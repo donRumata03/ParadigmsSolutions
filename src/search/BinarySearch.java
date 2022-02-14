@@ -7,8 +7,8 @@ import java.util.function.Function;
  *  Invariant: `rightmostFalse + 1 == leftmostTrue`
  */
 class DiscreteBinarySearchResult {
-    private int rightmostFalse;
-    private int leftmostTrue;
+    private final int rightmostFalse;
+    private final int leftmostTrue;
 
     public DiscreteBinarySearchResult(int rightmostFalse, int leftmostTrue) {
         assert rightmostFalse + 1 == leftmostTrue;
@@ -34,9 +34,9 @@ public class BinarySearch {
      * @param thresholdFunction Is defined in (left, right) and non-strictly monotonously increase at that open interval
      *
      * Let's denote extendedThresholdFunction(x) for a given thresholdFunction, left and right to be:
-     * — 0, if x <= left
+     * — false, if x <= left
      * — thresholdFunction(x), if left < x < right
-     * — 1, if x >= right
+     * — true, if x >= right
      *
      * @return such `DiscreteBinarySearchResult result` (note this type's invariants) that
      * `extendedThresholdFunction(result.rightmostFalse) == false && extendedThresholdFunction(result.leftmostTrue) == true`
@@ -44,6 +44,11 @@ public class BinarySearch {
     static DiscreteBinarySearchResult discreteIterativeBinarySearch(Function<Integer, Boolean> thresholdFunction, int left, int right) {
         int l = left;
         int r = right;
+
+        // Invariant:
+        // extendedThresholdFunction non-strictly monotonously increase at [l, r] &&
+        // extendedThresholdFunction(l) == false && extendedThresholdFunction(r) == true &&
+        // l < r
 
         while (l + 1 != r) {
             int m = (l + r) / 2;
