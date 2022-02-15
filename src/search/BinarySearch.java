@@ -28,18 +28,29 @@ class DiscreteBinarySearchResult {
 
 public class BinarySearch {
 
+    // Pre- and post- conditions for binary search:
+
+    @FunctionalInterface
+    interface DiscreteBinarySearchEngine {
+        /**
+         * @param left left border of search
+         * @param right > left
+         * @param thresholdFunction Is defined in (left, right) and non-strictly monotonously increase at that open interval
+         *
+         * Let's denote extendedThresholdFunction(x) for a given thresholdFunction, left and right to be:
+         * — false, if x <= left
+         * — thresholdFunction(x), if left < x < right
+         * — true, if x >= right
+         *
+         * @return such `DiscreteBinarySearchResult result` (note this type's invariants) that
+         * `extendedThresholdFunction(result.rightmostFalse) == false && extendedThresholdFunction(result.leftmostTrue) == true`
+         */
+        DiscreteBinarySearchResult search(Function<Integer, Boolean> thresholdFunction, int left, int right);
+    }
+
+
     /**
-     * @param left
-     * @param right > left
-     * @param thresholdFunction Is defined in (left, right) and non-strictly monotonously increase at that open interval
-     *
-     * Let's denote extendedThresholdFunction(x) for a given thresholdFunction, left and right to be:
-     * — false, if x <= left
-     * — thresholdFunction(x), if left < x < right
-     * — true, if x >= right
-     *
-     * @return such `DiscreteBinarySearchResult result` (note this type's invariants) that
-     * `extendedThresholdFunction(result.rightmostFalse) == false && extendedThresholdFunction(result.leftmostTrue) == true`
+     * Satisfies «Pre- and post- conditions for binary search» ↑↑↑
      */
     static DiscreteBinarySearchResult discreteIterativeBinarySearch(Function<Integer, Boolean> thresholdFunction, int left, int right) {
         int l = left;
@@ -64,6 +75,23 @@ public class BinarySearch {
     }
 
     /**
+     * Satisfies «Pre- and post- conditions for binary search» ↑↑↑
+     */
+    static DiscreteBinarySearchResult discreteRecursiveBinarySearch(Function<Integer, Boolean> thresholdFunction, int left, int right) {
+        if (left + 1 == right) {
+            return new DiscreteBinarySearchResult(left, right);
+        }
+
+        int m = (left + right) / 2;
+
+        if (thresholdFunction.apply(m)) {
+            return discreteRecursiveBinarySearch(thresholdFunction, left, m);
+        } else {
+            return discreteRecursiveBinarySearch(thresholdFunction, m, right);
+        }
+    }
+
+    /**
      * @param array contains non-strictly descending values
      * @param value value to search
      *
@@ -71,9 +99,10 @@ public class BinarySearch {
      * — Some(i)
      * — Otherwise, None
      */
-    static Optional<Integer> arrayBinarySearch(int[] array, int value) {
+    static Optional<Integer> arrayBinarySearch(int[] array, int value, DiscreteBinarySearchEngine searchEngine) {
+        // Note that this function call satisfies pre-condition discreteIterativeBinarySearch
         DiscreteBinarySearchResult res =
-            discreteIterativeBinarySearch((Integer index) -> array[index] <= value, -1, array.length);
+            searchEngine.search((Integer index) -> array[index] <= value, -1, array.length);
 
         return res.getLeftmostTrue() != array.length ?
             Optional.of(res.getLeftmostTrue()) :
@@ -96,10 +125,15 @@ public class BinarySearch {
             a[i] = Integer.parseInt(args[i + 1]);
         }
 
-        var searched = arrayBinarySearch(a, x);
+        var iterativeSearched = arrayBinarySearch(a, x, BinarySearch::discreteIterativeBinarySearch);
+        var recursiveSearched = arrayBinarySearch(a, x, BinarySearch::discreteRecursiveBinarySearch);
 
-        if (searched.isPresent()) {
-            System.out.println(searched.get());
+        if (!iterativeSearched.equals(recursiveSearched)) {
+            throw new AssertionError("Iterative and recursive searches gave different results");
+        }
+
+        if (iterativeSearched.isPresent()) {
+            System.out.println(iterativeSearched.get());
         } else {
 //            System.out.println("Fuck you!");
             System.out.println(a.length);
