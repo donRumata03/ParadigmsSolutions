@@ -3,170 +3,11 @@ package search;
 import java.util.Optional;
 import java.util.function.Function;
 
-/**
- *  Invariant: `rightmostFalse + 1 == leftmostTrue`
- */
-class DiscreteBinarySearchResult {
-    private final int rightmostFalse;
-    private final int leftmostTrue;
-
-    public DiscreteBinarySearchResult(int rightmostFalse, int leftmostTrue) {
-        assert rightmostFalse + 1 == leftmostTrue;
-
-        this.rightmostFalse = rightmostFalse;
-        this.leftmostTrue = leftmostTrue;
-    }
-
-    public int getRightmostFalse() {
-        return rightmostFalse;
-    }
-
-    public int getLeftmostTrue() {
-        return leftmostTrue;
-    }
-}
 
 public class BinarySearch {
 
-    // Pre- and post- conditions for binary search:
-
-    @FunctionalInterface
-    interface DiscreteBinarySearchEngine {
-        /**
-         * @param left left border of search
-         * @param right > left
-         * @param thresholdFunction Is defined in (left, right) and non-strictly monotonously increase at that open interval
-         *
-         * Let's denote extendedThresholdFunction(x) for a given thresholdFunction, left and right to be:
-         * — false, if x <= left
-         * — thresholdFunction(x), if left < x < right
-         * — true, if x >= right
-         *
-         * @return such `DiscreteBinarySearchResult result` (note this type's invariants) that
-         * `extendedThresholdFunction(result.rightmostFalse) == false && extendedThresholdFunction(result.leftmostTrue) == true`
-         */
-        DiscreteBinarySearchResult search(Function<Integer, Boolean> thresholdFunction, int left, int right);
-    }
 
 
-    /**
-     * Satisfies «Pre- and post- conditions for binary search» ↑↑↑
-     */
-    static DiscreteBinarySearchResult discreteIterativeBinarySearch(Function<Integer, Boolean> thresholdFunction, int left, int right) {
-        int l = left;
-        int r = right;
-
-        // Invariant (we get it from contract by denoting left as l, right as r):
-        // extendedThresholdFunction non-strictly monotonously increase at [l, r] &&
-        // extendedThresholdFunction(l) == false && extendedThresholdFunction(r) == true &&
-        // l < r
-
-        // `r - l` decreases at each iteration at least by 1 => loop isn't infinite
-        while (l + 1 != r) {
-            // extendedThresholdFunction non-strictly monotonously increase at [l, r] &&
-            // extendedThresholdFunction(l) == false && extendedThresholdFunction(r) == true &&
-            // l + 1 < r
-            int m = (l + r) / 2;
-            // extendedThresholdFunction non-strictly monotonously increase at [l, r] &&
-            // extendedThresholdFunction(l) == false && extendedThresholdFunction(r) == true &&
-            // l + 1 < r &&
-            // m - l >= 1 &&
-            // r - m >= 1 &&
-            // (=>) m \in (left, right)
-
-
-            if (thresholdFunction.apply(m)) {
-                // extendedThresholdFunction non-strictly monotonously increase at [l, r] &&
-                // extendedThresholdFunction(l) == false && extendedThresholdFunction(r) == true &&
-                // l + 1 < r &&
-                // m \in (left, right) &&
-                // extendedThresholdFunction(m) == true
-                r = m;
-                // extendedThresholdFunction non-strictly monotonously increase at [l, r] &&
-                // extendedThresholdFunction(l) == false && extendedThresholdFunction(r) == true &&
-                // l < r
-            } else {
-                // extendedThresholdFunction non-strictly monotonously increase at [l, r] &&
-                // extendedThresholdFunction(l) == false && extendedThresholdFunction(r) == true &&
-                // l + 1 < r &&
-                // m \in (left, right) &&
-                // extendedThresholdFunction(m) == true
-                l = m;
-                // extendedThresholdFunction non-strictly monotonously increase at [l, r] &&
-                // extendedThresholdFunction(l) == false && extendedThresholdFunction(r) == true &&
-                // l < r
-            }
-
-            // extendedThresholdFunction non-strictly monotonously increase at [l, r] &&
-            // extendedThresholdFunction(l) == false && extendedThresholdFunction(r) == true &&
-            // l < r
-        }
-
-        // extendedThresholdFunction non-strictly monotonously increase at [l, r] &&
-        // extendedThresholdFunction(l) == false && extendedThresholdFunction(r) == true &&
-        // l < r &&
-        // r == l + 1 (=> constructing is correct)
-        return new DiscreteBinarySearchResult(l, r);
-    }
-
-    /**
-     * Satisfies «Pre- and post- conditions for binary search» ↑↑↑
-     */
-    static DiscreteBinarySearchResult discreteRecursiveBinarySearch(Function<Integer, Boolean> thresholdFunction, int left, int right) {
-        // extendedThresholdFunction non-strictly monotonously increase at [left, right] &&
-        // extendedThresholdFunction(left) == false && extendedThresholdFunction(right) == true &&
-        // left < right
-
-        if (left + 1 == right) {
-            // left + 1 == right (=> can construct DiscreteBinarySearchResult)
-            // extendedThresholdFunction(l) == false && extendedThresholdFunction(r) == true
-            // (=> `extendedThresholdFunction(result.rightmostFalse) == false && extendedThresholdFunction(result.leftmostTrue) == true`)
-            return new DiscreteBinarySearchResult(left, right); // so, function's post-condition is satisfied
-        }
-
-        // extendedThresholdFunction non-strictly monotonously increase at [left, right] &&
-        // extendedThresholdFunction(left) == false && extendedThresholdFunction(right) == true &&
-        // left + 1 < right &&
-        // (=>) (left + right) / 2 - left >= 1 &&
-        // (=>) right - (left + right) / 2 >= 1
-        int m = (left + right) / 2;
-        // extendedThresholdFunction non-strictly monotonously increase at [left, right] &&
-        // extendedThresholdFunction(left) == false && extendedThresholdFunction(right) == true &&
-        // left + 1 < right &&
-        // m - left >= 1 &&
-        // right - m >= 1 &&
-        // (=>) m \in (left, right)
-
-        // (m - left >= 1 && right - m >= 1) => pre-condition for `thresholdFunction` is satisfied
-        boolean callResult = thresholdFunction.apply(m);
-        if (callResult) {
-            // extendedThresholdFunction non-strictly monotonously increase at [left, right] &&
-            // extendedThresholdFunction(left) == false && extendedThresholdFunction(right) == true &&
-            // left + 1 < right &&
-            // m \in (left, right)
-            // && extendedThresholdFunction(m) == true
-
-            // (=>) extendedThresholdFunction non-strictly monotonously increase at [left, m] &&
-            // (=>) extendedThresholdFunction(left) == false && extendedThresholdFunction(m) == true
-            // (=>) m > left
-
-            // m - left + 1 <= right - left => recursion isn't infinite
-            return discreteRecursiveBinarySearch(thresholdFunction, left, m);
-        } else {
-            // extendedThresholdFunction non-strictly monotonously increase at [left, right] &&
-            // extendedThresholdFunction(left) == false && extendedThresholdFunction(right) == true &&
-            // left + 1 < right &&
-            // m \in (left, right)
-            // && extendedThresholdFunction(m) == false
-
-            // (=>) extendedThresholdFunction non-strictly monotonously increase at [m, right] &&
-            // (=>) extendedThresholdFunction(m) == false && extendedThresholdFunction(right) == true
-            // (=>) right > m
-
-            // right - m + 1 <= right - left => recursion isn't infinite
-            return discreteRecursiveBinarySearch(thresholdFunction, m, right);
-        }
-    }
 
     /**
      * @param array contains non-strictly descending values
@@ -239,8 +80,10 @@ public class BinarySearch {
         // Prints minimal `i` \in [0, a.length) such that a[i] <= x if any; else — prints `a.length`
 
         // a is non-str. mon. inc. => correct calls
-        var iterativeSearched = arrayBinarySearch(a, x, BinarySearch::discreteIterativeBinarySearch);
-        var recursiveSearched = arrayBinarySearch(a, x, BinarySearch::discreteRecursiveBinarySearch);
+        var iterativeSearched =
+            arrayBinarySearch(a, x, DiscreteIterativeBinarySearch::discreteIterativeBinarySearch);
+        var recursiveSearched =
+            arrayBinarySearch(a, x, DiscreteRecursiveBinarySearch::discreteRecursiveBinarySearch);
         // both `iterativeSearched` and `recursiveSearched` ==
         //  {
         //      if there exists minimal `i` such that `array[i] <= value`
