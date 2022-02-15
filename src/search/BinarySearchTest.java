@@ -40,7 +40,7 @@ public final class BinarySearchTest {
     }
 
     private static Sorted uniI(final IntBinaryOperator op) {
-        return uni((k, a) -> k != 0 && (k == a.length || op.applyAsInt(a[k], a[k - 1]) == a[k - 1]) ? k - 1 : k);
+        return uni((k, a) -> k != 0 && (k == a.length || op.applyAsInt(a[k], a[k - 1]) == a[k - 1] && a[k] != a[k - 1]) ? k - 1 : k);
     }
 
     public static final ModelessSelector<?> SELECTOR = VariantTester.selector(BinarySearchTest.class, BinarySearchTester::test)

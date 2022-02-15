@@ -60,6 +60,7 @@ public class BinarySearch {
      * @param args Such array that
      * — `Integer.parseInt(args[0])` executes correctly, denote it as `x`.
      * — Integer.parseInt can parse all items from `args[1:]` and collected parse result is denoted as array `a`
+     * - And `a` it's non-strictly monotonously decreasing
      * Prints minimal `i` \in [0, a.length) such that a[i] <= x if any; else — prints `a.length`
      */
     public static void main(String[] args) {
