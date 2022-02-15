@@ -177,13 +177,41 @@ public class BinarySearch {
      * — Otherwise, None
      */
     static Optional<Integer> arrayBinarySearch(int[] array, int value, DiscreteBinarySearchEngine searchEngine) {
-        // Note that this function call satisfies pre-condition discreteIterativeBinarySearch
-        DiscreteBinarySearchResult res =
+        // `(Integer index) -> array[index] <= value` is defined at (-1, array.length) and is non-st. mon. inc.
+        // because values in array are && -1 < array.length
+        // => this function call satisfies pre-condition of DiscreteBinarySearchEngine.search
+        DiscreteBinarySearchResult result =
             searchEngine.search((Integer index) -> array[index] <= value, -1, array.length);
+        // `DiscreteBinarySearchResult result` => result.rightmostFalse + 1 == result.leftmostTrue &&
+        // (We'll denote `extendedThresholdFunction` to be `extendedThresholdFunction` from Engine contract instantiation ↑)
+        // extendedThresholdFunction(result.rightmostFalse) == false
+        // && extendedThresholdFunction(result.leftmostTrue) == true` &&
+        // array contains non-strictly descending values
 
-        return res.getLeftmostTrue() != array.length ?
-            Optional.of(res.getLeftmostTrue()) :
-            Optional.empty();
+        if (result.getLeftmostTrue() != array.length) {
+            // `DiscreteBinarySearchResult result` => result.rightmostFalse + 1 == result.leftmostTrue &&
+            // `extendedThresholdFunction(result.leftmostTrue - 1) == false
+            // && extendedThresholdFunction(result.leftmostTrue) == true &&
+            // array contains non-strictly descending values &&
+            // result.getLeftmostTrue() != array.length
+            // (=>) result.leftmostTrue \in [0, array.length)
+            // (=>) extendedThresholdFunction(result.leftmostTrue - 1) == false
+            // (=>) \forall j \in [0, result.leftmostTrue)
+            //      (extendedThresholdFunction(j) == false => array[j] > value)
+            // (=>) (extendedThresholdFunction(result.leftmostTrue) == true) => array[result.leftmostTrue] <= value
+            return Optional.of(result.getLeftmostTrue());
+        } else {
+            // `DiscreteBinarySearchResult result` => result.rightmostFalse + 1 == result.leftmostTrue &&
+            // extendedThresholdFunction(result.leftmostTrue - 1) == false
+            // && extendedThresholdFunction(result.leftmostTrue) == true &&
+            // array contains non-strictly descending values &&
+            // result.getLeftmostTrue() == array.length
+            // (=>) (extendedThresholdFunction(result.leftmostTrue - 1) == false)
+            //          => \forall j \in [0, array.length)
+            //                  (extendedThresholdFunction(j) == false => array[j] > value)
+            // (=>) all cells in array are `< value` => there exist no `i` such that `array[i] <= value`
+            return Optional.empty();
+        }
     }
 
 
