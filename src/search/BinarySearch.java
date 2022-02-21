@@ -22,7 +22,7 @@ public class BinarySearch {
         // because values in array are && -1 < array.length
         // => this function call satisfies pre-condition of DiscreteBinarySearchEngine.search
         DiscreteBinarySearchResult result =
-            searchEngine.search((Integer index) -> array[index] <= value, -1, array.length);
+            searchEngine.search((int index) -> array[index] <= value, -1, array.length);
         // `DiscreteBinarySearchResult result` => result.rightmostFalse + 1 == result.leftmostTrue &&
         // (We'll denote `extendedThresholdFunction` to be `extendedThresholdFunction` from Engine contract instantiation ↑)
         // extendedThresholdFunction(result.rightmostFalse) == false

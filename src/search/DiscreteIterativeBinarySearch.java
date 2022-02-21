@@ -1,12 +1,12 @@
 package search;
 
-import java.util.function.Function;
+import java.util.function.IntPredicate;
 
 public class DiscreteIterativeBinarySearch {
     /**
      * Satisfies «Pre- and post- conditions for binary search» ↑↑↑
      */
-    static DiscreteBinarySearchResult discreteIterativeBinarySearch(Function<Integer, Boolean> thresholdFunction, int left, int right) {
+    static DiscreteBinarySearchResult discreteIterativeBinarySearch(IntPredicate thresholdFunction, int left, int right) {
         int l = left;
         int r = right;
 
@@ -29,7 +29,7 @@ public class DiscreteIterativeBinarySearch {
             // (=>) m \in (left, right)
 
 
-            if (thresholdFunction.apply(m)) {
+            if (thresholdFunction.test(m)) {
                 // extendedThresholdFunction non-strictly monotonously increase at [l, r] &&
                 // extendedThresholdFunction(l) == false && extendedThresholdFunction(r) == true &&
                 // l + 1 < r &&

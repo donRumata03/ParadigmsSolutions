@@ -1,6 +1,6 @@
 package search;
 
-import java.util.function.Function;
+import java.util.function.IntPredicate;
 
 @FunctionalInterface
 public interface DiscreteBinarySearchEngine {
@@ -17,6 +17,6 @@ public interface DiscreteBinarySearchEngine {
      * @return such `DiscreteBinarySearchResult result` (note this type's invariants) that
      * `extendedThresholdFunction(result.rightmostFalse) == false && extendedThresholdFunction(result.leftmostTrue) == true`
      */
-    DiscreteBinarySearchResult search(Function<Integer, Boolean> thresholdFunction, int left, int right);
+    DiscreteBinarySearchResult search(IntPredicate thresholdFunction, int left, int right);
 }
 

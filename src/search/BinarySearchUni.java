@@ -56,7 +56,7 @@ public class BinarySearchUni {
         // otherwise it exists in somewhere in array but can't be after index => it's in [0, index]
         // we get maximal index for which
         var searched = engine.search(
-            (Integer index) -> index == array.length - 1 || array[index] < array[index + 1],
+            (int index) -> index == array.length - 1 || array[index] < array[index + 1],
             -1, array.length
             );
         // searched.leftmostTrue == minimal position from which second array can start

@@ -1,13 +1,13 @@
 package search;
 
-import java.util.function.Function;
+import java.util.function.IntPredicate;
 
 public class DiscreteRecursiveBinarySearch {
 
     /**
      * Satisfies «Pre- and post- conditions for binary search» ↑↑↑
      */
-    static DiscreteBinarySearchResult discreteRecursiveBinarySearch(Function<Integer, Boolean> thresholdFunction, int left, int right) {
+    static DiscreteBinarySearchResult discreteRecursiveBinarySearch(IntPredicate thresholdFunction, int left, int right) {
         // extendedThresholdFunction non-strictly monotonously increase at [left, right] &&
         // extendedThresholdFunction(left) == false && extendedThresholdFunction(right) == true &&
         // left < right
@@ -33,7 +33,7 @@ public class DiscreteRecursiveBinarySearch {
         // (=>) m \in (left, right)
 
         // (m - left >= 1 && right - m >= 1) => pre-condition for `thresholdFunction` is satisfied
-        boolean callResult = thresholdFunction.apply(m);
+        boolean callResult = thresholdFunction.test(m);
         if (callResult) {
             // extendedThresholdFunction non-strictly monotonously increase at [left, right] &&
             // extendedThresholdFunction(left) == false && extendedThresholdFunction(right) == true &&
