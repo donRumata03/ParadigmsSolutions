@@ -1,7 +1,5 @@
 package queue;
 
-import java.util.Arrays;
-
 /**
  * Model: infinite sequence a[0..+inf], integer L, integer R
  * Invariant: for i \in [L, R): a[i] != null
@@ -187,5 +185,34 @@ public class ArrayQueue {
         // tail stays at the same position
 
         return res;
+    }
+
+    public int indexOf(Object element) {
+        for (
+            int indexFromHead = 0, arrayPosition = previousCircularPosition(head());
+            indexFromHead < size;
+            indexFromHead++, arrayPosition = previousCircularPosition(arrayPosition)
+        ) {
+            if (elements[arrayPosition] == element) {
+                return indexFromHead;
+            }
+        }
+
+        return -1;
+    }
+
+
+    public int lastIndexOf(Object element) {
+        for (
+            int indexFromHead = size - 1, arrayPosition = tail;
+            indexFromHead < size;
+            indexFromHead--, arrayPosition = nextCircularPosition(arrayPosition)
+        ) {
+            if (elements[arrayPosition] == element) {
+                return indexFromHead;
+            }
+        }
+
+        return -1;
     }
 }
