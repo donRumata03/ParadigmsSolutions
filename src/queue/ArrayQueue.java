@@ -64,7 +64,10 @@ public class ArrayQueue {
      *  — cL
      */
     public void enqueue(final Object element) {
-        model().addLast(element);
+        ensureCapacity(size + 1);
+
+        elements[head()] = element;
+        size++;
     }
 
     /**
@@ -76,7 +79,12 @@ public class ArrayQueue {
      *  — Ret = a[L]
      */
     public Object dequeue() {
-        return model().removeFirst();
+        var res = elements[tail];
+        elements[tail] = null;
+        tail = nextCircularPosition(tail);
+        size--;
+
+        return res;
     }
 
     /**
@@ -88,7 +96,7 @@ public class ArrayQueue {
      *  — Ret = R - L
      */
     public int size() {
-        return model().size();
+        return size;
     }
 
     /**
@@ -109,7 +117,9 @@ public class ArrayQueue {
      *  — 0 <= L = R
      */
     public void clear() {
-        model().clear();
+        elements = null;
+        size = 0;
+        tail = 0;
     }
 
     /**
@@ -121,6 +131,6 @@ public class ArrayQueue {
      *  — Ret = a[L]
      */
     public Object element() {
-        return model().getFirst();
+        return elements[tail];
     }
 }
