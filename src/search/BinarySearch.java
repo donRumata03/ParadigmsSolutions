@@ -24,32 +24,32 @@ public class BinarySearch {
         DiscreteBinarySearchResult result =
             searchEngine.search((int index) -> array[index] <= value, -1, array.length);
         // `DiscreteBinarySearchResult result` => result.rightmostFalse + 1 == result.leftmostTrue &&
-        // (We'll denote `extendedThresholdFunction` to be `extendedThresholdFunction` from Engine contract instantiation ↑)
-        // extendedThresholdFunction(result.rightmostFalse) == false
-        // && extendedThresholdFunction(result.leftmostTrue) == true` &&
+        // (We'll denote `etf` to be `etf` from Engine contract instantiation ↑)
+        // etf(result.rightmostFalse) == false
+        // && etf(result.leftmostTrue) == true` &&
         // array contains non-strictly descending values
 
         if (result.getLeftmostTrue() != array.length) {
             // `DiscreteBinarySearchResult result` => result.rightmostFalse + 1 == result.leftmostTrue &&
-            // `extendedThresholdFunction(result.leftmostTrue - 1) == false
-            // && extendedThresholdFunction(result.leftmostTrue) == true &&
+            // `etf(result.leftmostTrue - 1) == false
+            // && etf(result.leftmostTrue) == true &&
             // array contains non-strictly descending values &&
             // result.getLeftmostTrue() != array.length
             // (=>) result.leftmostTrue \in [0, array.length)
-            // (=>) extendedThresholdFunction(result.leftmostTrue - 1) == false
+            // (=>) etf(result.leftmostTrue - 1) == false
             // (=>) \forall j \in [0, result.leftmostTrue)
-            //      (extendedThresholdFunction(j) == false => array[j] > value)
-            // (=>) (extendedThresholdFunction(result.leftmostTrue) == true) => array[result.leftmostTrue] <= value
+            //      (etf(j) == false => array[j] > value)
+            // (=>) (etf(result.leftmostTrue) == true) => array[result.leftmostTrue] <= value
             return Optional.of(result.getLeftmostTrue());
         } else {
             // `DiscreteBinarySearchResult result` => result.rightmostFalse + 1 == result.leftmostTrue &&
-            // extendedThresholdFunction(result.leftmostTrue - 1) == false
-            // && extendedThresholdFunction(result.leftmostTrue) == true &&
+            // etf(result.leftmostTrue - 1) == false
+            // && etf(result.leftmostTrue) == true &&
             // array contains non-strictly descending values &&
             // result.getLeftmostTrue() == array.length
-            // (=>) (extendedThresholdFunction(result.leftmostTrue - 1) == false)
+            // (=>) (etf(result.leftmostTrue - 1) == false)
             //          => \forall j \in [0, array.length)
-            //                  (extendedThresholdFunction(j) == false => array[j] > value)
+            //                  (etf(j) == false => array[j] > value)
             // (=>) all cells in array are `< value` => there exist no `i` such that `array[i] <= value`
             return Optional.empty();
         }
