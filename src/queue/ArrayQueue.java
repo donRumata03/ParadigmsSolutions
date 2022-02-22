@@ -1,5 +1,7 @@
 package queue;
 
+import java.util.Arrays;
+
 /**
  * Model: infinite sequence a[0..+inf], integer L, integer R
  * Invariant: for i \in [L, R): a[i] != null
@@ -10,21 +12,38 @@ package queue;
  */
 public class ArrayQueue {
     private Object[] elements = null; // If not null, has capacity > 0
-    private int head = 0;
     private int tail = 0;
+    private int size = 0;
+
+    private int head() {
+        return (tail + size) % elements.length;
+    }
+
     // implied order from model is: [tail, head) in circular space of `elements`
     // queue is produced from head to «right» and consumed from tail to «right»
     // Imagine a dinosaur is eating its tail…
 
-    private void ensureCapacity(int requiredSize) {
-        if (elements.length < requiredSize) {
-            int newSize = (elements.length + 1) * 2;
-            Object[] newArray = ;
-        }
+    private int capacity() {
+        return elements == null ? 0 : elements.length;
     }
 
     private int nextCircularPosition(int pos) {
         return (pos + 1) % elements.length;
+    }
+
+    private void ensureCapacity(int requiredCapacity) {
+        if (capacity() < requiredCapacity) {
+            int newCapacity = (capacity() + 1) * 2;
+            Object[] newArray = new Object[newCapacity];
+
+            for (int oldPtr = tail, newPtr = 0; newPtr < size(); oldPtr = nextCircularPosition(oldPtr), newPtr++) {
+                newArray[newPtr] = elements[oldPtr];
+            }
+
+            elements = newArray;
+            tail = 0;
+            // size remains unchanged
+        }
     }
 
     /**
