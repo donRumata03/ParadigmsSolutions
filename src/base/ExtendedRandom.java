@@ -1,5 +1,6 @@
 package base;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
@@ -22,8 +23,8 @@ public final class ExtendedRandom {
         this.random = random;
     }
 
-    public ExtendedRandom() {
-        this(new Random(8045702385702345702L));
+    public ExtendedRandom(final Class<?> owner) {
+        this(new Random(8045702385702345702L + owner.getName().hashCode()));
     }
 
     public String randomString(final String chars) {
@@ -43,7 +44,7 @@ public final class ExtendedRandom {
     }
 
     public String randomString(final String chars, final int minLength, final int maxLength) {
-        return randomString(chars, nextInt(minLength, maxLength + 1));
+        return randomString(chars, nextInt(minLength, maxLength));
     }
 
     public boolean nextBoolean() {
@@ -55,7 +56,7 @@ public final class ExtendedRandom {
     }
 
     public int nextInt(final int min, final int max) {
-        return nextInt(max - min) + min;
+        return nextInt(max - min + 1) + min;
     }
 
     public int nextInt(final int n) {
@@ -81,5 +82,9 @@ public final class ExtendedRandom {
 
     public double nextDouble() {
         return random.nextDouble();
+    }
+
+    public <E> void shuffle(final List<E> all) {
+        Collections.shuffle(all, random);
     }
 }

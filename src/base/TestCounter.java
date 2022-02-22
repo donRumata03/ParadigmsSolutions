@@ -28,14 +28,16 @@ public class TestCounter extends Log {
 
     private final Class<?> owner;
     private final Map<String, ?> properties;
+    private final ExtendedRandom random;
+
+    private final long start = System.currentTimeMillis();
+    private int passed;
 
     public TestCounter(final Class<?> owner, final Map<String, ?> properties) {
         this.owner = owner;
         this.properties = properties;
+        random = new ExtendedRandom(owner);
     }
-
-    private final long start = System.currentTimeMillis();
-    private int passed;
 
     public int getTestNo() {
         return passed + 1;
@@ -131,6 +133,10 @@ public class TestCounter extends Log {
 
     public Path getFile(final String suffix) {
         return Paths.get(String.format("test%d.%s", getTestNo(), suffix));
+    }
+
+    public ExtendedRandom random() {
+        return random;
     }
 
     @FunctionalInterface
