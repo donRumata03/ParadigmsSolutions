@@ -9,6 +9,7 @@ import java.util.Arrays;
  * Let immutable(l, r): for i \in [l, r): a'[i] == a[i]
  * Let `cL`: L' == L
  * Let `cR`: R' == R
+ * Let `nE`: R - L > 0
  */
 public class ArrayQueue {
     private Object[] elements = null; // If not null, has capacity > 0
@@ -31,12 +32,19 @@ public class ArrayQueue {
         return (pos + 1) % elements.length;
     }
 
+    private int previousCircularPosition(int pos) {
+        return pos == 0 ? elements.length - 1 : pos - 1;
+    }
+
     private void ensureCapacity(int requiredCapacity) {
         if (capacity() < requiredCapacity) {
             int newCapacity = (capacity() + 1) * 2;
             Object[] newArray = new Object[newCapacity];
 
-            for (int oldPtr = tail, newPtr = 0; newPtr < size(); oldPtr = nextCircularPosition(oldPtr), newPtr++) {
+            for (int oldPtr = tail, newPtr = 0;
+                newPtr < size();
+                oldPtr = nextCircularPosition(oldPtr), newPtr++
+            ) {
                 newArray[newPtr] = elements[oldPtr];
             }
 
@@ -71,7 +79,7 @@ public class ArrayQueue {
     }
 
     /**
-     * Pred: true
+     * Pred: nE
      * Post:
      *  — immutable(L + 1,  R)
      *  — L' = L + 1
@@ -123,7 +131,7 @@ public class ArrayQueue {
     }
 
     /**
-     * Pred: true
+     * Pred: nE
      * Post:
      *  — immutable(L,  R)
      *  — cL
@@ -132,5 +140,52 @@ public class ArrayQueue {
      */
     public Object element() {
         return elements[tail];
+    }
+
+    /**
+     * Pred: element != null
+     * Post:
+     *  — immutable(L,  R)
+     *  — cR
+     *  — L' = L - 1
+     *  — a[L'] = element
+     */
+    public void push(final Object element) {
+        ensureCapacity(elements.length + 1);
+
+        tail = previousCircularPosition(tail);
+        elements[tail] = element;
+        size++;
+    }
+
+    /**
+     * Pred: nE
+     * Post:
+     *  — immutable(L,  R)
+     *  — cL
+     *  — cR
+     *  — Ret = a[R - 1]
+     */
+    public Object peek() {
+        return elements[previousCircularPosition(head())];
+    }
+
+    /**
+     * Pred: nE
+     * Post:
+     *  — immutable(L,  R - 1)
+     *  — cL
+     *  — R' = R - 1
+     *  — Ret = a[R - 1]
+     */
+    public Object remove() {
+        int removedPosition = previousCircularPosition(head());
+
+        var res = elements[removedPosition];
+        elements[removedPosition] = null;
+        size--;
+        // tail stays at the same position
+
+        return res;
     }
 }
