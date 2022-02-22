@@ -7,7 +7,7 @@ import java.util.Optional;
  * Some useful definitions are provided here…
  *
  * Borrow the definitions of strictly and non-strictly monotonous for real-valued, integer-*
- * and boolean-* (consider false === \mathbb{0}; true === \mathbb{1}) functions.
+ * and boolean-* (consider false === \mathbb{0}; true === \mathbb{1}, for which there's ordering) functions.
  * Abbreviations: SMI, NSMI, SMD, NSMD
  *
  * Integer intervals are denoted as [a, b)
@@ -29,14 +29,21 @@ import java.util.Optional;
  *
  * Theorems for `SDID f: [l, r) |-> T`:
  *
- * Theorem S1: If f(m) < f(m + 1), then f|[m, r) is SMI.
+ * Let g: [l, r) -> Bool, g(i) = `m == r - 1 || f(m) < f(m + 1)`
+ * Theorem S1: If `g(m)`, then f|[m, r) is SMI and backwards.
  *
- * Theorem S2: Boolean function g: [l, r - 1) -> Bool, g(i) = (f(i) < f(i + 1)) is NSMI
+ * If first condition is true, conclusion is obvious.
+ * If it's the second one but not the first, we'll proof that g(i + 1) is true (=> by induction, conclusion becomes true)
  *
-// * Theorem S3: and for some m \in [l, r): f(m) < f(m + 1), then f|           is SDID.
-// *                                                                                          | [l, m]
+ * Indeed, for m + 2 == r it's true, and if f(m) < f(m + 1) >= f(m + 2), f wouldn't be SDID,
+ * because any splitter would be m + 1 >= s >= m + 2 => contradiction.
  *
+ * Backwards proof is obvious.
+ * ____________________________________________________________________________________________________
+ * Theorem S2: Boolean function g(i) is NSMI
  *
+ * Indeed, g(i) <=> f|[i, r) is SMI, so, viewing max SMI postfix [l', r),
+ * g(i) is false for i \in [l, l') and true for i \in [l', r)
  */
 public class BinarySearchUni {
 
@@ -46,7 +53,9 @@ public class BinarySearchUni {
      * @return the smallest splitter of `array`
      */
     static int minimalPrefixBeforeIncreasing(int[] array, DiscreteBinarySearchEngine engine) {
-        // predicate `(Integer index) -> index == array.length - 1 || array[index] < array[index + 1]`
+        // let f be [0, array.length()), f(i) = array[i]
+        // predicate `(int index) -> index == array.length - 1 || array[index] < array[index + 1]`
+        // is `g` function from Theorems S1, S2. It's NSMI and <==> `f|[m, r)` is SMI.
         // checks whether there are positions in `[0, index]` that can be the start of second array
         // (
         //  via extendedThresholdFunction indexes < 0 and >= array.length
