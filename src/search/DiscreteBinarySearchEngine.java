@@ -10,9 +10,10 @@ public interface DiscreteBinarySearchEngine {
      * — false, if x <= left
      * — thresholdFunction(x), if left < x < right
      * — true, if x >= right
+     *
      * @param left left border of search
      * @param right > left
-     * @param thresholdFunction Is defined in (left, right) and non-strictly monotonously increases at that open interval
+     * @param thresholdFunction Is defined in (left, right) and is NSMI at that open interval
      *
      * @return such `DiscreteBinarySearchResult result` (note this type's invariants) that
      * `etf(result.rightmostFalse) == false && etf(result.leftmostTrue) == true`

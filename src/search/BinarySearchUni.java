@@ -7,8 +7,8 @@ import java.util.Optional;
  * Some useful definitions are provided here…
  *
  * Borrow the definitions of strictly and non-strictly monotonous for real-valued, integer-*
- * and boolean-* (consider false === \mathbb{0}; true === \mathbb{1}, for which there's ordering) functions.
- * Abbreviations: SMI, NSMI, SMD, NSMD
+ * and boolean-* (consider false === \mathbb{0}; true === \mathbb{1}, for which there's ordering) functions
+ * from Discrete Maths. Abbreviations: SMI, NSMI, SMD, NSMD
  *
  * Integer intervals are denoted as [a, b)
  *

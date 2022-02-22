@@ -11,17 +11,17 @@ public class DiscreteIterativeBinarySearch {
         int r = right;
 
         // Invariant (we get it from contract by denoting left as l, right as r):
-        // etf non-strictly monotonously increase at [l, r] &&
+        // etf NSMI at [l, r] &&
         // etf(l) == false && etf(r) == true &&
         // l < r
 
         // `r - l` decreases at each iteration at least by 1 => loop isn't infinite
         while (l + 1 != r) {
-            // etf non-strictly monotonously increase at [l, r] &&
+            // etf NSMI at [l, r] &&
             // etf(l) == false && etf(r) == true &&
             // l + 1 < r
             int m = (l + r) / 2;
-            // etf non-strictly monotonously increase at [l, r] &&
+            // etf NSMI at [l, r] &&
             // etf(l) == false && etf(r) == true &&
             // l + 1 < r &&
             // m - l >= 1 &&
@@ -30,28 +30,28 @@ public class DiscreteIterativeBinarySearch {
 
 
             if (thresholdFunction.test(m)) {
-                // etf non-strictly monotonously increase at [l, r] &&
+                // etf NSMI at [l, r] &&
                 // etf(l) == false && etf(r) == true &&
                 // l + 1 < r &&
                 // m \in (left, right) &&
                 // etf(m) == true
                 r = m;
-                // etf non-strictly monotonously increase at [l, r] &&
+                // etf NSMI at [l, r] &&
                 // etf(l) == false && etf(r) == true &&
                 // l < r
             } else {
-                // etf non-strictly monotonously increase at [l, r] &&
+                // etf NSMI at [l, r] &&
                 // etf(l) == false && etf(r) == true &&
                 // l + 1 < r &&
                 // m \in (left, right) &&
                 // etf(m) == true
                 l = m;
-                // etf non-strictly monotonously increase at [l, r] &&
+                // etf NSMI at [l, r] &&
                 // etf(l) == false && etf(r) == true &&
                 // l < r
             }
 
-            // etf non-strictly monotonously increase at [l, r] &&
+            // etf NSMI at [l, r] &&
             // etf(l) == false && etf(r) == true &&
             // l < r
         }

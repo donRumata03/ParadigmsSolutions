@@ -10,7 +10,7 @@ public class BinarySearch {
 
 
     /**
-     * @param array contains non-strictly descending values
+     * @param array is NSMD
      * @param value value to search
      *
      * @return if there exists minimal `i` such that `array[i] <= value`
@@ -18,7 +18,7 @@ public class BinarySearch {
      * — Otherwise, None
      */
     static Optional<Integer> arrayBinarySearch(int[] array, int value, DiscreteBinarySearchEngine searchEngine) {
-        // `(Integer index) -> array[index] <= value` is defined at (-1, array.length) and is non-st. mon. inc.
+        // `(Integer index) -> array[index] <= value` is defined at (-1, array.length) and is NSMI.
         // because values in array are && -1 < array.length
         // => this function call satisfies pre-condition of DiscreteBinarySearchEngine.search
         DiscreteBinarySearchResult result =
@@ -27,13 +27,13 @@ public class BinarySearch {
         // (We'll denote `etf` to be `etf` from Engine contract instantiation ↑)
         // etf(result.rightmostFalse) == false
         // && etf(result.leftmostTrue) == true` &&
-        // array contains non-strictly descending values
+        // array is NSMD
 
         if (result.getLeftmostTrue() != array.length) {
             // `DiscreteBinarySearchResult result` => result.rightmostFalse + 1 == result.leftmostTrue &&
             // `etf(result.leftmostTrue - 1) == false
             // && etf(result.leftmostTrue) == true &&
-            // array contains non-strictly descending values &&
+            // array is NSMD &&
             // result.getLeftmostTrue() != array.length
             // (=>) result.leftmostTrue \in [0, array.length)
             // (=>) etf(result.leftmostTrue - 1) == false
@@ -45,7 +45,7 @@ public class BinarySearch {
             // `DiscreteBinarySearchResult result` => result.rightmostFalse + 1 == result.leftmostTrue &&
             // etf(result.leftmostTrue - 1) == false
             // && etf(result.leftmostTrue) == true &&
-            // array contains non-strictly descending values &&
+            // array is NSMD &&
             // result.getLeftmostTrue() == array.length
             // (=>) (etf(result.leftmostTrue - 1) == false)
             //          => \forall j \in [0, array.length)
@@ -60,7 +60,7 @@ public class BinarySearch {
      * @param args Such array that
      * — `Integer.parseInt(args[0])` executes correctly, denote it as `x`.
      * — Integer.parseInt can parse all items from `args[1:]` and collected parse result is denoted as array `a`
-     * - And `a` it's non-strictly monotonously decreasing
+     * - And `a` is NSMD
      * Prints minimal `i` \in [0, a.length) such that a[i] <= x if any; else — prints `a.length`
      */
     public static void main(String[] args) {
@@ -80,7 +80,7 @@ public class BinarySearch {
         // i == args.length - 1 => a[0..array.length) array `a` contains parsed args[1:]
         // Prints minimal `i` \in [0, a.length) such that a[i] <= x if any; else — prints `a.length`
 
-        // a is non-str. mon. inc. => correct calls
+        // a is NSMD => correct calls
         var iterativeSearched =
             arrayBinarySearch(a, x, DiscreteIterativeBinarySearch::discreteIterativeBinarySearch);
         var recursiveSearched =
