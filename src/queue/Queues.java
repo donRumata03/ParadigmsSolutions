@@ -2,8 +2,12 @@ package queue;
 
 import base.ExtendedRandom;
 
+import java.lang.reflect.Field;
 import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.Predicate;
 
 /**
  * @author Georgiy Korneev (kgeorgiy@kgeorgiy.info)
@@ -83,4 +87,150 @@ public final class Queues {
             return List.of();
         }
     }
+    /* package-private */ interface DequeModel extends Queues.QueueModel {
+        default void push(final Object element) {
+            model().addFirst(element);
+        }
+
+        @SuppressWarnings("UnusedReturnValue")
+        default Object peek() {
+            return model().getLast();
+        }
+
+        default Object remove() {
+            return model().removeLast();
+        }
+    }
+
+    /* package-private */ interface DequeChecker<T extends DequeModel> extends Queues.QueueChecker<T> {
+        @Override
+        default void add(final T queue, final Object element, final ExtendedRandom random) {
+            if (random.nextBoolean()) {
+                Queues.QueueChecker.super.add(queue, element, random);
+            } else {
+                queue.push(element);
+            }
+        }
+
+        @Override
+        default void check(final T queue, final ExtendedRandom random) {
+            if (random.nextBoolean()) {
+                Queues.QueueChecker.super.check(queue, random);
+            } else {
+                queue.peek();
+            }
+        }
+
+        @Override
+        default void remove(final T queue, final ExtendedRandom random) {
+            if (random.nextBoolean()) {
+                Queues.QueueChecker.super.remove(queue, random);
+            } else {
+                queue.remove();
+            }
+        }
+    }
+
+    // === Reflection
+
+    /* package-private */ interface ReflectionModel extends Queues.QueueModel {
+        Field ELEMENTS = getField("elements");
+        Field HEAD = getField("head");
+
+        @SuppressWarnings("unchecked")
+        private <Z> Z get(final Field field) {
+            try {
+                return (Z) field.get(model());
+            } catch (final IllegalAccessException e) {
+                throw new AssertionError("Cannot access field " + field.getName() + ": " + e.getMessage(), e);
+            }
+        }
+
+        private static Field getField(final String name) {
+            try {
+                final Field field = ArrayDeque.class.getDeclaredField(name);
+                field.setAccessible(true);
+                return field;
+            } catch (final NoSuchFieldException e) {
+                throw new AssertionError("Reflection error: " + e.getMessage(), e);
+            }
+        }
+
+        @ReflectionTest.Ignore
+        default int head() {
+            return get(HEAD);
+        }
+
+        @ReflectionTest.Ignore
+        default Object[] elements() {
+            return get(ELEMENTS);
+        }
+
+        @ReflectionTest.Ignore
+        default <R> R reduce(final R zero, final Predicate<Object> p, final BiFunction<R, Integer, R> f) {
+            final int size = size();
+            final Object[] elements = elements();
+            final int head = head();
+            R result = zero;
+            for (int i = 0; i < size; i++) {
+                if (p.test(elements[(head + i) % elements.length])) {
+                    result = f.apply(result, i);
+                }
+            }
+            return result;
+        }
+
+        @ReflectionTest.Ignore
+        default <R> R reduce(final R zero, final Object v, final BiFunction<R, Integer, R> f) {
+            return reduce(zero, o -> Objects.equals(v, o), f);
+        }
+    }
+
+
+    // === Count
+
+    /* package-private */ interface CountModel extends ReflectionModel {
+        default int count(final Object element) {
+            return reduce(0, element, (v, i) -> v + 1);
+        }
+    }
+
+    /* package-private */ static final Queues.LinearTester<CountModel> COUNT =
+            (tester, queue, random) -> queue.count(tester.randomElement(random));
+
+    // === DequeCount
+
+    /* package-private */ interface DequeCountModel extends DequeModel, CountModel {
+    }
+
+    /* package-private */ static final Queues.LinearTester<DequeCountModel> DEQUE_COUNT = COUNT::test;
+
+    // === Index
+
+    /* package-private */
+    interface IndexModel extends ReflectionModel {
+        default int indexOf(final Object element) {
+            return reduce(-1, element, (v, i) -> v == -1 ? i : v);
+        }
+
+        default int lastIndexOf(final Object element) {
+            return reduce(-1, element, (v, i) -> i);
+        }
+    }
+
+    /* package-private */ static final Queues.LinearTester<IndexModel> INDEX = (tester, queue, random) -> {
+        if (random.nextBoolean()) {
+            queue.indexOf(tester.randomElement(random));
+        } else {
+            queue.lastIndexOf(tester.randomElement(random));
+        }
+    };
+
+
+    // === DequeIndex
+
+    /* package-private */ interface DequeIndexModel extends DequeModel, IndexModel {
+    }
+
+    /* package-private */ static final Queues.LinearTester<DequeIndexModel> DEQUE_INDEX = INDEX::test;
 }
