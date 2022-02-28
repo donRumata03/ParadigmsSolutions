@@ -186,8 +186,6 @@ public class ArrayQueueModule {
     }
 
     public static int lastIndexOf(Object element) {
-        System.out.println("lastIndexOf Called");
-
         for (
             int indexFromHead = 0, arrayPosition = previousCircularPosition(head());
             indexFromHead < size;
@@ -203,7 +201,6 @@ public class ArrayQueueModule {
 
 
     public static int indexOf(Object element) {
-        System.out.println("indexOf Called");
         for (
             int indexFromHead = size - 1, arrayPosition = tail;
             indexFromHead >= 0;

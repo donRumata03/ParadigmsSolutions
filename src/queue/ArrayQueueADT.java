@@ -1,14 +1,15 @@
 package queue;
 
+
+/**
+ * Model: infinite sequence a[0..+inf], integer L, integer R
+ * Invariant: for i \in [L, R): a[i] != null
+ *
+ * Let immutable(l, r): for i \in [l, r): a'[i] == a[i]
+ * Let `cL`: L' == L
+ * Let `cR`: R' == R
+ */
 public class ArrayQueueADT {
-    /**
-     * Model: infinite sequence a[0..+inf], integer L, integer R
-     * Invariant: for i \in [L, R): a[i] != null
-     *
-     * Let immutable(l, r): for i \in [l, r): a'[i] == a[i]
-     * Let `cL`: L' == L
-     * Let `cR`: R' == R
-     */
     private Object[] elements = null; // If not null, has capacity > 0
     private int tail = 0;
     private int size = 0;
@@ -29,13 +30,16 @@ public class ArrayQueueADT {
         return (pos + 1) % queue.elements.length;
     }
 
+    private static int previousCircularPosition(ArrayQueueADT queue, int pos) {
+        return pos == 0 ? queue.elements.length - 1 : pos - 1;
+    }
+
     private static void ensureCapacity(ArrayQueueADT queue, int requiredCapacity) {
         if (capacity(queue) < requiredCapacity) {
             int newCapacity = (capacity(queue) + 1) * 2;
             Object[] newArray = new Object[newCapacity];
 
-            for (
-                int oldPtr = queue.tail, newPtr = 0;
+            for (int oldPtr = queue.tail, newPtr = 0;
                 newPtr < size(queue);
                 oldPtr = nextCircularPosition(queue, oldPtr), newPtr++
             ) {
@@ -53,7 +57,7 @@ public class ArrayQueueADT {
      * Post:
      *  — Constructs queue with 0 <= L = R
      */
-    /* implicit constructor */
+    // Implicit Default Constructor
 
     /**
      * Pred: element != null
@@ -71,7 +75,7 @@ public class ArrayQueueADT {
     }
 
     /**
-     * Pred: true
+     * Pred: nE
      * Post:
      *  — immutable(L + 1,  R)
      *  — L' = L + 1
@@ -123,7 +127,7 @@ public class ArrayQueueADT {
     }
 
     /**
-     * Pred: true
+     * Pred: nE
      * Post:
      *  — immutable(L,  R)
      *  — cL
@@ -132,5 +136,81 @@ public class ArrayQueueADT {
      */
     public static Object element(ArrayQueueADT queue) {
         return queue.elements[queue.tail];
+    }
+
+    /**
+     * Pred: element != null
+     * Post:
+     *  — immutable(L,  R)
+     *  — cR
+     *  — L' = L - 1
+     *  — a[L'] = element
+     */
+    public static void push(ArrayQueueADT queue, final Object element) {
+        ensureCapacity(queue, queue.elements.length + 1);
+
+        queue.tail = previousCircularPosition(queue, queue.tail);
+        queue.elements[queue.tail] = element;
+        queue.size++;
+    }
+
+    /**
+     * Pred: nE
+     * Post:
+     *  — immutable(L,  R)
+     *  — cL
+     *  — cR
+     *  — Ret = a[R - 1]
+     */
+    public static Object peek(ArrayQueueADT queue) {
+        return queue.elements[previousCircularPosition(queue, head(queue))];
+    }
+
+    /**
+     * Pred: nE
+     * Post:
+     *  — immutable(L,  R - 1)
+     *  — cL
+     *  — R' = R - 1
+     *  — Ret = a[R - 1]
+     */
+    public static Object remove(ArrayQueueADT queue) {
+        int removedPosition = previousCircularPosition(queue, head(queue));
+
+        var res = queue.elements[removedPosition];
+        queue.elements[removedPosition] = null;
+        queue.size--;
+        // queue.tail stays at the same position
+
+        return res;
+    }
+
+    public static int lastIndexOf(ArrayQueueADT queue, Object element) {
+        for (
+            int indexFromHead = 0, arrayPosition = previousCircularPosition(queue, head(queue));
+            indexFromHead < queue.size;
+            indexFromHead++, arrayPosition = previousCircularPosition(queue, arrayPosition)
+        ) {
+            if (queue.elements[arrayPosition].equals(element)) {
+                return queue.size - 1 - indexFromHead; // Their head is weird…
+            }
+        }
+
+        return -1;
+    }
+
+
+    public static int indexOf(ArrayQueueADT queue, Object element) {
+        for (
+            int indexFromHead = queue.size - 1, arrayPosition = queue.tail;
+            indexFromHead >= 0;
+            indexFromHead--, arrayPosition = nextCircularPosition(queue, arrayPosition)
+        ) {
+            if (queue.elements[arrayPosition].equals(element)) {
+                return queue.size - 1 - indexFromHead;  // Their head is still weird…
+            }
+        }
+
+        return -1;
     }
 }

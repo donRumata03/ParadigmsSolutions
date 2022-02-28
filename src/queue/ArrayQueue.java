@@ -57,9 +57,7 @@ public class ArrayQueue {
      * Post:
      *  — Constructs queue with 0 <= L = R
      */
-    public ArrayQueue() {
-
-    }
+    // Implicit Default Constructor
 
     /**
      * Pred: element != null
@@ -187,14 +185,14 @@ public class ArrayQueue {
         return res;
     }
 
-    public int indexOf(Object element) {
+    public int lastIndexOf(Object element) {
         for (
             int indexFromHead = 0, arrayPosition = previousCircularPosition(head());
             indexFromHead < size;
             indexFromHead++, arrayPosition = previousCircularPosition(arrayPosition)
         ) {
-            if (elements[arrayPosition] == element) {
-                return indexFromHead;
+            if (elements[arrayPosition].equals(element)) {
+                return size - 1 - indexFromHead; // Their head is weird…
             }
         }
 
@@ -202,14 +200,14 @@ public class ArrayQueue {
     }
 
 
-    public int lastIndexOf(Object element) {
+    public int indexOf(Object element) {
         for (
             int indexFromHead = size - 1, arrayPosition = tail;
-            indexFromHead < size;
+            indexFromHead >= 0;
             indexFromHead--, arrayPosition = nextCircularPosition(arrayPosition)
         ) {
-            if (elements[arrayPosition] == element) {
-                return indexFromHead;
+            if (elements[arrayPosition].equals(element)) {
+                return size - 1 - indexFromHead;  // Their head is still weird…
             }
         }
 
