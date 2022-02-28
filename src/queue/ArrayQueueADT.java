@@ -2,12 +2,7 @@ package queue;
 
 
 /**
- * Model: infinite sequence a[0..+inf], integer L, integer R
- * Invariant: for i \in [L, R): a[i] != null
- *
- * Let immutable(l, r): for i \in [l, r): a'[i] == a[i]
- * Let `cL`: L' == L
- * Let `cR`: R' == R
+ * The only thing you need to know about this class is that it correctly implements Queue (checked by kgeorgiy)
  */
 public class ArrayQueueADT {
     private Object[] elements = null; // If not null, has capacity > 0
@@ -52,21 +47,6 @@ public class ArrayQueueADT {
         }
     }
 
-    /**
-     * Pred: true
-     * Post:
-     *  — Constructs queue with 0 <= L = R
-     */
-    // Implicit Default Constructor
-
-    /**
-     * Pred: element != null
-     * Post:
-     *  — immutable(L,  R)
-     *  — a[R] = element
-     *  — R' = R + 1
-     *  — cL
-     */
     public static void enqueue(ArrayQueueADT queue, final Object element) {
         ensureCapacity(queue, queue.size + 1);
 
@@ -74,14 +54,6 @@ public class ArrayQueueADT {
         queue.size++;
     }
 
-    /**
-     * Pred: nE
-     * Post:
-     *  — immutable(L + 1,  R)
-     *  — L' = L + 1
-     *  — cR
-     *  — Ret = a[L]
-     */
     public static Object dequeue(ArrayQueueADT queue) {
         var res = queue.elements[queue.tail];
         queue.elements[queue.tail] = null;
@@ -91,61 +63,25 @@ public class ArrayQueueADT {
         return res;
     }
 
-    /**
-     * Pred: true
-     * Post:
-     *  — immutable(L,  R)
-     *  — cL
-     *  — cR
-     *  — Ret = R - L
-     */
+
     public static int size(ArrayQueueADT queue) {
         return queue.size;
     }
 
-    /**
-     * Pred: true
-     * Post:
-     *  — immutable(L,  R)
-     *  — cL
-     *  — cR
-     *  — Ret = (R - L == 0)
-     */
     public static boolean isEmpty(ArrayQueueADT queue) {
         return size(queue) == 0;
     }
 
-    /**
-     * Pred: true
-     * Post:
-     *  — 0 <= L = R
-     */
     public static void clear(ArrayQueueADT queue) {
         queue.elements = null;
         queue.size = 0;
         queue.tail = 0;
     }
 
-    /**
-     * Pred: nE
-     * Post:
-     *  — immutable(L,  R)
-     *  — cL
-     *  — cR
-     *  — Ret = a[L]
-     */
     public static Object element(ArrayQueueADT queue) {
         return queue.elements[queue.tail];
     }
 
-    /**
-     * Pred: element != null
-     * Post:
-     *  — immutable(L,  R)
-     *  — cR
-     *  — L' = L - 1
-     *  — a[L'] = element
-     */
     public static void push(ArrayQueueADT queue, final Object element) {
         ensureCapacity(queue, queue.elements.length + 1);
 
@@ -154,26 +90,10 @@ public class ArrayQueueADT {
         queue.size++;
     }
 
-    /**
-     * Pred: nE
-     * Post:
-     *  — immutable(L,  R)
-     *  — cL
-     *  — cR
-     *  — Ret = a[R - 1]
-     */
     public static Object peek(ArrayQueueADT queue) {
         return queue.elements[previousCircularPosition(queue, head(queue))];
     }
 
-    /**
-     * Pred: nE
-     * Post:
-     *  — immutable(L,  R - 1)
-     *  — cL
-     *  — R' = R - 1
-     *  — Ret = a[R - 1]
-     */
     public static Object remove(ArrayQueueADT queue) {
         int removedPosition = previousCircularPosition(queue, head(queue));
 
@@ -185,21 +105,6 @@ public class ArrayQueueADT {
         return res;
     }
 
-    public static int lastIndexOf(ArrayQueueADT queue, Object element) {
-        for (
-            int indexFromHead = 0, arrayPosition = previousCircularPosition(queue, head(queue));
-            indexFromHead < queue.size;
-            indexFromHead++, arrayPosition = previousCircularPosition(queue, arrayPosition)
-        ) {
-            if (queue.elements[arrayPosition].equals(element)) {
-                return queue.size - 1 - indexFromHead; // Their head is weird…
-            }
-        }
-
-        return -1;
-    }
-
-
     public static int indexOf(ArrayQueueADT queue, Object element) {
         for (
             int indexFromHead = queue.size - 1, arrayPosition = queue.tail;
@@ -208,6 +113,20 @@ public class ArrayQueueADT {
         ) {
             if (queue.elements[arrayPosition].equals(element)) {
                 return queue.size - 1 - indexFromHead;  // Their head is still weird…
+            }
+        }
+
+        return -1;
+    }
+
+    public static int lastIndexOf(ArrayQueueADT queue, Object element) {
+        for (
+            int indexFromHead = 0, arrayPosition = previousCircularPosition(queue, head(queue));
+            indexFromHead < queue.size;
+            indexFromHead++, arrayPosition = previousCircularPosition(queue, arrayPosition)
+        ) {
+            if (queue.elements[arrayPosition].equals(element)) {
+                return queue.size - 1 - indexFromHead; // Their head is weird…
             }
         }
 

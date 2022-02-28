@@ -46,21 +46,6 @@ public class ArrayQueue implements Queue {
         }
     }
 
-    /**
-     * Pred: true
-     * Post:
-     *  — Constructs queue with 0 <= L = R
-     */
-    // Implicit Default Constructor
-
-    /**
-     * Pred: element != null
-     * Post:
-     *  — immutable(L,  R)
-     *  — a[R] = element
-     *  — R' = R + 1
-     *  — cL
-     */
     public void enqueue(final Object element) {
         ensureCapacity(size + 1);
 
@@ -68,14 +53,6 @@ public class ArrayQueue implements Queue {
         size++;
     }
 
-    /**
-     * Pred: nE
-     * Post:
-     *  — immutable(L + 1,  R)
-     *  — L' = L + 1
-     *  — cR
-     *  — Ret = a[L]
-     */
     public Object dequeue() {
         var res = elements[tail];
         elements[tail] = null;
@@ -85,61 +62,24 @@ public class ArrayQueue implements Queue {
         return res;
     }
 
-    /**
-     * Pred: true
-     * Post:
-     *  — immutable(L,  R)
-     *  — cL
-     *  — cR
-     *  — Ret = R - L
-     */
     public int size() {
         return size;
     }
 
-    /**
-     * Pred: true
-     * Post:
-     *  — immutable(L,  R)
-     *  — cL
-     *  — cR
-     *  — Ret = (R - L == 0)
-     */
     public boolean isEmpty() {
         return size() == 0;
     }
 
-    /**
-     * Pred: true
-     * Post:
-     *  — 0 <= L = R
-     */
     public void clear() {
         elements = null;
         size = 0;
         tail = 0;
     }
 
-    /**
-     * Pred: nE
-     * Post:
-     *  — immutable(L,  R)
-     *  — cL
-     *  — cR
-     *  — Ret = a[L]
-     */
     public Object element() {
         return elements[tail];
     }
 
-    /**
-     * Pred: element != null
-     * Post:
-     *  — immutable(L,  R)
-     *  — cR
-     *  — L' = L - 1
-     *  — a[L'] = element
-     */
     public void push(final Object element) {
         ensureCapacity(elements.length + 1);
 
@@ -148,26 +88,10 @@ public class ArrayQueue implements Queue {
         size++;
     }
 
-    /**
-     * Pred: nE
-     * Post:
-     *  — immutable(L,  R)
-     *  — cL
-     *  — cR
-     *  — Ret = a[R - 1]
-     */
     public Object peek() {
         return elements[previousCircularPosition(head())];
     }
 
-    /**
-     * Pred: nE
-     * Post:
-     *  — immutable(L,  R - 1)
-     *  — cL
-     *  — R' = R - 1
-     *  — Ret = a[R - 1]
-     */
     public Object remove() {
         int removedPosition = previousCircularPosition(head());
 
@@ -179,21 +103,6 @@ public class ArrayQueue implements Queue {
         return res;
     }
 
-    public int lastIndexOf(Object element) {
-        for (
-            int indexFromHead = 0, arrayPosition = previousCircularPosition(head());
-            indexFromHead < size;
-            indexFromHead++, arrayPosition = previousCircularPosition(arrayPosition)
-        ) {
-            if (elements[arrayPosition].equals(element)) {
-                return size - 1 - indexFromHead; // Their head is weird…
-            }
-        }
-
-        return -1;
-    }
-
-
     public int indexOf(Object element) {
         for (
             int indexFromHead = size - 1, arrayPosition = tail;
@@ -202,6 +111,20 @@ public class ArrayQueue implements Queue {
         ) {
             if (elements[arrayPosition].equals(element)) {
                 return size - 1 - indexFromHead;  // Their head is still weird…
+            }
+        }
+
+        return -1;
+    }
+
+    public int lastIndexOf(Object element) {
+        for (
+            int indexFromHead = 0, arrayPosition = previousCircularPosition(head());
+            indexFromHead < size;
+            indexFromHead++, arrayPosition = previousCircularPosition(arrayPosition)
+        ) {
+            if (elements[arrayPosition].equals(element)) {
+                return size - 1 - indexFromHead; // Their head is weird…
             }
         }
 
