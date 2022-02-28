@@ -87,7 +87,7 @@ public final class Queues {
             return List.of();
         }
     }
-    /* package-private */ interface DequeModel extends Queues.QueueModel {
+    /* package-private */ interface DequeModel extends QueueModel {
         default void push(final Object element) {
             model().addFirst(element);
         }
@@ -102,11 +102,11 @@ public final class Queues {
         }
     }
 
-    /* package-private */ interface DequeChecker<T extends DequeModel> extends Queues.QueueChecker<T> {
+    /* package-private */ interface DequeChecker<T extends DequeModel> extends QueueChecker<T> {
         @Override
         default void add(final T queue, final Object element, final ExtendedRandom random) {
             if (random.nextBoolean()) {
-                Queues.QueueChecker.super.add(queue, element, random);
+                QueueChecker.super.add(queue, element, random);
             } else {
                 queue.push(element);
             }
@@ -115,7 +115,7 @@ public final class Queues {
         @Override
         default void check(final T queue, final ExtendedRandom random) {
             if (random.nextBoolean()) {
-                Queues.QueueChecker.super.check(queue, random);
+                QueueChecker.super.check(queue, random);
             } else {
                 queue.peek();
             }
@@ -124,7 +124,7 @@ public final class Queues {
         @Override
         default void remove(final T queue, final ExtendedRandom random) {
             if (random.nextBoolean()) {
-                Queues.QueueChecker.super.remove(queue, random);
+                QueueChecker.super.remove(queue, random);
             } else {
                 queue.remove();
             }
@@ -133,7 +133,7 @@ public final class Queues {
 
     // === Reflection
 
-    /* package-private */ interface ReflectionModel extends Queues.QueueModel {
+    /* package-private */ interface ReflectionModel extends QueueModel {
         Field ELEMENTS = getField("elements");
         Field HEAD = getField("head");
 
@@ -195,7 +195,7 @@ public final class Queues {
         }
     }
 
-    /* package-private */ static final Queues.LinearTester<CountModel> COUNT =
+    /* package-private */ static final LinearTester<CountModel> COUNT =
             (tester, queue, random) -> queue.count(tester.randomElement(random));
 
     // === DequeCount
@@ -203,7 +203,7 @@ public final class Queues {
     /* package-private */ interface DequeCountModel extends DequeModel, CountModel {
     }
 
-    /* package-private */ static final Queues.LinearTester<DequeCountModel> DEQUE_COUNT = COUNT::test;
+    /* package-private */ static final LinearTester<DequeCountModel> DEQUE_COUNT = COUNT::test;
 
     // === Index
 
@@ -218,7 +218,7 @@ public final class Queues {
         }
     }
 
-    /* package-private */ static final Queues.LinearTester<IndexModel> INDEX = (tester, queue, random) -> {
+    /* package-private */ static final LinearTester<IndexModel> INDEX = (tester, queue, random) -> {
         if (random.nextBoolean()) {
             queue.indexOf(tester.randomElement(random));
         } else {
@@ -232,5 +232,5 @@ public final class Queues {
     /* package-private */ interface DequeIndexModel extends DequeModel, IndexModel {
     }
 
-    /* package-private */ static final Queues.LinearTester<DequeIndexModel> DEQUE_INDEX = INDEX::test;
+    /* package-private */ static final LinearTester<DequeIndexModel> DEQUE_INDEX = INDEX::test;
 }
