@@ -1,15 +1,9 @@
 package queue;
 
 /**
- * Model: infinite sequence a[0..+inf], integer L, integer R
- * Invariant: for i \in [L, R): a[i] != null
- *
- * Let immutable(l, r): for i \in [l, r): a'[i] == a[i]
- * Let `cL`: L' == L
- * Let `cR`: R' == R
- * Let `nE`: R - L > 0
+ * The only thing you need to know about this class is that it correctly implements Queue (checked by kgeorgiy)
  */
-public class ArrayQueue {
+public class ArrayQueue implements Queue {
     private Object[] elements = null; // If not null, has capacity > 0
     private int tail = 0;
     private int size = 0;
