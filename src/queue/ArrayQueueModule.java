@@ -185,8 +185,8 @@ public class ArrayQueueModule {
         return res;
     }
 
-    public static int indexOf(Object element) {
-        System.out.println("Called");
+    public static int lastIndexOf(Object element) {
+        System.out.println("lastIndexOf Called");
 
         for (
             int indexFromHead = 0, arrayPosition = previousCircularPosition(head());
@@ -194,7 +194,7 @@ public class ArrayQueueModule {
             indexFromHead++, arrayPosition = previousCircularPosition(arrayPosition)
         ) {
             if (elements[arrayPosition].equals(element)) {
-                return indexFromHead;
+                return size - 1 - indexFromHead; // Their head is weird…
             }
         }
 
@@ -202,15 +202,15 @@ public class ArrayQueueModule {
     }
 
 
-    public static int lastIndexOf(Object element) {
-        System.out.println("Called");
+    public static int indexOf(Object element) {
+        System.out.println("indexOf Called");
         for (
             int indexFromHead = size - 1, arrayPosition = tail;
             indexFromHead >= 0;
             indexFromHead--, arrayPosition = nextCircularPosition(arrayPosition)
         ) {
             if (elements[arrayPosition].equals(element)) {
-                return indexFromHead;
+                return size - 1 - indexFromHead;  // Their head is still weird…
             }
         }
 
