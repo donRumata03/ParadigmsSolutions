@@ -2,10 +2,7 @@ package queue;
 
 public class QueueTestMy {
 
-    public static void main(String[] args) {
-        ArrayQueue queue = new ArrayQueue();
-
-//        queue.enqueue(["do"]);
+    public static void useQueue(Queue queue) {
         queue.enqueue(10);
         queue.enqueue("Hello");
 
@@ -17,5 +14,17 @@ public class QueueTestMy {
         }
 
         assert queue.isEmpty();
+    }
+
+
+    public static void main(String[] args) {
+        Queue arrayQueue = new ArrayQueue();
+        Queue linkedQueue = new LinkedQueue();
+
+        useQueue(arrayQueue);
+        useQueue(linkedQueue);
+
+
+//        queue.enqueue(["do"]);
     }
 }
