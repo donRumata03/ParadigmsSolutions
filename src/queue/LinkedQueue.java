@@ -4,51 +4,105 @@ package queue;
 /**
  * The only thing you need to know about this class is that it correctly implements Queue (checked by kgeorgiy)
  */
-public class LinkedQueue implements Queue {
+public class LinkedQueue extends AbstractQueue {
+
+
+    private static class Node {
+        private Object value;
+        private Node left;
+        private Node right;
+
+        private Node(Node left, Node right) {
+            this.value = null;
+            this.left = left;
+            this.right = right;
+        }
+
+        public static Node emptyNode() {
+            return new Node(null, null);
+        }
+
+        public Node(Object value, Node left, Node right) {
+            assert value != null;
+
+            this.value = value;
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+
+    private final Node leftPtr = Node.emptyNode();
+    private final Node rightPtr = Node.emptyNode();
+
+    LinkedQueue() {
+        leftPtr.right = rightPtr;
+        rightPtr.left = leftPtr;
+    }
+
+    private void connect(Node left, Node right) {
+        left.right = right;
+        right.left = left;
+    }
+
+    private void makeNodeBefore(Node successor, Object element) {
+        var newNode = new Node(element, successor.left, successor);
+
+        connect(successor.left, newNode);
+        connect(newNode, successor);
+    }
+
+
+    private void makeNodeAfter(Node predecessor, Object element) {
+        makeNodeBefore(predecessor.right, element);
+    }
+
+    private void delinkNode(Node delinked) {
+        var l = delinked.left;
+        var r = delinked.right;
+
+        l.right = r;
+        r.left = l;
+    }
+
 
     @Override
-    public void enqueue(Object element) {
-
+    protected void pushRightImpl(Object element) {
+        makeNodeBefore(rightPtr, element);
     }
 
     @Override
-    public Object dequeue() {
-        return null;
+    protected void pushLeftImpl(Object element) {
+        makeNodeAfter(leftPtr, element);
     }
 
     @Override
-    public int size() {
-        return 0;
+    protected Object popLeftImpl() {
+        var res = leftPtr.right.value;
+        delinkNode(leftPtr.right);
+        return res;
     }
 
     @Override
-    public boolean isEmpty() {
-        return false;
+    protected Object popRightImpl() {
+        var res = rightPtr.left.value;
+        delinkNode(rightPtr.left);
+        return res;
     }
 
     @Override
-    public void clear() {
-
+    protected Object viewLeftImpl() {
+        return leftPtr.right.value;
     }
 
     @Override
-    public Object element() {
-        return null;
+    protected Object viewRightImpl() {
+        return rightPtr.left.value;
     }
 
     @Override
-    public void push(Object element) {
-
-    }
-
-    @Override
-    public Object peek() {
-        return null;
-    }
-
-    @Override
-    public Object remove() {
-        return null;
+    protected void clearImpl() {
+        connect(leftPtr, rightPtr);
     }
 
     @Override
@@ -60,4 +114,5 @@ public class LinkedQueue implements Queue {
     public int lastIndexOf(Object element) {
         return 0;
     }
+
 }
