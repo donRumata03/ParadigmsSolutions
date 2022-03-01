@@ -35,7 +35,8 @@ public class LinkedQueue extends AbstractQueue {
     private final Node leftPtr = Node.emptyNode();
     private final Node rightPtr = Node.emptyNode();
 
-    LinkedQueue() {
+    public LinkedQueue() {
+        super();
         leftPtr.right = rightPtr;
         rightPtr.left = leftPtr;
     }
