@@ -25,21 +25,20 @@ import java.util.Optional;
  *
  * Theorems for `SDID a`, call `len = a.length` :
  * Let g: [0, len) -> Bool, g(i) = `m == len - 1 || a[m] < a[m + 1]`
- *
- * Theorem S1: `g(m)` <==> a[m:r) is SMI.
+ * ____________________________________________________________________________________________________
+ * Theorem S1: `g(m)` <==> a[m:len) is SMI.
  *
  * Proof: If first condition is true, conclusion is obvious.
  * Otherwise, we'll proof that g(i + 1) is true (=> by induction, conclusion becomes true)
  *
  * Indeed, for m + 2 == r it's true, and if f(m) < f(m + 1) >= f(m + 2), f wouldn't be SDID,
  * because any splitter would be m + 1 >= s >= m + 2 => contradiction.
- *
  * Backwards proof is obvious.
  * ____________________________________________________________________________________________________
  * Theorem S2: Boolean function g(i) is NSMI
  *
- * Indeed, g(i) <=> f|[i, r) is SMI, so, viewing max SMI postfix [l', r),
- * g(i) is false for i \in [l, l') and true for i \in [l', r)
+ * Indeed, g(i) <=> a[i:r) is SMI, so, viewing max SMI postfix [l', len),
+ * g(i) is false for i \in [0, l') and true for i \in [l', len)
  */
 public class BinarySearchUni {
 
@@ -48,15 +47,16 @@ public class BinarySearchUni {
      * @return the smallest splitter of `array`
      */
     static int minimalPrefixBeforeIncreasing(int[] array, DiscreteBinarySearchEngine engine) {
-        // predicate `(int index) -> index == array.length - 1 || array[index] < array[index + 1]`
-        // is `g` function from Theorems S1, S2. It's NSMI and is <==> `f|[m, r)` is SMI.
+        // View `g` -- function from Theorems S1, S2. It's NSMI and is <==> `a[m:r)` is SMI.
         // So, wee can find rightmost false, leftmost true. Let's proof that leftmost true of g is the answer.
         // First, for empty arrays, answer is 0, which is OK.
-        // Otherwise, g(len - 1) is true, so leftmost true (call it `s`) \in [l, r) and points to such element that:
-        // (`f|[s, r)` is SMI) && (`f|[i, r)` is NOT SMI for any i \in [l, s))
-        // Firstly, there are no f's splitters \in [l, s) (because right part wouldn't be SMI).
+        // Otherwise, g(len - 1) is true, so leftmost true (call it `s`) \in [l, r) and:
+        // - a[s:r) is SMI
+        // - a[i:r) is NOT SMI for any i \in [0, s)
+        // Firstly, there are no a's splitters \in [0, s) (because a[s:len) wouldn't be SMI).
         // Contrary proof that s is splitter:
-        // …, but there exist splitters > s (because f is SDID), call one of them t (for which [l, t) is SMD).
+        // let s be not splitter, but there exist splitters > s (because f is SDID),
+        // call one of them t (for which [l, t) is SMD).
         // But prefix [l, s) would be SMD, too => contradiction
         var searched = engine.search(
             (int index) -> index == array.length - 1 || array[index] < array[index + 1],
