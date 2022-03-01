@@ -106,12 +106,12 @@ public class ArrayQueueModule {
 
     public static int indexOf(Object element) {
         for (
-            int indexFromHead = size - 1, arrayPosition = tail;
-            indexFromHead >= 0;
-            indexFromHead--, arrayPosition = nextCircularPosition(arrayPosition)
+            int indexFromTheirHead = 0, arrayPosition = tail;
+            indexFromTheirHead < size;
+            indexFromTheirHead++, arrayPosition = nextCircularPosition(arrayPosition)
         ) {
             if (elements[arrayPosition].equals(element)) {
-                return size - 1 - indexFromHead;  // Their head is still weird…
+                return indexFromTheirHead;  // Their head is still weird…
             }
         }
 
@@ -120,12 +120,12 @@ public class ArrayQueueModule {
 
     public static int lastIndexOf(Object element) {
         for (
-            int indexFromHead = 0, arrayPosition = previousCircularPosition(head());
-            indexFromHead < size;
-            indexFromHead++, arrayPosition = previousCircularPosition(arrayPosition)
+            int indexFromTheirHead = size - 1, arrayPosition = previousCircularPosition(head());
+            indexFromTheirHead >= 0;
+            indexFromTheirHead--, arrayPosition = previousCircularPosition(arrayPosition)
         ) {
             if (elements[arrayPosition].equals(element)) {
-                return size - 1 - indexFromHead; // Their head is weird…
+                return indexFromTheirHead; // Their head is weird…
             }
         }
 
