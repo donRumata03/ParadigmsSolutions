@@ -1,7 +1,7 @@
 package queue;
 
 public abstract class AbstractQueue implements Queue {
-    protected int size;
+    protected int size = 0;
 
     @Override
     public int size() {

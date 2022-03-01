@@ -3,10 +3,9 @@ package queue;
 /**
  * The only thing you need to know about this class is that it correctly implements Queue (checked by kgeorgiy)
  */
-public class ArrayQueue implements Queue {
+public class ArrayQueue extends AbstractQueue {
     private Object[] elements = null; // If not null, has capacity > 0
     private int tail = 0;
-    private int size = 0;
 
     private int head() {
         return (tail + size) % elements.length;
@@ -47,69 +46,54 @@ public class ArrayQueue implements Queue {
     }
 
     @Override
-    public void enqueue(final Object element) {
+    public void pushRightImpl(final Object element) {
         ensureCapacity(size + 1);
 
         elements[head()] = element;
-        size++;
     }
 
     @Override
-    public Object dequeue() {
-        var res = elements[tail];
-        elements[tail] = null;
-        tail = nextCircularPosition(tail);
-        size--;
-
-        return res;
-    }
-
-    @Override
-    public int size() {
-        return size;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return size() == 0;
-    }
-
-    @Override
-    public void clear() {
-        elements = null;
-        size = 0;
-        tail = 0;
-    }
-
-    @Override
-    public Object element() {
-        return elements[tail];
-    }
-
-    @Override
-    public void push(final Object element) {
+    public void pushLeftImpl(final Object element) {
         ensureCapacity(elements.length + 1);
 
         tail = previousCircularPosition(tail);
         elements[tail] = element;
-        size++;
     }
 
     @Override
-    public Object peek() {
-        return elements[previousCircularPosition(head())];
+    public Object popLeftImpl() {
+        var res = elements[tail];
+        elements[tail] = null;
+        tail = nextCircularPosition(tail);
+
+        return res;
     }
 
     @Override
-    public Object remove() {
+    public Object popRightImpl() {
         int removedPosition = previousCircularPosition(head());
 
         var res = elements[removedPosition];
         elements[removedPosition] = null;
-        size--;
         // tail stays at the same position
 
         return res;
+    }
+
+    @Override
+    public Object viewLeftImpl() {
+        return elements[tail];
+    }
+
+    @Override
+    public Object viewRightImpl() {
+        return elements[previousCircularPosition(head())];
+    }
+
+    @Override
+    public void clearImpl() {
+        elements = null;
+        tail = 0;
     }
 
     @Override
