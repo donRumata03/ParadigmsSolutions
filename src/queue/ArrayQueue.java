@@ -96,33 +96,29 @@ public class ArrayQueue extends AbstractQueue {
         tail = 0;
     }
 
-    @Override
-    public int indexOf(Object element) {
-        for (
-            int indexFromTheirHead = 0, arrayPosition = tail;
-            indexFromTheirHead < size;
-            indexFromTheirHead++, arrayPosition = nextCircularPosition(arrayPosition)
-        ) {
-            if (elements[arrayPosition].equals(element)) {
-                return indexFromTheirHead;  // Their head is still weird…
-            }
-        }
 
-        return -1;
+    @Override
+    Object rightmostIterator() {
+        return previousCircularPosition(head());
     }
 
     @Override
-    public int lastIndexOf(Object element) {
-        for (
-            int indexFromTheirHead = size - 1, arrayPosition = previousCircularPosition(head());
-            indexFromTheirHead >= 0;
-            indexFromTheirHead--, arrayPosition = previousCircularPosition(arrayPosition)
-        ) {
-            if (elements[arrayPosition].equals(element)) {
-                return indexFromTheirHead; // Their head is weird…
-            }
-        }
+    Object leftmostIterator() {
+        return tail;
+    }
 
-        return -1;
+    @Override
+    Object stepLeft(Object iterator) {
+        return previousCircularPosition((int)iterator);
+    }
+
+    @Override
+    Object stepRight(Object iterator) {
+        return nextCircularPosition((int)iterator);
+    }
+
+    @Override
+    Object dereferenceIterator(Object iterator) {
+        return elements[(int)iterator];
     }
 }
