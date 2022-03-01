@@ -113,7 +113,7 @@ public interface Queue {
      *  — immutable(L,  R)
      *  — cL
      *  — cR
-     *  — Ret = if there's some — minimal such index `i` \in [L, R) that a[i] == element,
+     *  — Ret = if there's some — minimal such index `i` \in [0, R - L) that a[L + i] == element,
      *    Otherwise: `-1`
      */
     int indexOf(Object element);
@@ -124,7 +124,7 @@ public interface Queue {
      *  — immutable(L,  R)
      *  — cL
      *  — cR
-     *  — Ret = if there's some — maximal such index `i` \in [L, R) that a[i] == element,
+     *  — Ret = if there's some — maximal such index `i` \in [0, R - L) that a[L + i] == element,
      *    Otherwise: `-1`
      */
     int lastIndexOf(Object element);

@@ -98,6 +98,7 @@ public abstract class AbstractQueue implements Queue {
 
     abstract Object dereferenceIterator(Object iterator);
 
+
     @Override
     public int indexOf(Object element) {
         Object iterator = leftmostIterator();
