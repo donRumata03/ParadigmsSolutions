@@ -107,12 +107,12 @@ public class ArrayQueueADT {
 
     public static int indexOf(ArrayQueueADT queue, Object element) {
         for (
-            int indexFromHead = queue.size - 1, arrayPosition = queue.tail;
-            indexFromHead >= 0;
-            indexFromHead--, arrayPosition = nextCircularPosition(queue, arrayPosition)
+            int indexFromTheirHead = 0, arrayPosition = queue.tail;
+            indexFromTheirHead < queue.size;
+            indexFromTheirHead++, arrayPosition = nextCircularPosition(queue, arrayPosition)
         ) {
             if (queue.elements[arrayPosition].equals(element)) {
-                return queue.size - 1 - indexFromHead;  // Their head is still weird…
+                return indexFromTheirHead;  // Their head is still weird…
             }
         }
 
@@ -121,12 +121,12 @@ public class ArrayQueueADT {
 
     public static int lastIndexOf(ArrayQueueADT queue, Object element) {
         for (
-            int indexFromHead = 0, arrayPosition = previousCircularPosition(queue, head(queue));
-            indexFromHead < queue.size;
-            indexFromHead++, arrayPosition = previousCircularPosition(queue, arrayPosition)
+            int indexFromTheirHead = queue.size - 1, arrayPosition = previousCircularPosition(queue, head(queue));
+            indexFromTheirHead >= 0;
+            indexFromTheirHead--, arrayPosition = previousCircularPosition(queue, arrayPosition)
         ) {
             if (queue.elements[arrayPosition].equals(element)) {
-                return queue.size - 1 - indexFromHead; // Their head is weird…
+                return indexFromTheirHead; // Their head is weird…
             }
         }
 
