@@ -123,6 +123,7 @@ public final class Queues {
 
         @Override
         default void remove(final T queue, final ExtendedRandom random) {
+            System.out.println("Remove");
             if (random.nextBoolean()) {
                 QueueChecker.super.remove(queue, random);
             } else {

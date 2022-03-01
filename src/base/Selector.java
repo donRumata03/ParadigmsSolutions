@@ -1,69 +1,142 @@
 package base;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * @author Georgiy Korneev (kgeorgiy@kgeorgiy.info)
  */
-public final class Selector<V> {
+public final class Selector {
     private final Class<?> owner;
-    private final BiConsumer<V, TestCounter> test;
+    private final List<String> modes;
+    private final Set<String> variantNames = new LinkedHashSet<>();
+    private final Map<String, Consumer<TestCounter>> variants = new HashMap<>();
 
-    private final Map<String, List<V>> variants = new LinkedHashMap<>();
-
-    private Selector(final Class<?> owner, final BiConsumer<V, TestCounter> test) {
+    public Selector(final Class<?> owner, final String... modes) {
         this.owner = owner;
-        this.test = test;
+        this.modes = List.of(modes);
     }
 
-    public static <V> Selector<V> create(final Class<?> owner, final BiConsumer<V, TestCounter> test) {
-        return new Selector<>(owner, test);
-    }
-
-    public static Selector<Consumer<TestCounter>> create(final Class<?> owner) {
-        return new Selector<>(owner, Consumer::accept);
-    }
-
-    @SafeVarargs
-    public final Selector<V> variant(final String name, final V... operations) {
-        Asserts.assertTrue("Duplicate variant " + name, variants.put(name, List.of(operations)) == null);
+    public Selector variant(final String name, final Consumer<TestCounter> operations) {
+        Asserts.assertTrue("Duplicate variant " + name, variants.put(name.toLowerCase(), operations) == null);
+        variantNames.add(name);
         return this;
     }
 
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    private void check(final boolean condition, final String format, final Object... args) {
+    private static void check(final boolean condition, final String format, final Object... args) {
         if (!condition) {
-            System.err.println("ERROR: " + String.format(format, args));
-            System.err.println("Usage: " + owner.getName() + " VARIANT...");
-            System.err.println("Variants: " + String.join(", ", variants.keySet()));
-            System.exit(1);
+            throw new IllegalArgumentException(String.format(format, args));
         }
     }
 
     public void main(final String... args) {
-        check(args.length >= 1, "At least one argument expected, found %s", args.length);
-        final List<String> vars = Arrays.stream(args)
-                .flatMap(arg -> Arrays.stream(arg.split("[ +]+")))
-                .collect(Collectors.toList());
-        if (variants.containsKey("Base") && !vars.contains("Base")) {
+        try {
+            final String mode;
+            if (modes.isEmpty()) {
+                check(args.length >= 1, "At least one argument expected, found %s", args.length);
+                mode = "";
+            } else {
+                check(args.length >= 2, "At least two arguments expected, found %s", args.length);
+                mode = args[0];
+            }
+
+            final List<String> vars = Arrays.stream(args).skip(modes.isEmpty() ? 0 : 1)
+                    .flatMap(arg -> Arrays.stream(arg.split("[ +]+")))
+                    .collect(Collectors.toUnmodifiableList());
+
+            test(mode, vars);
+        } catch (final IllegalArgumentException e) {
+            System.err.println("ERROR: " + e.getMessage());
+            if (modes.isEmpty()) {
+                System.err.println("Usage: " + owner.getName() + " VARIANT...");
+            } else {
+                System.err.println("Usage: " + owner.getName() + " MODE VARIANT...");
+                System.err.println("Modes: " + String.join(", ", modes));
+            }
+            System.err.println("Variants: " + String.join(", ", variantNames));
+            System.exit(1);
+        }
+    }
+
+    public void test(final String mode, List<String> vars) {
+        final int modeNo = modes.isEmpty() ? -1 : modes.indexOf(mode) ;
+        check(modes.isEmpty() || modeNo >= 0, "Unknown mode '%s'", mode);
+        if (variantNames.contains("Base") && !vars.contains("Base")) {
+            vars = new ArrayList<>(vars);
             vars.add(0, "Base");
         }
 
-        vars.forEach(var -> check(variants.containsKey(var), "Unknown variant '%s'", var));
+        vars.forEach(var -> check(variants.containsKey(var.toLowerCase()), "Unknown variant '%s'", var));
 
-        final TestCounter counter = new TestCounter(owner, Map.of("variant", String.join("+", vars)));
-        vars.forEach(var -> counter.scope("Testing " + var,
-                () -> variants.get(var).forEach(variant -> test.accept(variant, counter))));
+        final Map<String, String> properties = modes.isEmpty()
+                                               ? Map.of("variant", String.join("+", vars))
+                                               : Map.of("variant", String.join("+", vars), "mode", mode);
+        final TestCounter counter = new TestCounter(owner, 0, properties);
+        vars.forEach(var -> counter.scope("Testing " + var, () -> variants.get(var.toLowerCase()).accept(counter)));
         counter.printStatus();
+    }
+
+    public static <V extends Tester> Composite<V> composite(final Class<?> owner, final Function<TestCounter, V> factory, final String... modes) {
+        return new Composite<>(owner, factory, (counter, tester) -> tester.test(), modes);
+    }
+
+    public static <V> Composite<V> composite(final Class<?> owner, final Function<TestCounter, V> factory, final BiConsumer<TestCounter, V> tester, final String... modes) {
+        return new Composite<>(owner, factory, tester, modes);
+    }
+
+    public List<String> getModes() {
+        return modes.isEmpty() ? List.of("") : modes;
     }
 
     public List<String> getVariants() {
         return List.copyOf(variants.keySet());
+    }
+
+    /**
+     * @author Georgiy Korneev (kgeorgiy@kgeorgiy.info)
+     */
+    public static final class Composite<V> {
+        private final Selector selector;
+        private final Function<TestCounter, V> factory;
+        private final BiConsumer<TestCounter, V> tester;
+        private List<Consumer<? super V>> base;
+
+        private Composite(final Class<?> owner, final Function<TestCounter, V> factory, final BiConsumer<TestCounter, V> tester, final String... modes) {
+            selector = new Selector(owner, modes);
+            this.factory = factory;
+            this.tester = tester;
+        }
+
+        @SafeVarargs
+        public final Composite<V> variant(final String name, final Consumer<? super V>... parts) {
+            if ("Base".equalsIgnoreCase(name)) {
+                base = List.of(parts);
+                return v(name.toLowerCase());
+            } else {
+                return v(name, parts);
+            }
+        }
+
+        @SafeVarargs
+        private Composite<V> v(final String name, final Consumer<? super V>... parts) {
+            selector.variant(name, counter -> {
+                final V variant = factory.apply(counter);
+                for (final Consumer<? super V> part : base) {
+                    part.accept(variant);
+                }
+                for (final Consumer<? super V> part : parts) {
+                    part.accept(variant);
+                }
+                tester.accept(counter, variant);
+            });
+            return this;
+        }
+
+        public Selector selector() {
+            return selector;
+        }
     }
 }

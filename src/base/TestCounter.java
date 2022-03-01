@@ -27,16 +27,22 @@ public class TestCounter extends Log {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
     private final Class<?> owner;
+    private final int mode;
     private final Map<String, ?> properties;
     private final ExtendedRandom random;
 
     private final long start = System.currentTimeMillis();
     private int passed;
 
-    public TestCounter(final Class<?> owner, final Map<String, ?> properties) {
+    public TestCounter(final Class<?> owner, final int mode, final Map<String, ?> properties) {
         this.owner = owner;
+        this.mode = mode;
         this.properties = properties;
         random = new ExtendedRandom(owner);
+    }
+
+    public int mode() {
+        return mode;
     }
 
     public int getTestNo() {

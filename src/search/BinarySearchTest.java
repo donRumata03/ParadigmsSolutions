@@ -78,7 +78,7 @@ public final class BinarySearchTest {
         return uni((k, a) -> k != 0 && (k == a.length || op.applyAsInt(a[k], a[k - 1]) == a[k - 1] && a[k] != a[k - 1]) ? k - 1 : k);
     }
 
-    public static final Selector<?> SELECTOR = Selector.create(BinarySearchTest.class)
+    public static final Selector SELECTOR = new Selector(BinarySearchTest.class)
             .variant("Base", Solver.variant("", false, BinarySearchTest::base))
             .variant("Missing",   Solver.variant("Missing", true,   BinarySearchTest::missing))
             .variant("Shift",     sorted("Shift",   true,   CYCLE))

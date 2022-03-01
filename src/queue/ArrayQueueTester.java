@@ -39,6 +39,21 @@ public class ArrayQueueTester<M extends Queues.QueueModel> {
             }
 
             @Override
+            public void check(final M queue, final ExtendedRandom random) {
+                tester.check(queue, random);
+            }
+
+            @Override
+            public void add(final M queue, final Object element, final ExtendedRandom random) {
+                tester.add(queue, element, random);
+            }
+
+            @Override
+            public void remove(final M queue, final ExtendedRandom random) {
+                tester.remove(queue, random);
+            }
+
+            @Override
             public List<M> linearTest(final M queue, final ExtendedRandom random) {
                 return splitter.split(this, queue, random);
             }
