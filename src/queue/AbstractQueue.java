@@ -1,6 +1,7 @@
 package queue;
 
 public abstract class AbstractQueue implements Queue {
+
     protected int size = 0;
 
     @Override
@@ -21,6 +22,7 @@ public abstract class AbstractQueue implements Queue {
         pushRightImpl(element);
         size++;
     }
+
     protected abstract void pushRightImpl(Object element);
 
     @Override
@@ -43,6 +45,7 @@ public abstract class AbstractQueue implements Queue {
 
         return res;
     }
+
     protected abstract Object popLeftImpl();
 
     @Override
@@ -54,12 +57,14 @@ public abstract class AbstractQueue implements Queue {
 
         return res;
     }
+
     protected abstract Object popRightImpl();
 
     @Override
     public Object element() {
         return viewLeftImpl();
     }
+
     protected abstract Object viewLeftImpl();
 
 
@@ -69,6 +74,7 @@ public abstract class AbstractQueue implements Queue {
 
         return viewRightImpl();
     }
+
     protected abstract Object viewRightImpl();
 
 
@@ -79,4 +85,50 @@ public abstract class AbstractQueue implements Queue {
     }
 
     protected abstract void clearImpl();
+
+
+    // Should be done with a typesafe way via trait associated types…
+    abstract Object rightmostIterator();
+
+    abstract Object leftmostIterator();
+
+    abstract Object stepLeft(Object iterator);
+
+    abstract Object stepRight(Object iterator);
+
+    abstract Object dereferenceIterator(Object iterator);
+
+    @Override
+    public int indexOf(Object element) {
+        Object iterator = leftmostIterator();
+
+        for (
+            int indexFromTheirHead = 0;
+            indexFromTheirHead < size;
+            indexFromTheirHead++, iterator = stepRight(iterator)
+        ) {
+            if (dereferenceIterator(iterator).equals(element)) {
+                return indexFromTheirHead;  // Their head is still weird…
+            }
+        }
+
+        return -1;
+    }
+
+    @Override
+    public int lastIndexOf(Object element) {
+        Object iterator = rightmostIterator();
+
+        for (
+            int indexFromTheirHead = size - 1;
+            indexFromTheirHead >= 0;
+            indexFromTheirHead--, iterator = stepLeft(iterator)
+        ) {
+            if (dereferenceIterator(iterator).equals(element)) {
+                return indexFromTheirHead;  // Their head is still weird…
+            }
+        }
+
+        return -1;
+    }
 }
