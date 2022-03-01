@@ -1,6 +1,7 @@
 package queue;
 
 
+import java.util.function.Predicate;
 
 /**
  * Model: infinite sequence a[0..+inf], integer L, integer R
@@ -10,6 +11,12 @@ package queue;
  * Let `cL`: L' == L
  * Let `cR`: R' == R
  * Let `nE`: R - L > 0
+ *
+ * Let remove(index_set):
+ * - Denote prefix sum of booleans[elements deleted in `[0, i]` ]  as `p`
+ * - cL
+ * - R' = R - p[R - 1]
+ * - for i \in [L, R'): a'[i] = a[i + p[i]]
  */
 public interface Queue {
     /**
@@ -128,4 +135,28 @@ public interface Queue {
      *    Otherwise: `-1`
      */
     int lastIndexOf(Object element);
+
+    /**
+     * Pred: true
+     * Post: remove(such `i` in [L, R) that predicate(i))
+     */
+    void removeIf(Predicate<Object> predicate);
+
+    /**
+     * Pred: true
+     * Post: remove(such `i` in [L, R) that !predicate(i))
+     */
+    void retainIf(Predicate<Object> predicate);
+
+    /**
+     * Pred: true
+     * Post: remove(such `i` in [L, R) that there exists j \in [L, i] such that !predicate(j))
+     */
+    void takeWhile(Predicate<Object> predicate);
+
+    /**
+     * Pred: true
+     * Post: remove(such `i` in [L, R) that there DOESN'T exist j \in [L, i] such that !predicate(j))
+     */
+    void dropWhile(Predicate<Object> predicate);
 }
