@@ -1,5 +1,7 @@
 package queue;
 
+import java.util.function.Predicate;
+
 /**
  * The only thing you need to know about this class is that it correctly implements Queue (checked by kgeorgiy)
  */
@@ -120,5 +122,10 @@ public class ArrayQueue extends AbstractQueue {
     @Override
     Object dereferenceIterator(Object iterator) {
         return elements[(int)iterator];
+    }
+
+    @Override
+    void filter(Predicate<Object> predicate) {
+
     }
 }

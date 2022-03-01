@@ -1,6 +1,8 @@
 package queue;
 
 
+import java.util.function.Predicate;
+
 /**
  * The only thing you need to know about this class is that it correctly implements Queue (checked by kgeorgiy)
  */
@@ -131,5 +133,19 @@ public class LinkedQueue extends AbstractQueue {
     @Override
     Object dereferenceIterator(Object iterator) {
         return ((Node)iterator).value;
+    }
+
+    @Override
+    void filter(Predicate<Object> predicate) {
+        Node node = leftPtr.right;
+        for (int i = 0; i < size; i++) {
+            var nextNode = node.right;
+
+            if (!predicate.test(node.value)) {
+                connect(node.left, node.right);
+            }
+
+            node = nextNode;
+        }
     }
 }
