@@ -7,7 +7,7 @@ import java.util.Optional;
  * Some useful definitions are provided here…
  *
  * Borrow the definitions of strictly and non-strictly monotonous for real-valued, integer-*
- * and boolean-* (consider false === \mathbb{0}; true === \mathbb{1}, for which there's ordering) functions
+ * and boolean-* (consider false === `0`; true === `1`, for which there exists ordering) functions
  * from Discrete Maths. Abbreviations: SMI, NSMI, SMD, NSMD
  *
  * Integer intervals are denoted as [a, b)
@@ -15,25 +15,21 @@ import java.util.Optional;
  * Denote function restriction to [a, b) as f|          or just `f|[a, b)`
  *                                           |[a, b)
  *
- * We'll call function `f: [l, r) \subset \mathbb{Z} |-> (T: Ord)`
- * Strictly Decreasing-Increasing Decayable (SDID) if there exists `m \in [l; r]` such that
- * — \forall i < j in [l, m): f(i) > f(j)
- * — \forall i < j in [m, r): f(i) < f(j)
+ * For an array `a` we'll call `a.length` as just «len».
  *
- * For a given `f` the set of such `i`s is denoted as splitters(f). So, `f` is SDID <=> there exists its splitters
+ * We'll call array `a` Strictly Decreasing-Increasing Decayable (SDID)
+ * if there exists `m \in [0; len]` such that
+ * — \forall i < j in [0, m): a[i] > a[j]
+ * — \forall i < j in [m, len): a[i] < a[j]
+ * Such `i`s are called «splitters» of `a`.
  *
- * Array `a` is SDID if `acc: [0, a.length()) |-> decltype(a[0])` such that acc(i) = a[i] is SDID
+ * Theorems for `SDID a`, call `len = a.length` :
+ * Let g: [0, len) -> Bool, g(i) = `m == len - 1 || a[m] < a[m + 1]`
  *
- * Note that being SDID for an array is the formalization of
- * «being possible to be produced by concatenation of strictly decreasing and strictly increasing arrays (both may be empty)»
+ * Theorem S1: `g(m)` <==> a[m:r) is SMI.
  *
- * Theorems for `SDID f: [l, r) |-> T`:
- *
- * Let g: [l, r) -> Bool, g(i) = `m == r - 1 || f(m) < f(m + 1)`
- * Theorem S1: If `g(m)`, then f|[m, r) is SMI and backwards.
- *
- * If first condition is true, conclusion is obvious.
- * If it's the second one but not the first, we'll proof that g(i + 1) is true (=> by induction, conclusion becomes true)
+ * Proof: If first condition is true, conclusion is obvious.
+ * Otherwise, we'll proof that g(i + 1) is true (=> by induction, conclusion becomes true)
  *
  * Indeed, for m + 2 == r it's true, and if f(m) < f(m + 1) >= f(m + 2), f wouldn't be SDID,
  * because any splitter would be m + 1 >= s >= m + 2 => contradiction.
@@ -52,8 +48,6 @@ public class BinarySearchUni {
      * @return the smallest splitter of `array`
      */
     static int minimalPrefixBeforeIncreasing(int[] array, DiscreteBinarySearchEngine engine) {
-        // let len = array.length()
-        // let f be [0, len), f(i) = array[i]
         // predicate `(int index) -> index == array.length - 1 || array[index] < array[index + 1]`
         // is `g` function from Theorems S1, S2. It's NSMI and is <==> `f|[m, r)` is SMI.
         // So, wee can find rightmost false, leftmost true. Let's proof that leftmost true of g is the answer.
