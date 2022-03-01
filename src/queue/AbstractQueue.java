@@ -1,5 +1,7 @@
 package queue;
 
+import java.util.function.Predicate;
+
 public abstract class AbstractQueue implements Queue {
 
     protected int size = 0;
@@ -98,6 +100,8 @@ public abstract class AbstractQueue implements Queue {
 
     abstract Object dereferenceIterator(Object iterator);
 
+    abstract void filter(Predicate<Object> predicate);
+
 
     @Override
     public int indexOf(Object element) {
@@ -131,5 +135,27 @@ public abstract class AbstractQueue implements Queue {
         }
 
         return -1;
+    }
+
+    @Override
+    public void removeIf(Predicate<Object> predicate) {
+        filter(Predicate.not(predicate));
+    }
+
+    @Override
+    public void retainIf(Predicate<Object> predicate) {
+        filter(predicate);
+    }
+
+    @Override
+    public void takeWhile(Predicate<Object> predicate) {
+        final Boolean[] allWereTrue = {true};
+        filter(o -> allWereTrue[0] &= predicate.test(o));
+    }
+
+    @Override
+    public void dropWhile(Predicate<Object> predicate) {
+        final boolean[] hasMeetFalse = {false};
+        filter(o -> hasMeetFalse[0] |= !predicate.test(o));
     }
 }

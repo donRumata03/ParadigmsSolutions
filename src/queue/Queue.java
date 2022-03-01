@@ -137,25 +137,25 @@ public interface Queue {
     int lastIndexOf(Object element);
 
     /**
-     * Pred: true
+     * Pred: predicate != null
      * Post: remove(such `i` in [L, R) that predicate(i))
      */
     void removeIf(Predicate<Object> predicate);
 
     /**
-     * Pred: true
+     * Pred: predicate != null
      * Post: remove(such `i` in [L, R) that !predicate(i))
      */
     void retainIf(Predicate<Object> predicate);
 
     /**
-     * Pred: true
+     * Pred: predicate != null
      * Post: remove(such `i` in [L, R) that there exists j \in [L, i] such that !predicate(j))
      */
     void takeWhile(Predicate<Object> predicate);
 
     /**
-     * Pred: true
+     * Pred: predicate != null
      * Post: remove(such `i` in [L, R) that there DOESN'T exist j \in [L, i] such that !predicate(j))
      */
     void dropWhile(Predicate<Object> predicate);
