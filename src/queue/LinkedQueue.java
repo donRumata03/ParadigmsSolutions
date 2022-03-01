@@ -106,14 +106,30 @@ public class LinkedQueue extends AbstractQueue {
         connect(leftPtr, rightPtr);
     }
 
+
+
     @Override
-    public int indexOf(Object element) {
-        return 0;
+    Object rightmostIterator() {
+        return rightPtr.left;
     }
 
     @Override
-    public int lastIndexOf(Object element) {
-        return 0;
+    Object leftmostIterator() {
+        return leftPtr.right;
     }
 
+    @Override
+    Object stepLeft(Object iterator) {
+        return ((Node)iterator).left;
+    }
+
+    @Override
+    Object stepRight(Object iterator) {
+        return ((Node)iterator).right;
+    }
+
+    @Override
+    Object dereferenceIterator(Object iterator) {
+        return ((Node)iterator).value;
+    }
 }
