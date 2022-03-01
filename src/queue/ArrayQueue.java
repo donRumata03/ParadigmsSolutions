@@ -46,6 +46,7 @@ public class ArrayQueue implements Queue {
         }
     }
 
+    @Override
     public void enqueue(final Object element) {
         ensureCapacity(size + 1);
 
@@ -53,6 +54,7 @@ public class ArrayQueue implements Queue {
         size++;
     }
 
+    @Override
     public Object dequeue() {
         var res = elements[tail];
         elements[tail] = null;
@@ -62,24 +64,29 @@ public class ArrayQueue implements Queue {
         return res;
     }
 
+    @Override
     public int size() {
         return size;
     }
 
+    @Override
     public boolean isEmpty() {
         return size() == 0;
     }
 
+    @Override
     public void clear() {
         elements = null;
         size = 0;
         tail = 0;
     }
 
+    @Override
     public Object element() {
         return elements[tail];
     }
 
+    @Override
     public void push(final Object element) {
         ensureCapacity(elements.length + 1);
 
@@ -88,10 +95,12 @@ public class ArrayQueue implements Queue {
         size++;
     }
 
+    @Override
     public Object peek() {
         return elements[previousCircularPosition(head())];
     }
 
+    @Override
     public Object remove() {
         int removedPosition = previousCircularPosition(head());
 
@@ -103,6 +112,7 @@ public class ArrayQueue implements Queue {
         return res;
     }
 
+    @Override
     public int indexOf(Object element) {
         for (
             int indexFromHead = size - 1, arrayPosition = tail;
@@ -117,6 +127,7 @@ public class ArrayQueue implements Queue {
         return -1;
     }
 
+    @Override
     public int lastIndexOf(Object element) {
         for (
             int indexFromHead = 0, arrayPosition = previousCircularPosition(head());
