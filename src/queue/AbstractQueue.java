@@ -100,7 +100,10 @@ public abstract class AbstractQueue implements Queue {
 
     abstract Object dereferenceIterator(Object iterator);
 
-    abstract void filter(Predicate<Object> predicate);
+    /**
+     * @return how many elements left
+     */
+    abstract int filter(Predicate<Object> predicate);
 
 
     @Override
@@ -139,23 +142,23 @@ public abstract class AbstractQueue implements Queue {
 
     @Override
     public void removeIf(Predicate<Object> predicate) {
-        filter(Predicate.not(predicate));
+        size = filter(Predicate.not(predicate));
     }
 
     @Override
     public void retainIf(Predicate<Object> predicate) {
-        filter(predicate);
+        size = filter(predicate);
     }
 
     @Override
     public void takeWhile(Predicate<Object> predicate) {
         final Boolean[] allWereTrue = {true};
-        filter(o -> allWereTrue[0] &= predicate.test(o));
+        size = filter(o -> allWereTrue[0] &= predicate.test(o));
     }
 
     @Override
     public void dropWhile(Predicate<Object> predicate) {
         final boolean[] hasMeetFalse = {false};
-        filter(o -> hasMeetFalse[0] |= !predicate.test(o));
+        size = filter(o -> hasMeetFalse[0] |= !predicate.test(o));
     }
 }

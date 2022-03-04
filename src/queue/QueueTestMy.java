@@ -16,6 +16,9 @@ public class QueueTestMy {
         assert queue.isEmpty();
     }
 
+    public static void simpleTest() {
+
+    }
 
     public static void main(String[] args) {
         Queue arrayQueue = new ArrayQueue();

@@ -125,7 +125,7 @@ public class ArrayQueue extends AbstractQueue {
     }
 
     @Override
-    void filter(Predicate<Object> predicate) {
+    int filter(Predicate<Object> predicate) {
         int writePtr = tail;
 
         for (
@@ -146,5 +146,7 @@ public class ArrayQueue extends AbstractQueue {
             }
 
         }
+
+        return writePtr;
     }
 }

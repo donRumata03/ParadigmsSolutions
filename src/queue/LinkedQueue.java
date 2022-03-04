@@ -136,16 +136,21 @@ public class LinkedQueue extends AbstractQueue {
     }
 
     @Override
-    void filter(Predicate<Object> predicate) {
+    int filter(Predicate<Object> predicate) {
         Node node = leftPtr.right;
+        int elementsLeft = 0;
         for (int i = 0; i < size; i++) {
             var nextNode = node.right;
 
             if (!predicate.test(node.value)) {
                 connect(node.left, node.right);
+            } else {
+                elementsLeft++;
             }
 
             node = nextNode;
         }
+
+        return elementsLeft;
     }
 }
