@@ -126,6 +126,25 @@ public class ArrayQueue extends AbstractQueue {
 
     @Override
     void filter(Predicate<Object> predicate) {
+        int writePtr = tail;
 
+        for (
+                int readIndex = 0, readPtr = tail;
+                readIndex < size();
+                readPtr = nextCircularPosition(readPtr), readIndex++
+        ) {
+            if (predicate.test(readPtr)) {
+                // Leave => move from read to write
+                if (readPtr != writePtr) {
+                    elements[writePtr] = elements[readPtr];
+                    elements[readPtr] = null;
+                }
+                writePtr = nextCircularPosition(writePtr);
+            } else {
+                // Remove => free memory
+                elements[readPtr] = null;
+            }
+
+        }
     }
 }
