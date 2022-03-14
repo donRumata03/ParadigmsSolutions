@@ -1,0 +1,8 @@
+# Here are masks for files which:
+# — Are not tests (not written by GK => shouldn't be deleted before pulling new tests)
+# — Shouldn't be copied into presentation directory
+
+*.txt
+*.jar
+
+!*grammar*.txt

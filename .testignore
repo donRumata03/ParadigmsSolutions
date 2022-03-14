@@ -1,6 +1,6 @@
 # «ignored» files are considered tests
 
-# «General» reules
+# «General» rules
 *Test.java
 *Tester.java
 *TestSet.java

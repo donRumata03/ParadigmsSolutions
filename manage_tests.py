@@ -95,6 +95,7 @@ match argv[1]:
 		delete_tests()
 	case "update-tests":
 		# TODO:
+		#  3. support Present-ignore files
 		#  1. if COPIED test appears first time and doesn't match .testignore, add it there
 		#  2. Enable partial test updating (by folder)
 		update_tests()
