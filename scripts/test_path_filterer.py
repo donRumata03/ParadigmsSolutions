@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Iterable
 
 import gitignore_parser
-from location_detector import solutions_dir
+from scripts.location_detector import solutions_dir
 
 test_detector = gitignore_parser.parse_gitignore(solutions_dir / ".testignore")
 

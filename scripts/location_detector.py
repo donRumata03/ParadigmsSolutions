@@ -22,9 +22,9 @@ def check_dir(required_path: Path):
 
 
 paradigms_dir = Path(__file__).resolve().parent.parent.parent
+
 solutions_dir = paradigms_dir / "ParadigmsSolutions"
 tests_dir = paradigms_dir / "paradigms-2022"
-
 repo_dir = paradigms_dir / "paradigms"
 
 
