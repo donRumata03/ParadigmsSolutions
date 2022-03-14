@@ -1,3 +1,12 @@
 # «ignored» files are considered tests
-/src/*Test.java
-/src/base
+
+# «General» reules
+*Test.java
+*Tester.java
+src/base/*
+
+# Specific GK's files:
+
+# Queues:
+src/queue/Queues.java
+
