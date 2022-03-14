@@ -82,7 +82,7 @@ public class ArrayQueueModule {
     }
 
     public static void push(final Object element) {
-        ensureCapacity(elements.length + 1);
+        ensureCapacity(size + 1);
 
         tail = previousCircularPosition(tail);
         elements[tail] = element;

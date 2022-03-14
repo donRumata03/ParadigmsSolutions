@@ -83,7 +83,7 @@ public class ArrayQueueADT {
     }
 
     public static void push(ArrayQueueADT queue, final Object element) {
-        ensureCapacity(queue, queue.elements.length + 1);
+        ensureCapacity(queue, queue.size + 1);
 
         queue.tail = previousCircularPosition(queue, queue.tail);
         queue.elements[queue.tail] = element;

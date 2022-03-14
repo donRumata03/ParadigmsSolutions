@@ -56,7 +56,7 @@ public class ArrayQueue extends AbstractQueue {
 
     @Override
     public void pushLeftImpl(final Object element) {
-        ensureCapacity(elements.length + 1);
+        ensureCapacity(size + 1);
 
         tail = previousCircularPosition(tail);
         elements[tail] = element;
