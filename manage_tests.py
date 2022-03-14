@@ -5,23 +5,12 @@ import gitignore_parser
 from pathlib import Path
 from sys import argv
 import colorama
+
+from scripts.test_path_filterer import filter_tests, filter_out_tests
+
 colorama.init(autoreset=True)
 
-
-
-def list_files(root_directory: Path) -> Iterable[Path]:
-	for (dirpath, dirnames, filenames) in os.walk(root_directory):
-		for fname in filenames:
-			yield Path(os.path.join(dirpath, fname))
-
-
-
-def filter_tests(paths: Iterable[Path]) -> Iterable[Path]:
-	return filter(test_detector, paths)
-
-
-def filter_out_tests(paths: Iterable[Path]) -> Iterable[Path]:
-	return filter(lambda f: not test_detector(f), paths)
+from scripts.location_detector import *
 
 
 assert len(argv) == 2
@@ -40,6 +29,13 @@ match argv[1]:
 			print(f"Removing {test_file.relative_to(solutions_dir)}")
 			os.remove(str(test_file))
 		print(colorama.Fore.GREEN + "Done deleting tests!")
+	case "update-tests":
+		print(colorama.Fore.GREEN + "Updating tests…")
+
+		for test_file in filter_tests(list_files(solutions_dir)):
+			pass
+			# print(f"Removing {test_file.relative_to(solutions_dir)}")
+			# os.remove(str(test_file))
+		print(colorama.Fore.GREEN + "Done updating tests!")
 	case _:
 		print(colorama.Fore.RED + "Unknown command!")
-
