@@ -3,10 +3,35 @@
 # «General» reules
 *Test.java
 *Tester.java
+*TestSet.java
+*package-info.java
 src/base/*
 
 # Specific GK's files:
 
 # Queues:
 src/queue/Queues.java
+
+
+
+# Expressions:
+src/expression/common/*
+src/expression/Expression.java
+src/expression/ToMiniString.java
+src/expression/TripleExpression.java
+
+# expression/parser
+src/expression/parser/Operations.java
+src/expression/parser/TripleParser.java
+
+# expression/parser
+# (nothing special yet)
+
+# expression/generic
+# Not src/expression/generic/Tabulator.java because I modify it
+
+# Search
+# (nothing special)
+
+
 
