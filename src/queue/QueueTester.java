@@ -29,4 +29,5 @@ public class QueueTester<M extends Queues.QueueModel> extends ArrayQueueTester<M
         Asserts.assertTrue(type + " should extend AbstractQueue", "queue.AbstractQueue".equals(type.getSuperclass().getName()));
         Asserts.assertTrue(type + " should implement interface Queue", implementsQueue(type));
     }
+
 }

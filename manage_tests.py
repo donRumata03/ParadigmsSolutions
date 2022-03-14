@@ -39,13 +39,15 @@ def delete_tests():
 def update_tests():
 	print(colorama.Fore.GREEN + "Updating tests…")
 
-	# delete_tests()
+	delete_tests()
 	update_tests_repo()
 
-	shutil.copytree(tests_dir / "artifacts", solutions_dir / "compiledTests", dirs_exist_ok=True)
+	shutil.copytree(tests_dir / "artifacts", solutions_dir / "compiledTests",
+	                dirs_exist_ok=True)
+	shutil.copytree(tests_dir / "java", solutions_dir / "src",
+	                dirs_exist_ok=True)
 
 	print(colorama.Fore.GREEN + "Done updating tests!")
-
 
 
 assert len(argv) >= 2

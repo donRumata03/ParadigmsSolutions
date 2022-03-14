@@ -55,7 +55,12 @@ public class ArrayQueueTester<M extends Queues.QueueModel> {
 
             @Override
             public List<M> linearTest(final M queue, final ExtendedRandom random) {
-                return splitter.split(this, queue, random);
+                if (random.nextInt(50) == 0) {
+                    queue.clear();
+                    return List.of();
+                } else {
+                    return splitter.split(this, queue, random);
+                }
             }
         };
     }

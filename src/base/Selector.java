@@ -88,7 +88,7 @@ public final class Selector {
     }
 
     public List<String> getModes() {
-        return modes.isEmpty() ? List.of("") : modes;
+        return modes.isEmpty() ? List.of("~") : modes;
     }
 
     public List<String> getVariants() {
