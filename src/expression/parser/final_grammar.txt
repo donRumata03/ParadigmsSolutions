@@ -1,0 +1,25 @@
+Shr   -> Exp Shr'
+Shr'  -> ([ '<<' | '>>' | '>>>' ] Exp)*
+
+Exp   -> Term Exp'
+Exp'  -> ([ '+' | '-' ] Term)*
+
+Term  -> Factor Term'
+Term' -> ([ '*' | '/' ] Factor)*
+
+// For right associativity:
+# Factor  ->
+#	Atomic ** Factor
+#	| Atomic // Factor
+
+Factor  -> Atomic Factor'
+Factor' -> ([ '//' | '**' ] Atomic)*
+
+Atomic  ->
+	('-' num) -> -num
+	| num
+	| '(' Exp ')'
+	| '-' Factor
+	| FuncName Factor
+
+FuncName -> 't0' | 'l0' | 'abs'

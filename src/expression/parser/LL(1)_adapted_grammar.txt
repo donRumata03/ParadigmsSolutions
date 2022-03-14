@@ -1,0 +1,11 @@
+// Only right recursion:
+
+
+(1) Exp   -> Term Exp'
+(2) Exp'  -> [ + | - ] Term Exp'
+(3) Exp'  -> ϵ
+(4) Term  -> Factor Term'
+(5) Term' -> [ * | / ] Factor Term'
+(6) Term' -> ϵ
+(7) Factor  -> num
+(8) Factor  -> ( Exp )
