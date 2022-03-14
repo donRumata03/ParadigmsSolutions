@@ -1,5 +1,7 @@
 import gitignore_parser
-from location_detector import test_detector, solutions_dir
+from location_detector import solutions_dir
+from scripts.test_path_filterer import test_detector
+
 
 tested_paths = [
 	("src/queue/QueueTest.java", True),

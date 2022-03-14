@@ -1,3 +1,16 @@
+"""
+There are three major repositories for GK's HTs:
+	— Working repo
+	— Tests: we can `pull origin master` and copy tests into working repo
+		with rewriting and deleting all tests from it
+	— Presenting repo: we can copy non-tests into it
+		(and commit by hand afterwards)
+
+This is achieved by marking some source files in Working repo as tests
+and others — as MY solutions. Use ./.testignore for «ignoring» tests
+with gitignore syntax inside
+"""
+
 import os
 from typing import Iterable
 
@@ -13,7 +26,7 @@ colorama.init(autoreset=True)
 from scripts.location_detector import *
 
 
-assert len(argv) == 2
+assert len(argv) >= 2
 match argv[1]:
 	case "list-tests":
 		print(colorama.Fore.GREEN + "These files are tests:")
@@ -30,6 +43,7 @@ match argv[1]:
 			os.remove(str(test_file))
 		print(colorama.Fore.GREEN + "Done deleting tests!")
 	case "update-tests":
+		# TODO: if COPIED test appears first time and doesn't match .testignore, add it there
 		print(colorama.Fore.GREEN + "Updating tests…")
 
 		for test_file in filter_tests(list_files(solutions_dir)):
