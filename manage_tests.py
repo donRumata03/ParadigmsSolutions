@@ -21,7 +21,8 @@ from sys import argv
 import colorama
 
 from scripts.git_manager import update_tests_repo
-from scripts.test_path_filterer import filter_tests, filter_out_tests
+from scripts.test_path_filterer import filter_tests, filter_out_tests, \
+	test_detector
 
 colorama.init(autoreset=True)
 
@@ -42,13 +43,43 @@ def update_tests():
 	delete_tests()
 	update_tests_repo()
 
-	shutil.copytree(tests_dir / "artifacts", solutions_dir / "compiledTests",
-	                dirs_exist_ok=True)
-	shutil.copytree(tests_dir / "java", solutions_dir / "src",
-	                dirs_exist_ok=True)
+	shutil.copytree(
+		tests_dir / "artifacts", solutions_dir / "compiledTests",
+		dirs_exist_ok=True
+	)
+	shutil.copytree(
+		tests_dir / "java", solutions_dir / "src",
+		dirs_exist_ok=True
+	)
 
 	print(colorama.Fore.GREEN + "Done updating tests!")
 
+
+def present_solutions(subfolder: str):
+	solution_path = solutions_dir / "src" / subfolder
+	assert solution_path.exists()
+
+	# Ensure target exists and is clear
+	presentation_path = presentation_dir / "java-solutions" / subfolder
+	if presentation_path.exists():
+		shutil.rmtree(str(presentation_path))
+	# if not presentation_path.exists():
+	# 	os.mkdir(str(presentation_path))
+
+	print(f"Copying {subfolder} solution files:")
+
+	def inspect(full_path):
+		is_test = test_detector(full_path)
+		if not Path(full_path).is_dir():
+			print(f"{Path(full_path).relative_to(solution_path)}: {'TEST' if is_test else 'SOLUTION'}")
+		return is_test
+
+	# Copy excluding tests
+	shutil.copytree(
+		str(solution_path),
+		str(presentation_path),
+		ignore=lambda path, filenames: list(filter(lambda name: inspect(os.path.join(path, name)), filenames))
+	)
 
 assert len(argv) >= 2
 match argv[1]:
@@ -65,5 +96,8 @@ match argv[1]:
 	case "update-tests":
 		# TODO: if COPIED test appears first time and doesn't match .testignore, add it there
 		update_tests()
+	case "present-solutions":
+		assert len(argv) == 3
+		present_solutions(argv[2])
 	case _:
 		print(colorama.Fore.RED + "Unknown command!")

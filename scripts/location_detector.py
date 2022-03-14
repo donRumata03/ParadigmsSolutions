@@ -4,9 +4,8 @@ from pathlib import Path
 from typing import Iterable
 
 import colorama
-colorama.init(autoreset=True)
 
-import gitignore_parser
+colorama.init(autoreset=True)
 
 
 def list_files(root_directory: Path) -> Iterable[Path]:
@@ -25,9 +24,9 @@ paradigms_dir = Path(__file__).resolve().parent.parent.parent
 
 solutions_dir = paradigms_dir / "ParadigmsSolutions"
 tests_dir = paradigms_dir / "paradigms-2022"
-repo_dir = paradigms_dir / "paradigms"
+presentation_dir = paradigms_dir / "paradigms"
 
 
-for d in (solutions_dir, tests_dir, repo_dir):
+for d in (solutions_dir, tests_dir, presentation_dir):
 	check_dir(d)
 
