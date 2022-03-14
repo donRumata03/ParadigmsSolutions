@@ -16,11 +16,11 @@ public final class Op<T> {
         return new Op<>(name, f);
     }
 
-    public String getName() {
+    public String name() {
         return name;
     }
 
-    public T getValue() {
+    public T value() {
         return value;
     }
 

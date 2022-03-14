@@ -1,14 +1,17 @@
 package expression.common;
 
 import base.ExtendedRandom;
+import base.Functional;
+import base.Pair;
 import base.TestCounter;
+import expression.ToMiniString;
+import expression.common.ExpressionKind.Variables;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Georgiy Korneev (kgeorgiy@kgeorgiy.info)
@@ -18,13 +21,10 @@ public class TestGenerator<C> {
     private final ExtendedRandom random;
 
     private final Generator<C> generator;
-    private final FullRenderer<C> full = new FullRenderer<>();
-    private final MiniRenderer<C> mini = new MiniRenderer<>(false);
-    private final MiniRenderer<C> safe = new MiniRenderer<>(true);
+    private final NodeRenderer<C> renderer;
 
-    private final List<Node<C>> args;
-    private final List<Node<C>> basicTests;
-    private final List<Node<C>> variables = new ArrayList<>();
+    private final Set<String> forbidden = new HashSet<>();
+    private final List<Function<List<Node<C>>, Stream<Node<C>>>> basicTests = new ArrayList<>();
     private final List<Node<C>> consts;
     private final boolean verbose;
 
@@ -40,129 +40,136 @@ public class TestGenerator<C> {
         this.verbose = verbose;
 
         generator = new Generator<>(random, constant);
-        full.unary("(", a -> "(" + a + ")");
+        renderer = new NodeRenderer<>(this.random);
 
-        consts = constants.stream().map(Node::constant).collect(Collectors.toUnmodifiableList());
-        args = new ArrayList<>(consts);
-        basicTests = new ArrayList<>(consts);
+        consts = Functional.map(constants, Node::constant);
+        basicTests.add(vars -> consts.stream());
+        basicTests.add(List::stream);
     }
 
-    private void test(final Node<C> node, final Consumer<Test<C>> consumer) {
-        consumer.accept(new Test<>(full.render(node), mini.render(node), safe.render(node), node));
+    private <E> void test(final Expr<C, E> expr, final Consumer<Test<C, E>> consumer) {
+        consumer.accept(new Test<>(
+                expr,
+                renderer.render(expr, NodeRenderer.FULL),
+                renderer.render(expr, NodeRenderer.FULL_EXTRA),
+                renderer.render(expr, NodeRenderer.MINI),
+                renderer.render(expr, NodeRenderer.SAME)
+        ));
     }
 
     private Node<C> c() {
         return random.randomItem(consts);
     }
 
-    private Node<C> v() {
+    private Node<C> v(final List<Node<C>> variables) {
         return random.randomItem(variables);
     }
 
-    @SafeVarargs
-    private static <C> Node<C> f(final String name, final Node<C>... arg) {
+    private static <C> Node<C> f(final String name, final Node<C> arg) {
         return Node.op(name, arg);
     }
 
-    @SafeVarargs
-    private void basicTests(final Node<C>... tests) {
-        basicTests.addAll(Arrays.asList(tests));
+    private static <C> Node<C> f(final String name, final Node<C> arg1, final Node<C> arg2) {
+        return Node.op(name, arg1, arg2);
     }
 
-    public void variable(final String name) {
-        generator.add(name, 0);
-        full.nullary(name);
-        mini.nullary(name);
-        safe.nullary(name);
-        basicTests(f(name));
-        args.add(f(name));
-        variables.add(f(name));
+    @SafeVarargs
+    private void basicTests(final Function<List<Node<C>>, Node<C>>... tests) {
+        Arrays.stream(tests).map(test -> test.andThen(Stream::of)).forEachOrdered(basicTests::add);
     }
 
     public void unary(final String name) {
         generator.add(name, 1);
-        full.unary(name);
-        mini.unary(name);
-        safe.unary(name);
+        renderer.unary(name);
+        forbidden.add(name);
 
         if (verbose) {
-            args.stream().map(a -> f(name, a)).forEachOrdered(basicTests::add);
+            basicTests.add(vars -> Stream.concat(consts.stream(), vars.stream()).map(a -> f(name, a)));
         } else {
             basicTests(
-                    f(name, c()),
-                    f(name, v())
+                    vars -> f(name, c()),
+                    vars -> f(name, v(vars))
             );
         }
 
-        final Node<C> p1 = f(name, f(name, f("+", v(), c())));
-        final Node<C> p2 = f("*", v(), f("*", v(), f(name, c())));
+        final Function<List<Node<C>>, Node<C>> p1 = vars -> f(name, f(name, f("+", v(vars), c())));
+        final Function<List<Node<C>>, Node<C>> p2 = vars -> f("*", v(vars), f("*", v(vars), f(name, c())));
         basicTests(
-                f(name, f("+", v(), v())),
-                f(name, f(name, v())),
-                f(name, f("/", f(name, v()), f("+", v(), v()))),
+                vars -> f(name, f("+", v(vars), v(vars))),
+                vars -> f(name, f(name, v(vars))),
+                vars -> f(name, f("/", f(name, v(vars)), f("+", v(vars), v(vars)))),
                 p1,
                 p2,
-                f("+", p1, p2)
+                vars -> f("+", p1.apply(vars), p2.apply(vars))
         );
     }
 
     public void binary(final String name, final int priority) {
         generator.add(name, 2);
-        full.binary(name);
-        mini.binary(name, priority);
-        safe.binary(name, priority);
+        renderer.binary(name, priority);
+        forbidden.add(name);
 
         if (verbose) {
-            args.stream().flatMap(a -> args.stream().map(b -> f(name, a, b))).forEachOrdered(basicTests::add);
+            basicTests.add(vars -> Stream.concat(consts.stream(), vars.stream().limit(3))
+                            .flatMap(a -> consts.stream().map(b -> f(name, a, b))));
         } else {
             basicTests(
-                    f(name, c(), c()),
-                    f(name, v(), c()),
-                    f(name, c(), v()),
-                    f(name, v(), v())
+                    vars -> f(name, c(), c()),
+                    vars -> f(name, v(vars), c()),
+                    vars -> f(name, c(), v(vars)),
+                    vars -> f(name, v(vars), v(vars))
             );
         }
 
-        final Node<C> p1 = f(name, f(name, f("+", v(), c()), v()), v());
-        final Node<C> p2 = f("*", v(), f("*", v(), f(name, c(), v())));
+        final Function<List<Node<C>>, Node<C>> p1 = vars -> f(name, f(name, f("+", v(vars), c()), v(vars)), v(vars));
+        final Function<List<Node<C>>, Node<C>> p2 = vars -> f("*", v(vars), f("*", v(vars), f(name, c(), v(vars))));
 
         basicTests(
-                f(name, f(name, v(), v()), v()),
-                f(name, v(), f(name, v(), v())),
-                f(name, f(name, v(), v()), f(name, v(), v())),
-                f(name, f("-", f(name, v(), v()), c()), f("+", v(), v())),
+                vars -> f(name, f(name, v(vars), v(vars)), v(vars)),
+                vars -> f(name, v(vars), f(name, v(vars), v(vars))),
+                vars -> f(name, f(name, v(vars), v(vars)), f(name, v(vars), v(vars))),
+                vars -> f(name, f("-", f(name, v(vars), v(vars)), c()), f("+", v(vars), v(vars))),
                 p1,
                 p2,
-                f("+", p1, p2)
+                vars -> f("+", p1.apply(vars), p2.apply(vars))
         );
     }
 
-    public void testBasic(final Consumer<Test<C>> consumer) {
+    public <E> void testBasic(final Variables<E> variables, final Consumer<Test<C, E>> consumer) {
         basicTests.forEach(test -> {
-            counter.println(full.render(test));
-            test(test, consumer);
+            final List<Pair<String, E>> vars = generator.variables(variables, random.nextInt(5) + 3);
+            test.apply(Functional.map(vars, v -> Node.op(v.first()))).forEachOrdered(node -> {
+//                counter.println(full.render(Expr.of(node, vars)));
+                test(Expr.of(node, vars), consumer);
+            });
         });
     }
 
-    public void testRandom(final int denominator, final Consumer<Test<C>> consumer) {
-        generator.testRandom(denominator, counter, node -> test(node, consumer));
+    public <E> void testRandom(final int denominator, final Variables<E> variables, final Consumer<Test<C, E>> consumer) {
+        generator.testRandom(denominator, counter, variables, expr -> test(expr, consumer));
     }
 
-    public String full(final Node<C> node) {
-        return full.render(node);
+    public String full(final Expr<C, ?> expr) {
+        return renderer.render(expr, NodeRenderer.FULL);
     }
 
-    public static class Test<C> {
+    public <E extends ToMiniString> List<Pair<String,E>> variables(final Variables<E> variables, final int count) {
+        return generator.variables(variables, count);
+    }
+
+    public static class Test<C, E> {
+        public final Expr<C, E> expr;
         public final String full;
+        public final String fullExtra;
         public final String mini;
         public final String safe;
-        public final Node<C> node;
 
-        public Test(final String full, final String mini, final String safe, final Node<C> node) {
+        public Test(final Expr<C, E> expr, final String full, final String fullExtra, final String mini, final String safe) {
+            this.expr = expr;
             this.full = full;
+            this.fullExtra = fullExtra;
             this.mini = mini;
             this.safe = safe;
-            this.node = node;
         }
     }
 }

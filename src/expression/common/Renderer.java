@@ -1,45 +1,50 @@
 package expression.common;
 
+import base.Functional;
+import base.Pair;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /**
  * @author Georgiy Korneev (kgeorgiy@kgeorgiy.info)
  */
-public class Renderer<C, T> {
-    private final Function<? super C, T> constant;
-    private final Map<String, Function<List<T>, T>> renderers = new HashMap<>();
+public class Renderer<C, S, R> {
+    private final Node.Const<C, R> constant;
+    private final Map<String, UnaryOperator<S, R>> unary = new HashMap<>();
+    private final Map<String, BinaryOperator<S, R>> binary = new HashMap<>();
 
-    public Renderer(final Function<? super C, T> constant) {
+    public Renderer(final Node.Const<C, R> constant) {
         this.constant = constant;
     }
 
-    public void add(final String name, final int arity, final Function<List<T>, T> renderer) {
-        any(Node.id(name, arity), renderer);
+    public void unary(final String name, final UnaryOperator<S, R> op) {
+        unary.put(name, op);
     }
 
-    public void any(final String id, final Function<List<T>, T> renderer) {
-        renderers.put(id, renderer);
+    public void binary(final String name, final BinaryOperator<S, R> op) {
+        binary.put(name, op);
     }
 
-    public void nullary(final String name, final T value) {
-        add(name, 0, args -> value);
+    public R render(final S settings, final Expr<C, R> expr) {
+        final Map<String, R> vars = expr.variables().stream().collect(Collectors.toMap(Pair::first, Pair::second));
+        return expr.node().cata(
+                constant,
+                name -> Functional.get(vars, name),
+                (name, arg) -> Functional.get(unary, name).apply(settings, arg),
+                (name, arg1, arg2) -> Functional.get(binary, name).apply(settings, arg1, arg2)
+        );
     }
 
-    public void unary(final String name, final UnaryOperator<T> op) {
-        add(name, 1, args -> op.apply(args.get(0)));
+
+    @FunctionalInterface
+    public interface UnaryOperator<S, R> {
+        R apply(S settings, R arg);
     }
 
-    public void binary(final String name, final BinaryOperator<T> op) {
-        add(name, 2, args -> op.apply(args.get(0), args.get(1)));
-    }
-
-    public T render(final Node<C> node) {
-        return node.cata(constant, (name, args) -> Objects.requireNonNull(renderers.get(name), name).apply(args));
+    @FunctionalInterface
+    public interface BinaryOperator<S, R> {
+        R apply(S settings, R arg1, R arg2);
     }
 }
