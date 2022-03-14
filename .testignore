@@ -1,2 +1,3 @@
 # «ignored» files are considered tests
 /src/*Test.java
+/src/base
