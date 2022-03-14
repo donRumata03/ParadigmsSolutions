@@ -94,7 +94,9 @@ match argv[1]:
 	case "delete-tests":
 		delete_tests()
 	case "update-tests":
-		# TODO: if COPIED test appears first time and doesn't match .testignore, add it there
+		# TODO:
+		#  1. if COPIED test appears first time and doesn't match .testignore, add it there
+		#  2. Enable partial test updating (by folder)
 		update_tests()
 	case "present-solutions":
 		assert len(argv) == 3
