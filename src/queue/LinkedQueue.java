@@ -94,21 +94,9 @@ public class LinkedQueue extends AbstractQueue {
     }
 
     @Override
-    protected Object viewLeftImpl() {
-        return leftPtr.right.value;
-    }
-
-    @Override
-    protected Object viewRightImpl() {
-        return rightPtr.left.value;
-    }
-
-    @Override
     protected void clearImpl() {
         connect(leftPtr, rightPtr);
     }
-
-
 
     @Override
     Object rightmostIterator() {

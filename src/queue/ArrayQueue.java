@@ -83,16 +83,6 @@ public class ArrayQueue extends AbstractQueue {
     }
 
     @Override
-    public Object viewLeftImpl() {
-        return elements[tail];
-    }
-
-    @Override
-    public Object viewRightImpl() {
-        return elements[previousCircularPosition(head())];
-    }
-
-    @Override
     public void clearImpl() {
         elements = null;
         tail = 0;

@@ -64,20 +64,15 @@ public abstract class AbstractQueue implements Queue {
 
     @Override
     public Object element() {
-        return viewLeftImpl();
+        assert !isEmpty();
+        return dereferenceIterator(leftmostIterator());
     }
-
-    protected abstract Object viewLeftImpl();
-
 
     @Override
     public Object peek() {
         assert !isEmpty();
-
-        return viewRightImpl();
+        return dereferenceIterator(rightmostIterator());
     }
-
-    protected abstract Object viewRightImpl();
 
 
     @Override
@@ -89,7 +84,6 @@ public abstract class AbstractQueue implements Queue {
     protected abstract void clearImpl();
 
 
-    // Should be done with a typesafe way via trait associated types…
     abstract Object rightmostIterator();
 
     abstract Object leftmostIterator();
