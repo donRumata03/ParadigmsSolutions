@@ -4,7 +4,7 @@ package queue;
 import java.util.function.Predicate;
 
 /**
- * The only thing you need to know about this class is that it correctly implements Queue (checked by kgeorgiy)
+ * The only thing you need to know about this class is that it correctly implements Queue
  */
 public class LinkedQueue extends AbstractQueue {
 
