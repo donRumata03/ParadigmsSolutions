@@ -14,4 +14,6 @@ public class BigIntegerArithmetics implements ArithmeticEngine<BigInteger> {
     public BigInteger add(BigInteger left, BigInteger right) throws ExpressionArithmeticException {
         return left.add(right);
     }
+
+    // …
 }

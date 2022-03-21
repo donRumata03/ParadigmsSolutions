@@ -1,7 +1,5 @@
 package expression.general;
 
-import expression.Expression;
-import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -12,6 +10,9 @@ public abstract class BinaryOperation<T, Engine extends ArithmeticEngine<T>>
 {
     private final ParenthesesTrackingExpression<T, Engine> left;
     private final ParenthesesTrackingExpression<T, Engine> right;
+    protected final Engine engine;
+
+
 
     private final OperatorTraits operatorInfo;
     private Optional<ParenthesesTrackingInfo> cachedPriorityInfo = Optional.empty();
@@ -22,9 +23,15 @@ public abstract class BinaryOperation<T, Engine extends ArithmeticEngine<T>>
 //    }
 
 
-    public BinaryOperation(ParenthesesTrackingExpression<T, Engine> left, ParenthesesTrackingExpression<T, Engine> right, OperatorTraits operatorInfo) {
+    public BinaryOperation(
+        ParenthesesTrackingExpression<T, Engine> left,
+        ParenthesesTrackingExpression<T, Engine> right,
+        Engine engine,
+        OperatorTraits operatorInfo
+    ) {
         this.left = left;
         this.right = right;
+        this.engine = engine;
         this.operatorInfo = operatorInfo;
     }
 

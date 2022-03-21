@@ -1,11 +1,12 @@
 package expression.general.operations;
 
+import expression.general.ArithmeticEngine;
 import expression.general.BinaryOperation;
 import expression.general.OperatorTraits;
 import expression.general.ParenthesesTrackingExpression;
-import java.math.BigDecimal;
 
-public class Add extends BinaryOperation {
+public class Add<T, Engine extends ArithmeticEngine<T>>
+    extends BinaryOperation<T, Engine> {
 
     public static final OperatorTraits OPERATOR_INFO = new OperatorTraits(
         2,
@@ -14,17 +15,12 @@ public class Add extends BinaryOperation {
         "+"
     );
 
-    public Add(ParenthesesTrackingExpression left, ParenthesesTrackingExpression right) {
-        super(left, right, OPERATOR_INFO);
+    public Add(ParenthesesTrackingExpression<T, Engine> left, ParenthesesTrackingExpression<T, Engine> right, Engine engine) {
+        super(left, right, engine, OPERATOR_INFO);
     }
 
     @Override
-    public int reductionOperation(int leftResult, int rightResult) {
-        return leftResult + rightResult;
-    }
-
-    @Override
-    public BigDecimal reductionOperation(BigDecimal leftResult, BigDecimal rightResult) {
-        return leftResult.add(rightResult);
+    public T reductionOperation(T leftResult, T rightResult) {
+        return engine.add(leftResult, rightResult);
     }
 }
