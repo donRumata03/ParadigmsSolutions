@@ -2,6 +2,7 @@ package expression.parser.generic;
 
 import expression.Const;
 import expression.Variable;
+import expression.general.ArithmeticEngine;
 import expression.general.ParenthesesTrackingExpression;
 import expression.parser.generic.tokens.AbstractOperationToken;
 import expression.parser.generic.tokens.NumberToken;
@@ -13,7 +14,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 
-public class TokenizedExpressionParser {
+public class TokenizedExpressionParser<T, Engine extends ArithmeticEngine<T>> {
     private final BaseTokenParser tokenParser;
     private boolean checked;
 
@@ -22,7 +23,7 @@ public class TokenizedExpressionParser {
         this.checked = checked;
     }
 
-    public ParenthesesTrackingExpression parseAll() throws ParseException {
+    public ParenthesesTrackingExpression<T, Engine> parseAll() throws ParseException {
         var result = parseShiftResult();
 
         if (tokenParser.viewRuntimeErrorizedNextToken().isPresent()) {

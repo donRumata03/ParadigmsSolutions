@@ -7,7 +7,7 @@ Exp'  -> ([ '+' | '-' ] Term)*
 Term  -> Factor Term'
 Term' -> ([ '*' | '/' ] Factor)*
 
-// For right associativity:
+// For right associativity it would be:
 # Factor  ->
 #	Atomic ** Factor
 #	| Atomic // Factor
