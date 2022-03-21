@@ -12,8 +12,9 @@ import java.util.function.Predicate;
  * Let `cR`: R' == R
  * Let `nE`: R - L > 0
  *
- * Let remove(index_set):
- * - Denote prefix sum of booleans[elements deleted in `[0, i]` ]  as `p`
+ * Let remove(index_set): # All indexes from index set are in [L, R)
+ * - Denote prefix sum of booleans[elements deleted in `[L, i]` ]  as `p`
+ * - More formally, p[i] = {sum_{j \in [L, i]} { 1 if `j \in index_set` else 0 } } for all i \in \mathbb{Z}
  * - cL
  * - R' = R - p[R - 1]
  * - for i \in [L, R'): a'[i] = a[i + p[i]]
@@ -139,7 +140,8 @@ public interface Queue {
     /**
      * Pred: predicate != null
      * Post: remove(such `i` in [L, R) that predicate(i))
-     */
+     * ↑ see definition of remove(…) at the top of the file ↑
+     * */
     void removeIf(Predicate<Object> predicate);
 
     /**
