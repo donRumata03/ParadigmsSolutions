@@ -15,7 +15,7 @@ public class ShiftLeft extends BinaryOperation {
     );
 
     public ShiftLeft(ParenthesesTrackingExpression left, ParenthesesTrackingExpression right) {
-        super(left, right, OPERATOR_INFO);
+        super(left, right, engine, OPERATOR_INFO);
     }
 
     @Override

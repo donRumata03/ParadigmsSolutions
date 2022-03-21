@@ -15,7 +15,7 @@ public class Divide extends BinaryOperation {
     );
 
     public Divide(ParenthesesTrackingExpression left, ParenthesesTrackingExpression right) {
-        super(left, right, OPERATOR_INFO);
+        super(left, right, engine, OPERATOR_INFO);
     }
 
     @Override

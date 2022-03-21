@@ -16,7 +16,7 @@ public class Pow extends BinaryOperation {
     );
 
     public Pow(ParenthesesTrackingExpression left, ParenthesesTrackingExpression right) {
-        super(left, right, OPERATOR_INFO);
+        super(left, right, engine, OPERATOR_INFO);
     }
 
     @Override
