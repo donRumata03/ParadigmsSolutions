@@ -28,26 +28,16 @@ public abstract class BinaryOperation<T, Engine extends ArithmeticEngine<T>>
         this.operatorInfo = operatorInfo;
     }
 
-    public abstract int reductionOperation(T leftResult, T rightResult);
+    public abstract T reductionOperation(T leftResult, T rightResult);
 
     @Override
     public T evaluate(T x) {
-        return null;
+        return reductionOperation(left.evaluate(x), right.evaluate(x));
     }
 
 
     @Override
-    public int evaluate(int x) {
-        return this.reductionOperation(left.evaluate(x), right.evaluate(x));
-    }
-
-    @Override
-    public BigDecimal evaluate(BigDecimal x) {
-        return this.reductionOperation(left.evaluate(x), right.evaluate(x));
-    }
-
-    @Override
-    public int evaluate(int x, int y, int z) {
+    public T evaluate(T x, T y, T z) {
         return this.reductionOperation(left.evaluate(x, y, z), right.evaluate(x, y, z));
     }
 
@@ -194,7 +184,7 @@ public abstract class BinaryOperation<T, Engine extends ArithmeticEngine<T>>
             right.equals(that.right);
     }
 
-    // TwoArgumentExpression object is immutable
+    // BinaryOperation object is immutable
     Optional<Integer> cachedHash = Optional.empty();
     @Override
     public int hashCode() {
