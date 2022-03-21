@@ -1,6 +1,6 @@
 package expression.generic;
 
-import expression.general.ArithmeticEngine;
+import expression.general.arithmetics.ArithmeticEngine;
 import expression.general.GenericTripleExpression;
 
 public class GenericExpressionComputer<T, Engine extends ArithmeticEngine<T>> {

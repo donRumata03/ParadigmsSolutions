@@ -1,8 +1,6 @@
 package expression.general;
 
-import expression.BigDecimalExpression;
-import expression.Expression;
-import expression.TripleExpression;
+import expression.general.arithmetics.ArithmeticEngine;
 
 /**
  * We want to force implementors to be efficient :)

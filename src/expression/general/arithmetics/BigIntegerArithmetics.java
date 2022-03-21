@@ -1,4 +1,4 @@
-package expression.general;
+package expression.general.arithmetics;
 
 import expression.general.exceptions.ExpressionArithmeticException;
 import java.math.BigInteger;

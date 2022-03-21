@@ -1,5 +1,7 @@
 package expression.general;
 
+import expression.general.arithmetics.ArithmeticEngine;
+
 /**
  * An expression is responsible for adding parentheses TO ITS CHILDREN if necessary (it knows better, when)
  */

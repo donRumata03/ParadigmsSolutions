@@ -1,10 +1,8 @@
 package expression;
 
-import expression.general.ArithmeticEngine;
+import expression.general.arithmetics.ArithmeticEngine;
 import expression.general.AtomicParenthesesTrackingExpression;
-import java.math.BigDecimal;
 import java.util.Objects;
-import java.util.Optional;
 
 public final class Const<T, Engine extends ArithmeticEngine<T>> extends AtomicParenthesesTrackingExpression<T, Engine> {
     private final T value;

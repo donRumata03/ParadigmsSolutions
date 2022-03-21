@@ -1,30 +1,41 @@
 package expression;
 
-import expression.general.OperatorTraits;
+import expression.general.arithmetics.BigIntegerArithmetics;
 import expression.general.ParenthesesTrackingExpression;
-import expression.general.BinaryOperation;
-import java.math.BigDecimal;
+import expression.general.arithmetics.UncheckedIntegerArithmetics;
+import java.math.BigInteger;
 
-public class Add extends BinaryOperation {
+/**
+ * Add should implement expression interfaces: Expression, Triple expression, …
+ */
+public class Add
+    extends expression.general.operations.Add<BigInteger, BigIntegerArithmetics>
+    implements BigIntegerExpression
+{
 
-    public static final OperatorTraits OPERATOR_INFO = new OperatorTraits(
-        2,
-        true,
-        true,
-        "+"
-    );
+//    public Add integerAdd(
+//        ParenthesesTrackingExpression<Integer, UncheckedIntegerArithmetics> left,
+//        ParenthesesTrackingExpression<Integer, UncheckedIntegerArithmetics> right
+//    ) {
+//
+//    }
 
-    public Add(ParenthesesTrackingExpression left, ParenthesesTrackingExpression right) {
-        super(left, right, engine, OPERATOR_INFO);
+    // TODO: resolve somehow
+    public Add(
+        ParenthesesTrackingExpression<BigInteger, BigIntegerArithmetics> left,
+        ParenthesesTrackingExpression<BigInteger, BigIntegerArithmetics> right
+    ) {
+        super(left, right, new BigIntegerArithmetics());
+
+
     }
 
-    @Override
-    public int reductionOperation(int leftResult, int rightResult) {
-        return leftResult + rightResult;
-    }
+    public Add(
+        ParenthesesTrackingExpression<Integer, UncheckedIntegerArithmetics> left,
+        ParenthesesTrackingExpression<Integer, UncheckedIntegerArithmetics> right
+    ) {
+        super(left, right, new UncheckedIntegerArithmetics());
 
-    @Override
-    public BigDecimal reductionOperation(BigDecimal leftResult, BigDecimal rightResult) {
-        return leftResult.add(rightResult);
+
     }
 }
