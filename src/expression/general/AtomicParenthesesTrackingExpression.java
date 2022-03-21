@@ -1,6 +1,6 @@
 package expression.general;
 
-public abstract class AtomicParenthesesTrackingExpression extends ParenthesesTrackingExpression {
+public abstract class AtomicParenthesesTrackingExpression<T, Engine extends ArithmeticEngine<T>> extends ParenthesesTrackingExpression<T, Engine> {
     @Override
     public ParenthesesElisionTrackingInfo getCachedPriorityInfo() {
         return ParenthesesElisionTrackingInfo.generateAtomicExpressionInfo();

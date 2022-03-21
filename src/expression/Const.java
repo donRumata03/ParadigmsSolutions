@@ -1,11 +1,12 @@
 package expression;
 
+import expression.general.ArithmeticEngine;
 import expression.general.AtomicParenthesesTrackingExpression;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
 
-public final class Const extends AtomicParenthesesTrackingExpression {
+public final class Const<T, Engine extends ArithmeticEngine<T>> extends AtomicParenthesesTrackingExpression<T, Engine> {
     private int intValue = 0;
     private Optional<BigDecimal> bigDecimalValue = Optional.empty();
 

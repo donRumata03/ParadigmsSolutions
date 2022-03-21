@@ -7,8 +7,11 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public abstract class BinaryOperation extends ParenthesesTrackingExpression {
-    private final ParenthesesTrackingExpression left;
+public abstract class BinaryOperation<T, Engine extends ArithmeticEngine<T>>
+    extends ParenthesesTrackingExpression<T, Engine>
+    implements GenericExpression<T>, GenericTripleExpression<T>
+{
+    private final ParenthesesTrackingExpression<T, Engine> left;
     private final ParenthesesTrackingExpression right;
 
     private final OperatorTraits operatorInfo;
@@ -27,6 +30,12 @@ public abstract class BinaryOperation extends ParenthesesTrackingExpression {
 
     public abstract int reductionOperation(int leftResult, int rightResult);
     public abstract BigDecimal reductionOperation(BigDecimal leftResult, BigDecimal rightResult);
+
+
+    @Override
+    public T evaluate(T x) {
+        return null;
+    }
 
 
     @Override
