@@ -1,5 +1,8 @@
 package expression.general;
 
+/**
+ * There are multiple implementations of tracking info, but they share this common interface:
+ */
 public interface ParenthesesTrackingInfo {
 
     void includeInParenthesesLessGroup(ParenthesesTrackingInfo other);
