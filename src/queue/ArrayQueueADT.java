@@ -2,7 +2,9 @@ package queue;
 
 
 /**
- * The only thing you need to know about this class is that it correctly implements Queue
+ * Apart from contracts written in this file for all functions,
+ * they correctly implement functions from queue interface
+ * and inherit their contracts
  */
 public class ArrayQueueADT {
     private Object[] elements = null; // If not null, has capacity > 0
@@ -47,6 +49,9 @@ public class ArrayQueueADT {
         }
     }
 
+    /**
+     * @param queue is not null
+     */
     public static void enqueue(ArrayQueueADT queue, final Object element) {
         ensureCapacity(queue, queue.size + 1);
 
@@ -54,6 +59,9 @@ public class ArrayQueueADT {
         queue.size++;
     }
 
+    /**
+     * @param queue is not null
+     */
     public static Object dequeue(ArrayQueueADT queue) {
         var res = queue.elements[queue.tail];
         queue.elements[queue.tail] = null;
@@ -64,24 +72,39 @@ public class ArrayQueueADT {
     }
 
 
+    /**
+     * @param queue is not null
+     */
     public static int size(ArrayQueueADT queue) {
         return queue.size;
     }
 
+    /**
+     * @param queue is not null
+     */
     public static boolean isEmpty(ArrayQueueADT queue) {
         return size(queue) == 0;
     }
 
+    /**
+     * @param queue is not null
+     */
     public static void clear(ArrayQueueADT queue) {
         queue.elements = null;
         queue.size = 0;
         queue.tail = 0;
     }
 
+    /**
+     * @param queue is not null
+     */
     public static Object element(ArrayQueueADT queue) {
         return queue.elements[queue.tail];
     }
 
+    /**
+     * @param queue is not null
+     */
     public static void push(ArrayQueueADT queue, final Object element) {
         ensureCapacity(queue, queue.size + 1);
 
@@ -90,10 +113,16 @@ public class ArrayQueueADT {
         queue.size++;
     }
 
+    /**
+     * @param queue is not null
+     */
     public static Object peek(ArrayQueueADT queue) {
         return queue.elements[previousCircularPosition(queue, head(queue))];
     }
 
+    /**
+     * @param queue is not null
+     */
     public static Object remove(ArrayQueueADT queue) {
         int removedPosition = previousCircularPosition(queue, head(queue));
 
@@ -105,6 +134,9 @@ public class ArrayQueueADT {
         return res;
     }
 
+    /**
+     * @param queue is not null
+     */
     public static int indexOf(ArrayQueueADT queue, Object element) {
         for (
             int indexFromTheirHead = 0, arrayPosition = queue.tail;
@@ -119,6 +151,9 @@ public class ArrayQueueADT {
         return -1;
     }
 
+    /**
+     * @param queue is not null
+     */
     public static int lastIndexOf(ArrayQueueADT queue, Object element) {
         for (
             int indexFromTheirHead = queue.size - 1, arrayPosition = previousCircularPosition(queue, head(queue));
