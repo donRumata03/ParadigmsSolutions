@@ -32,6 +32,7 @@ public final class Selector {
         }
     }
 
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public void main(final String... args) {
         try {
             final String mode;
@@ -74,16 +75,16 @@ public final class Selector {
         final Map<String, String> properties = modes.isEmpty()
                                                ? Map.of("variant", String.join("+", vars))
                                                : Map.of("variant", String.join("+", vars), "mode", mode);
-        final TestCounter counter = new TestCounter(owner, 0, properties);
+        final TestCounter counter = new TestCounter(owner, modeNo, properties);
         vars.forEach(var -> counter.scope("Testing " + var, () -> variants.get(var.toLowerCase()).accept(counter)));
         counter.printStatus();
     }
 
     public static <V extends Tester> Composite<V> composite(final Class<?> owner, final Function<TestCounter, V> factory, final String... modes) {
-        return new Composite<>(owner, factory, (counter, tester) -> tester.test(), modes);
+        return new Composite<>(owner, factory, (tester, counter) -> tester.test(), modes);
     }
 
-    public static <V> Composite<V> composite(final Class<?> owner, final Function<TestCounter, V> factory, final BiConsumer<TestCounter, V> tester, final String... modes) {
+    public static <V> Composite<V> composite(final Class<?> owner, final Function<TestCounter, V> factory, final BiConsumer<V, TestCounter> tester, final String... modes) {
         return new Composite<>(owner, factory, tester, modes);
     }
 
@@ -101,10 +102,10 @@ public final class Selector {
     public static final class Composite<V> {
         private final Selector selector;
         private final Function<TestCounter, V> factory;
-        private final BiConsumer<TestCounter, V> tester;
+        private final BiConsumer<V, TestCounter> tester;
         private List<Consumer<? super V>> base;
 
-        private Composite(final Class<?> owner, final Function<TestCounter, V> factory, final BiConsumer<TestCounter, V> tester, final String... modes) {
+        private Composite(final Class<?> owner, final Function<TestCounter, V> factory, final BiConsumer<V, TestCounter> tester, final String... modes) {
             selector = new Selector(owner, modes);
             this.factory = factory;
             this.tester = tester;
@@ -130,7 +131,7 @@ public final class Selector {
                 for (final Consumer<? super V> part : parts) {
                     part.accept(variant);
                 }
-                tester.accept(counter, variant);
+                tester.accept(variant, counter);
             });
             return this;
         }

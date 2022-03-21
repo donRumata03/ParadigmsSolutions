@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -35,6 +36,9 @@ public class TestCounter extends Log {
     private int passed;
 
     public TestCounter(final Class<?> owner, final int mode, final Map<String, ?> properties) {
+        Locale.setDefault(Locale.US);
+        Asserts.checkAssert(getClass());
+
         this.owner = owner;
         this.mode = mode;
         this.properties = properties;
@@ -105,6 +109,7 @@ public class TestCounter extends Log {
             return "error: " + e;
         }
     }
+
     public <T> T call(final String message, final SupplierE<T> supplier) {
         return get(supplier).either(e -> fail(e, "%s", message), Function.identity());
     }
