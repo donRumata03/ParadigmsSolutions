@@ -9,7 +9,7 @@ import java.math.BigInteger;
  * Add should implement expression interfaces: Expression, Triple expression, …
  */
 public class Add
-    extends expression.general.operations.Add<BigInteger, BigIntegerArithmetics>
+//    extends expression.general.operations.Add<BigInteger, BigIntegerArithmetics>
     implements BigIntegerExpression
 {
 
@@ -22,20 +22,22 @@ public class Add
 
     // TODO: resolve somehow
     public Add(
-        ParenthesesTrackingExpression<BigInteger, BigIntegerArithmetics> left,
-        ParenthesesTrackingExpression<BigInteger, BigIntegerArithmetics> right
+        ParenthesesTrackingExpression<?, ?> left,
+        ParenthesesTrackingExpression<?, ?> right
     ) {
-        super(left, right, new BigIntegerArithmetics());
+        super(left, right);
 
 
     }
 
-    public Add(
-        ParenthesesTrackingExpression<Integer, UncheckedIntegerArithmetics> left,
-        ParenthesesTrackingExpression<Integer, UncheckedIntegerArithmetics> right
-    ) {
-        super(left, right, new UncheckedIntegerArithmetics());
+    @Override
+    public BigInteger reductionOperation(BigInteger left, BigInteger right) {
+        return new BigIntegerArithmetics().add(left, right);
+    }
 
 
+    @Override
+    public Integer reductionOperation(Integer left, Integer right) {
+        return new UncheckedIntegerArithmetics().add(left, right);
     }
 }
