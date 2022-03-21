@@ -9,28 +9,26 @@ import java.util.function.Function;
 
 public abstract class BinaryOperation<T, Engine extends ArithmeticEngine<T>>
     extends ParenthesesTrackingExpression<T, Engine>
-    implements GenericExpression<T>, GenericTripleExpression<T>
 {
     private final ParenthesesTrackingExpression<T, Engine> left;
-    private final ParenthesesTrackingExpression right;
+    private final ParenthesesTrackingExpression<T, Engine> right;
 
     private final OperatorTraits operatorInfo;
     private Optional<ParenthesesTrackingInfo> cachedPriorityInfo = Optional.empty();
 
-    public BinaryOperation(Expression left, Expression right, OperatorTraits operatorInfo) {
-        this(new SafestParenthesesTrackingExpressionWrapper(left), new SafestParenthesesTrackingExpressionWrapper(right), operatorInfo);
-    }
+    // Deprecated && deleted
+//    public BinaryOperation(Expression left, Expression right, OperatorTraits operatorInfo) {
+//        this(new SafestParenthesesTrackingExpressionWrapper(left), new SafestParenthesesTrackingExpressionWrapper(right), operatorInfo);
+//    }
 
 
-    public BinaryOperation(ParenthesesTrackingExpression left, ParenthesesTrackingExpression right, OperatorTraits operatorInfo) {
+    public BinaryOperation(ParenthesesTrackingExpression<T, Engine> left, ParenthesesTrackingExpression<T, Engine> right, OperatorTraits operatorInfo) {
         this.left = left;
         this.right = right;
         this.operatorInfo = operatorInfo;
     }
 
-    public abstract int reductionOperation(int leftResult, int rightResult);
-    public abstract BigDecimal reductionOperation(BigDecimal leftResult, BigDecimal rightResult);
-
+    public abstract int reductionOperation(T leftResult, T rightResult);
 
     @Override
     public T evaluate(T x) {
