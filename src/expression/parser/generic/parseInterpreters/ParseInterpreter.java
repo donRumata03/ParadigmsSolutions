@@ -11,4 +11,8 @@ public interface ParseInterpreter<Element> {
     ParenthesesTrackingExpression<Element> constructBinaryExpression(
         AbstractOperationToken token, ParenthesesTrackingExpression<Element> left, ParenthesesTrackingExpression<Element> right
     );
+//
+//
+//    ParenthesesTrackingExpression<Element> constructVariable(String name);
+//    ParenthesesTrackingExpression<Element> constructConst(String name);
 }

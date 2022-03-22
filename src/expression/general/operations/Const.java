@@ -4,7 +4,7 @@ import expression.general.arithmetics.ArithmeticEngine;
 import expression.general.AtomicParenthesesTrackingExpression;
 import java.util.Objects;
 
-public final class Const<T, Engine extends ArithmeticEngine<T>> extends AtomicParenthesesTrackingExpression<T, Engine> {
+public final class Const<T> extends AtomicParenthesesTrackingExpression<T> {
     private final T value;
 
     public Const(T value) {

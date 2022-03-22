@@ -5,11 +5,11 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 public abstract class UnaryOperation<T, Engine extends ArithmeticEngine<T>>
-    extends AtomicParenthesesTrackingExpression<T, Engine>
+    extends AtomicParenthesesTrackingExpression<T>
 {
 
-    ParenthesesTrackingExpression<T> child;
-    UnaryOperatorTraits operatorInfo;
+    private final ParenthesesTrackingExpression<T> child;
+    private final UnaryOperatorTraits operatorInfo;
     protected Engine engine;
 
     public UnaryOperation(ParenthesesTrackingExpression<T> child, UnaryOperatorTraits operatorInfo, Engine engine) {

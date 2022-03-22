@@ -14,6 +14,6 @@ public class GenericParser<T, Engine extends ArithmeticEngine<T>> {
         return new TokenizedExpressionParser<T, Engine>(
             new ArithmeticExpressionTokenizer(
                 new ParsableSource(new ReaderBufferizer(new StringReader(expression)))
-            ), true).parseAll();
+            )).parseAll();
     }
 }
