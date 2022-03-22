@@ -1,22 +1,24 @@
 package expression.general;
 
+import expression.general.arithmetics.ArithmeticEngine;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-public abstract class UnaryOperation extends AtomicParenthesesTrackingExpression {
+public abstract class UnaryOperation<T, Engine extends ArithmeticEngine<T>>
+    extends AtomicParenthesesTrackingExpression<T, Engine>
+{
 
-    ParenthesesTrackingExpression child;
+    ParenthesesTrackingExpression<T, Engine> child;
     UnaryOperatorTraits operatorInfo;
 
     private Optional<ParenthesesTrackingInfo> cachedPriorityInfo = Optional.empty();
 
-    public UnaryOperation(ParenthesesTrackingExpression child, UnaryOperatorTraits operatorInfo) {
+    public UnaryOperation(ParenthesesTrackingExpression<T, Engine> child, UnaryOperatorTraits operatorInfo) {
         this.child = child;
         this.operatorInfo = operatorInfo;
     }
 
-    public abstract int reductionOperation(int childResult);
-    public abstract BigDecimal reductionOperation(BigDecimal childResult);
+    public abstract T reductionOperation(T childResult);
 
     @Override
     public void toStringBuilder(StringBuilder builder) {
@@ -41,17 +43,12 @@ public abstract class UnaryOperation extends AtomicParenthesesTrackingExpression
     }
 
     @Override
-    public BigDecimal evaluate(BigDecimal x) {
+    public T evaluate(T x) {
         return reductionOperation(child.evaluate(x));
     }
 
     @Override
-    public int evaluate(int x) {
-        return reductionOperation(child.evaluate(x));
-    }
-
-    @Override
-    public int evaluate(int x, int y, int z) {
+    public T evaluate(T x, T y, T z) {
         return reductionOperation(child.evaluate(x, y, z));
     }
 }
