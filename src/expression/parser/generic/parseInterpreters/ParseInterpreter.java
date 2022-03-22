@@ -9,6 +9,6 @@ public interface ParseInterpreter<Element> {
     ParenthesesTrackingExpression<Element> constructUnaryExpression(AbstractOperationToken token, ParenthesesTrackingExpression<Element> child);
 
     ParenthesesTrackingExpression<Element> constructBinaryExpression(
-        ParenthesesTrackingExpression<Element> left, ParenthesesTrackingExpression<Element> right
+        AbstractOperationToken token, ParenthesesTrackingExpression<Element> left, ParenthesesTrackingExpression<Element> right
     );
 }

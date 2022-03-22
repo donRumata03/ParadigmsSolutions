@@ -23,7 +23,8 @@ public class GenericParseInterpreter<T, Engine extends ArithmeticEngine<T>> impl
     }
 
     @Override
-    public ParenthesesTrackingExpression<T> constructBinaryExpression(ParenthesesTrackingExpression<T> left,
+    public ParenthesesTrackingExpression<T> constructBinaryExpression(
+        AbstractOperationToken token, ParenthesesTrackingExpression<T> left,
         ParenthesesTrackingExpression<T> right) {
         return ;
     }
