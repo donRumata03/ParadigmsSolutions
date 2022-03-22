@@ -5,8 +5,7 @@ import expression.general.BinaryOperation;
 import expression.general.OperatorTraits;
 import expression.general.ParenthesesTrackingExpression;
 
-public class Add<T, Engine extends ArithmeticEngine<T>>
-    extends BinaryOperation<T, Engine> {
+public class Add<T, Engine extends ArithmeticEngine<T>> extends BinaryOperation<T, Engine> {
 
     public static final OperatorTraits OPERATOR_INFO = new OperatorTraits(
         2,

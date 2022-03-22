@@ -8,12 +8,10 @@ public abstract class UnaryOperation<T, Engine extends ArithmeticEngine<T>>
     extends AtomicParenthesesTrackingExpression<T, Engine>
 {
 
-    ParenthesesTrackingExpression<T, Engine> child;
+    ParenthesesTrackingExpression<T> child;
     UnaryOperatorTraits operatorInfo;
 
-    private Optional<ParenthesesTrackingInfo> cachedPriorityInfo = Optional.empty();
-
-    public UnaryOperation(ParenthesesTrackingExpression<T, Engine> child, UnaryOperatorTraits operatorInfo) {
+    public UnaryOperation(ParenthesesTrackingExpression<T> child, UnaryOperatorTraits operatorInfo) {
         this.child = child;
         this.operatorInfo = operatorInfo;
     }
