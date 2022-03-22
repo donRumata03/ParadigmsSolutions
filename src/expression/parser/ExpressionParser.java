@@ -16,6 +16,6 @@ public class ExpressionParser implements Parser {
         return new TokenizedExpressionParser(
             new ArithmeticExpressionTokenizer(
                 new ParsableSource(new ReaderBufferizer(new StringReader(expression)))
-            )).parseAll();
+            ), interpreter).parseAll();
     }
 }

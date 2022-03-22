@@ -2,6 +2,8 @@ package expression.parser.generic;
 
 import expression.general.arithmetics.ArithmeticEngine;
 import expression.general.ParenthesesTrackingExpression;
+import expression.general.operations.Const;
+import expression.general.operations.Variable;
 import expression.parser.generic.parseInterpreters.ParseInterpreter;
 import expression.parser.generic.tokens.AbstractOperationToken;
 import expression.parser.generic.tokens.NumberToken;
@@ -17,9 +19,11 @@ public class TokenizedExpressionParser<
     T, Engine extends ArithmeticEngine<T>, Interpreter extends ParseInterpreter<T>
 > {
     private final BaseTokenParser tokenParser;
+    private final Interpreter interpreter;
 
-    public TokenizedExpressionParser(ArithmeticExpressionTokenizer tokenizer) {
+    public TokenizedExpressionParser(ArithmeticExpressionTokenizer tokenizer, Interpreter interpreter) {
         this.tokenParser = new BaseTokenParser(tokenizer);
+        this.interpreter = interpreter;
     }
 
     public ParenthesesTrackingExpression<T> parseAll() throws ParseException {
@@ -81,7 +85,11 @@ public class TokenizedExpressionParser<
                 break;
             }
 
-            left = ((AbstractOperationToken)mayBeOperator.get()).constructBinaryExpression(left, prevLayer.apply(this), checked);
+            left = interpreter.constructBinaryExpression(
+                (AbstractOperationToken)mayBeOperator.get(),
+                left,
+                prevLayer.apply(this)
+            );
         }
 
         return left;
@@ -113,8 +121,8 @@ public class TokenizedExpressionParser<
 
     private Optional<ParenthesesTrackingExpression<T>> maybeParsePositiveNumber() {
         return tokenParser.tryMatchToken(token -> token instanceof NumberToken)
-            .map(token -> new Const(
-                Integer.parseInt(((NumberToken)token).nonParsedValue())
+            .map(token -> new Const<>(
+                interpreter.parseSignedInt(((NumberToken)token).nonParsedValue())
             ));
     }
 
@@ -125,19 +133,19 @@ public class TokenizedExpressionParser<
                 if (unaryOpToken == OperatorToken.MINUS) {
                     var tryIntToken = tokenParser.tryMatchToken(t -> t instanceof NumberToken, false);
                     if (tryIntToken.isPresent()) {
-                        return new Const(Integer.parseInt(
-                            "-" + ((NumberToken)tryIntToken.get()).nonParsedValue()
+                        return new Const<>(interpreter.parseSignedInt(
+                            "-" + ((NumberToken) tryIntToken.get()).nonParsedValue()
                         ));
                     }
                 }
-                return ((AbstractOperationToken)unaryOpToken).constructUnaryExpression(parseAtomic(), checked);
+                return interpreter.constructUnaryExpression(((AbstractOperationToken)unaryOpToken), parseAtomic());
             });
     }
 
     private Optional<ParenthesesTrackingExpression<T>> maybeParseVariable() {
         return tokenParser
             .tryMatchToken(token -> token instanceof VariableToken)
-            .map(varToken -> new Variable(((VariableToken)varToken).varName()));
+            .map(varToken -> new Variable<>(((VariableToken)varToken).varName()));
     }
 
     private Optional<ParenthesesTrackingExpression<T>> maybeParseExpressionInParentheses() {
