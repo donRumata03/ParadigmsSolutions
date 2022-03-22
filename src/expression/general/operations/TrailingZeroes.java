@@ -3,26 +3,23 @@ package expression.general.operations;
 import expression.general.ParenthesesTrackingExpression;
 import expression.general.UnaryOperation;
 import expression.general.UnaryOperatorTraits;
+import expression.general.arithmetics.ArithmeticEngine;
 import java.math.BigDecimal;
 
 
-public class TrailingZeroes extends UnaryOperation {
-    static UnaryOperatorTraits OPERATOR_TRAITS = new UnaryOperatorTraits(
+public class TrailingZeroes<T, Engine extends ArithmeticEngine<T>> extends UnaryOperation<T, Engine> {
+    static UnaryOperatorTraits OPERATOR_INFO = new UnaryOperatorTraits(
         "t0"
     );
 
-    public TrailingZeroes(ParenthesesTrackingExpression child) {
-        super(child, OPERATOR_TRAITS);
+    public TrailingZeroes(ParenthesesTrackingExpression<T> child, Engine engine) {
+        super(child, OPERATOR_INFO, engine);
     }
 
     @Override
-    public int reductionOperation(int childResult) {
-        return Integer.numberOfTrailingZeros(childResult);
-    }
-
-    @Override
-    public BigDecimal reductionOperation(BigDecimal childResult) {
-        throw new RuntimeException("Works only with integers");
+    public T reductionOperation(T childResult) {
+        return engine.trailingZeroes(childResult);
     }
 }
+
 

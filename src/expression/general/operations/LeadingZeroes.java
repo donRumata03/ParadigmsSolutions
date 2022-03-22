@@ -1,26 +1,24 @@
 package expression.general.operations;
 
+import expression.general.BinaryOperation;
+import expression.general.OperatorTraits;
 import expression.general.ParenthesesTrackingExpression;
 import expression.general.UnaryOperation;
 import expression.general.UnaryOperatorTraits;
+import expression.general.arithmetics.ArithmeticEngine;
 import java.math.BigDecimal;
 
-public class LeadingZeroes extends UnaryOperation {
-    static UnaryOperatorTraits OPERATOR_TRAITS = new UnaryOperatorTraits(
+public class LeadingZeroes<T, Engine extends ArithmeticEngine<T>> extends UnaryOperation<T, Engine> {
+    static UnaryOperatorTraits OPERATOR_INFO = new UnaryOperatorTraits(
         "l0"
     );
 
-    public LeadingZeroes(ParenthesesTrackingExpression child) {
-        super(child, OPERATOR_TRAITS);
+    public LeadingZeroes(ParenthesesTrackingExpression<T> child, Engine engine) {
+        super(child, OPERATOR_INFO, engine);
     }
 
     @Override
-    public int reductionOperation(int childResult) {
-        return Integer.numberOfLeadingZeros(childResult);
-    }
-
-    @Override
-    public BigDecimal reductionOperation(BigDecimal childResult) {
-        throw new RuntimeException("Works only with integers");
+    public T reductionOperation(T childResult) {
+        return engine.leadingZeroes(childResult);
     }
 }
