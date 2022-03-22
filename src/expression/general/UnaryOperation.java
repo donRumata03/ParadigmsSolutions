@@ -10,11 +10,14 @@ public abstract class UnaryOperation<T, Engine extends ArithmeticEngine<T>>
 
     ParenthesesTrackingExpression<T> child;
     UnaryOperatorTraits operatorInfo;
+    protected Engine engine;
 
-    public UnaryOperation(ParenthesesTrackingExpression<T> child, UnaryOperatorTraits operatorInfo) {
+    public UnaryOperation(ParenthesesTrackingExpression<T> child, UnaryOperatorTraits operatorInfo, Engine engine) {
         this.child = child;
         this.operatorInfo = operatorInfo;
+        this.engine = engine;
     }
+
 
     public abstract T reductionOperation(T childResult);
 

@@ -2,6 +2,7 @@ package expression.parser.generic.parseInterpreters;
 
 import expression.general.ParenthesesTrackingExpression;
 import expression.general.arithmetics.ArithmeticEngine;
+import expression.general.operations.Abs;
 import expression.general.operations.Add;
 import expression.general.operations.Subtract;
 
@@ -32,7 +33,7 @@ public class GenericParseInterpreter<T, Engine extends ArithmeticEngine<T>> exte
 
     @Override
     ParenthesesTrackingExpression<T> constructAbs(ParenthesesTrackingExpression<T> child) {
-        return null;
+        return new Abs<>(child, engine);
     }
 
     @Override
