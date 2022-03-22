@@ -2,6 +2,7 @@ package expression.parser.generic;
 
 import expression.general.arithmetics.ArithmeticEngine;
 import expression.general.ParenthesesTrackingExpression;
+import expression.parser.generic.parseInterpreters.ParseInterpreter;
 import expression.parser.generic.tokens.AbstractOperationToken;
 import expression.parser.generic.tokens.NumberToken;
 import expression.parser.generic.tokens.OperatorToken;
@@ -12,13 +13,13 @@ import java.util.Optional;
 import java.util.function.Function;
 
 
-public class TokenizedExpressionParser<T, Engine extends ArithmeticEngine<T>> {
+public class TokenizedExpressionParser<
+    T, Engine extends ArithmeticEngine<T>, Interpreter extends ParseInterpreter<T>
+> {
     private final BaseTokenParser tokenParser;
-    private boolean checked;
 
-    public TokenizedExpressionParser(ArithmeticExpressionTokenizer tokenizer, boolean checked) {
+    public TokenizedExpressionParser(ArithmeticExpressionTokenizer tokenizer) {
         this.tokenParser = new BaseTokenParser(tokenizer);
-        this.checked = checked;
     }
 
     public ParenthesesTrackingExpression<T> parseAll() throws ParseException {
@@ -63,7 +64,7 @@ public class TokenizedExpressionParser<T, Engine extends ArithmeticEngine<T>> {
     }
 
     private ParenthesesTrackingExpression<T> parseLeftAssociativePriorityLayer (
-        Function<TokenizedExpressionParser<T, Engine>, ParenthesesTrackingExpression<T>> prevLayer,
+        Function<TokenizedExpressionParser<T, Engine, Interpreter>, ParenthesesTrackingExpression<T>> prevLayer,
         List<OperatorToken> operators
     ) throws ParseException
     {
@@ -92,7 +93,7 @@ public class TokenizedExpressionParser<T, Engine extends ArithmeticEngine<T>> {
             : "<EOF>";
     }
 
-    private ParenthesesTrackingExpression parseAtomic() {
+    private ParenthesesTrackingExpression<T> parseAtomic() {
         return maybeParsePositiveNumber()
             .or(this::maybeParseVariable)
             .or(this::maybeParseUnaryOperation)
@@ -110,14 +111,14 @@ public class TokenizedExpressionParser<T, Engine extends ArithmeticEngine<T>> {
             });
     }
 
-    private Optional<ParenthesesTrackingExpression> maybeParsePositiveNumber() {
+    private Optional<ParenthesesTrackingExpression<T>> maybeParsePositiveNumber() {
         return tokenParser.tryMatchToken(token -> token instanceof NumberToken)
             .map(token -> new Const(
                 Integer.parseInt(((NumberToken)token).nonParsedValue())
             ));
     }
 
-    private Optional<ParenthesesTrackingExpression> maybeParseUnaryOperation() {
+    private Optional<ParenthesesTrackingExpression<T>> maybeParseUnaryOperation() {
         return tokenParser
             .tryMatchToken(token -> token instanceof AbstractOperationToken operation && operation.canBeUnary())
             .map(unaryOpToken -> {
@@ -133,13 +134,13 @@ public class TokenizedExpressionParser<T, Engine extends ArithmeticEngine<T>> {
             });
     }
 
-    private Optional<ParenthesesTrackingExpression> maybeParseVariable() {
+    private Optional<ParenthesesTrackingExpression<T>> maybeParseVariable() {
         return tokenParser
             .tryMatchToken(token -> token instanceof VariableToken)
             .map(varToken -> new Variable(((VariableToken)varToken).varName()));
     }
 
-    private Optional<ParenthesesTrackingExpression> maybeParseExpressionInParentheses() {
+    private Optional<ParenthesesTrackingExpression<T>> maybeParseExpressionInParentheses() {
         return tokenParser
             .tryMatchToken(token -> token instanceof ParenthesesToken && ((ParenthesesToken)token).openCloseness())
             .map(p -> {
