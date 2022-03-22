@@ -11,7 +11,20 @@ public final class Const<T, Engine extends ArithmeticEngine<T>> extends AtomicPa
         this.value = value;
     }
 
+    @Override
+    public T evaluate(T x) {
+        return value;
+    }
 
+    @Override
+    public T evaluate(T x, T y, T z) {
+        return value;
+    }
+
+    @Override
+    public void toStringBuilder(StringBuilder builder) {
+        builder.append(value.toString());
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -21,12 +34,12 @@ public final class Const<T, Engine extends ArithmeticEngine<T>> extends AtomicPa
         if (!(o instanceof Const aConst)) {
             return false;
         }
-        return intValue == aConst.intValue
-            && bigDecimalValue.equals(aConst.bigDecimalValue);
+
+        return value.equals(aConst.value);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(intValue, bigDecimalValue);
+        return Objects.hash(value);
     }
 }
