@@ -15,7 +15,7 @@ public class Add<T, Engine extends ArithmeticEngine<T>>
         "+"
     );
 
-    public Add(ParenthesesTrackingExpression<T, Engine> left, ParenthesesTrackingExpression<T, Engine> right, Engine engine) {
+    public Add(ParenthesesTrackingExpression<T> left, ParenthesesTrackingExpression<T> right, Engine engine) {
         super(left, right, engine, OPERATOR_INFO);
     }
 

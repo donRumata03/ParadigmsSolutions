@@ -1,9 +1,6 @@
 package expression.parser.generic.tokens;
 
 
-import expression.Abs;
-import expression.LeadingZeroes;
-import expression.TrailingZeroes;
 import expression.general.ParenthesesTrackingExpression;
 
 public enum FunctionToken implements AbstractOperationToken {

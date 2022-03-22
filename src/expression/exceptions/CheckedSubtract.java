@@ -1,6 +1,5 @@
 package expression.exceptions;
 
-import expression.Subtract;
 import expression.general.ParenthesesTrackingExpression;
 
 public class CheckedSubtract extends Subtract {

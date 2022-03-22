@@ -1,6 +1,5 @@
 package expression.exceptions;
 
-import expression.Multiply;
 import expression.general.ParenthesesTrackingExpression;
 
 public class CheckedMultiply extends Multiply {

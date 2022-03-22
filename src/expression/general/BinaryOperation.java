@@ -7,10 +7,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public abstract class BinaryOperation<T, Engine extends ArithmeticEngine<T>>
-    extends ParenthesesTrackingExpression<T, Engine>
+    extends ParenthesesTrackingExpression<T>
 {
-    private final ParenthesesTrackingExpression<T, Engine> left;
-    private final ParenthesesTrackingExpression<T, Engine> right;
+    private final ParenthesesTrackingExpression<T> left;
+    private final ParenthesesTrackingExpression<T> right;
     protected final Engine engine;
 
 
@@ -25,8 +25,8 @@ public abstract class BinaryOperation<T, Engine extends ArithmeticEngine<T>>
 
 
     public BinaryOperation(
-        ParenthesesTrackingExpression<T, Engine> left,
-        ParenthesesTrackingExpression<T, Engine> right,
+        ParenthesesTrackingExpression<T> left,
+        ParenthesesTrackingExpression<T> right,
         Engine engine,
         OperatorTraits operatorInfo
     ) {

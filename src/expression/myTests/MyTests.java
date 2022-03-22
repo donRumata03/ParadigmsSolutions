@@ -1,11 +1,6 @@
 package expression.myTests;
 
 import expression.Add;
-import expression.Const;
-import expression.Divide;
-import expression.Multiply;
-import expression.Subtract;
-import expression.Variable;
 
 public class MyTests {
 

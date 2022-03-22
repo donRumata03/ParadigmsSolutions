@@ -1,6 +1,5 @@
 package expression.exceptions;
 
-import expression.Divide;
 import expression.general.ParenthesesTrackingExpression;
 
 public class CheckedDivide extends Divide {

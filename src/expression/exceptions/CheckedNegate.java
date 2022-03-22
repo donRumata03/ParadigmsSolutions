@@ -1,6 +1,5 @@
 package expression.exceptions;
 
-import expression.Negate;
 import expression.general.ParenthesesTrackingExpression;
 
 public class CheckedNegate extends Negate {

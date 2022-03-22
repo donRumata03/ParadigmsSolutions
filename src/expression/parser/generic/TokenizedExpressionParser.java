@@ -1,7 +1,5 @@
 package expression.parser.generic;
 
-import expression.Const;
-import expression.Variable;
 import expression.general.arithmetics.ArithmeticEngine;
 import expression.general.ParenthesesTrackingExpression;
 import expression.parser.generic.tokens.AbstractOperationToken;

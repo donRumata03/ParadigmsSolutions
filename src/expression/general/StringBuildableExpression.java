@@ -1,11 +1,13 @@
 package expression.general;
 
+import expression.ToMiniString;
 import expression.general.arithmetics.ArithmeticEngine;
 
 /**
  * We want to force implementors to be efficient :)
  */
-public abstract class StringBuildableExpression<T, Engine extends ArithmeticEngine<T>>
+public abstract class StringBuildableExpression<T>
+    implements ToMiniString, GenericExpression<T>, GenericTripleExpression<T>
 {
     abstract public void toStringBuilder(StringBuilder builder);
 
