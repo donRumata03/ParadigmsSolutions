@@ -1,4 +1,4 @@
-package expression.parser.generic;
+package expression.parser.generic.parseInterpreters;
 
 import expression.general.ParenthesesTrackingExpression;
 import expression.parser.generic.tokens.AbstractOperationToken;
