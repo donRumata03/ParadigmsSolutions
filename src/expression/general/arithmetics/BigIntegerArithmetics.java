@@ -11,6 +11,11 @@ public class BigIntegerArithmetics implements ArithmeticEngine<BigInteger> {
     }
 
     @Override
+    public BigInteger parseSignedInt(String toParse) {
+        return new BigInteger(toParse);
+    }
+
+    @Override
     public BigInteger add(BigInteger left, BigInteger right) throws ExpressionArithmeticException {
         return left.add(right);
     }

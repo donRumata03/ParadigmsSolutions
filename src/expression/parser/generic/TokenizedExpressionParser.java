@@ -21,7 +21,7 @@ public class TokenizedExpressionParser<T, Engine extends ArithmeticEngine<T>> {
         this.checked = checked;
     }
 
-    public ParenthesesTrackingExpression<T, Engine> parseAll() throws ParseException {
+    public ParenthesesTrackingExpression<T> parseAll() throws ParseException {
         var result = parseShiftResult();
 
         if (tokenParser.viewRuntimeErrorizedNextToken().isPresent()) {
@@ -40,7 +40,7 @@ public class TokenizedExpressionParser<T, Engine extends ArithmeticEngine<T>> {
         return result;
     }
 
-    private ParenthesesTrackingExpression parseShiftResult() throws ParseException {
+    private ParenthesesTrackingExpression<T> parseShiftResult() throws ParseException {
         return parseLeftAssociativePriorityLayer(
             TokenizedExpressionParser::parseExpression, List.of(
                 OperatorToken.SHIFT_LEFT,
@@ -50,24 +50,24 @@ public class TokenizedExpressionParser<T, Engine extends ArithmeticEngine<T>> {
         );
     }
 
-    private ParenthesesTrackingExpression parseExpression() throws ParseException {
+    private ParenthesesTrackingExpression<T> parseExpression() throws ParseException {
         return parseLeftAssociativePriorityLayer(TokenizedExpressionParser::parseTerm, List.of(OperatorToken.PLUS, OperatorToken.MINUS));
     }
 
-    private ParenthesesTrackingExpression parseTerm() throws ParseException {
+    private ParenthesesTrackingExpression<T> parseTerm() throws ParseException {
         return parseLeftAssociativePriorityLayer(TokenizedExpressionParser::parseFactor, List.of(OperatorToken.MULTIPLY, OperatorToken.DIVIDE));
     }
 
-    private ParenthesesTrackingExpression parseFactor() throws ParseException {
+    private ParenthesesTrackingExpression<T> parseFactor() throws ParseException {
         return parseLeftAssociativePriorityLayer(TokenizedExpressionParser::parseAtomic, List.of(OperatorToken.POW, OperatorToken.LOG));
     }
 
-    private ParenthesesTrackingExpression parseLeftAssociativePriorityLayer (
-        Function<TokenizedExpressionParser, ParenthesesTrackingExpression> prevLayer,
+    private ParenthesesTrackingExpression<T> parseLeftAssociativePriorityLayer (
+        Function<TokenizedExpressionParser<T, Engine>, ParenthesesTrackingExpression<T>> prevLayer,
         List<OperatorToken> operators
     ) throws ParseException
     {
-        ParenthesesTrackingExpression left = prevLayer.apply(this);
+        ParenthesesTrackingExpression<T> left = prevLayer.apply(this);
 
         while (true) {
             var mayBeOperator = tokenParser.tryMatchToken(token -> {

@@ -30,7 +30,7 @@ public enum FunctionToken implements AbstractOperationToken {
             case abs -> {
                 return new Abs(child);
             }
-            default -> throw new RuntimeException("Unknown token => Parser has an error…");
+            default -> throw new RuntimeException("Unknown token => Parser has a programmer's error…");
         }
     }
 
