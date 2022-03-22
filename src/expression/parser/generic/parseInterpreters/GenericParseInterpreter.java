@@ -2,9 +2,11 @@ package expression.parser.generic.parseInterpreters;
 
 import expression.general.ParenthesesTrackingExpression;
 import expression.general.arithmetics.ArithmeticEngine;
-import expression.parser.generic.tokens.AbstractOperationToken;
+import expression.general.operations.Add;
+import expression.general.operations.Subtract;
 
-public class GenericParseInterpreter<T, Engine extends ArithmeticEngine<T>> implements ParseInterpreter<T> {
+
+public class GenericParseInterpreter<T, Engine extends ArithmeticEngine<T>> extends TokenMatcher<T> {
 
     Engine engine;
 
@@ -17,15 +19,77 @@ public class GenericParseInterpreter<T, Engine extends ArithmeticEngine<T>> impl
         return engine.parseSignedInt(toParse);
     }
 
+
     @Override
-    public ParenthesesTrackingExpression<T> constructUnaryExpression(AbstractOperationToken token, ParenthesesTrackingExpression<T> child) {
-        return ;
+    ParenthesesTrackingExpression<T> constructLeadingZeroes(ParenthesesTrackingExpression<T> child) {
+        return null;
     }
 
     @Override
-    public ParenthesesTrackingExpression<T> constructBinaryExpression(
-        AbstractOperationToken token, ParenthesesTrackingExpression<T> left,
+    ParenthesesTrackingExpression<T> constructTrailingZeroes(ParenthesesTrackingExpression<T> child) {
+        return null;
+    }
+
+    @Override
+    ParenthesesTrackingExpression<T> constructAbs(ParenthesesTrackingExpression<T> child) {
+        return null;
+    }
+
+    @Override
+    ParenthesesTrackingExpression<T> constructUnaryMinus(ParenthesesTrackingExpression<T> child) {
+        return null;
+    }
+
+    @Override
+    ParenthesesTrackingExpression<T> constructAdd(ParenthesesTrackingExpression<T> left, ParenthesesTrackingExpression<T> right) {
+        return new Add<>(left, right, engine);
+    }
+
+    @Override
+    ParenthesesTrackingExpression<T> constructSubtract(ParenthesesTrackingExpression<T> left,
         ParenthesesTrackingExpression<T> right) {
-        return ;
+        return new Subtract<>(left, right, engine);
+    }
+
+    @Override
+    ParenthesesTrackingExpression<T> constructMultiply(ParenthesesTrackingExpression<T> left,
+        ParenthesesTrackingExpression<T> right) {
+        return null;
+    }
+
+    @Override
+    ParenthesesTrackingExpression<T> constructDivide(ParenthesesTrackingExpression<T> left,
+        ParenthesesTrackingExpression<T> right) {
+        return null;
+    }
+
+    @Override
+    ParenthesesTrackingExpression<T> constructShiftLeft(ParenthesesTrackingExpression<T> left,
+        ParenthesesTrackingExpression<T> right) {
+        return null;
+    }
+
+    @Override
+    ParenthesesTrackingExpression<T> constructLogicalShiftRight(ParenthesesTrackingExpression<T> left,
+        ParenthesesTrackingExpression<T> right) {
+        return null;
+    }
+
+    @Override
+    ParenthesesTrackingExpression<T> constructArithmeticShiftRight(ParenthesesTrackingExpression<T> left,
+        ParenthesesTrackingExpression<T> right) {
+        return null;
+    }
+
+    @Override
+    ParenthesesTrackingExpression<T> constructPow(ParenthesesTrackingExpression<T> left,
+        ParenthesesTrackingExpression<T> right) {
+        return null;
+    }
+
+    @Override
+    ParenthesesTrackingExpression<T> constructLog(ParenthesesTrackingExpression<T> left,
+        ParenthesesTrackingExpression<T> right) {
+        return null;
     }
 }

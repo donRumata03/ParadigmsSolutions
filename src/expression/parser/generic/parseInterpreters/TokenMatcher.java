@@ -1,25 +1,9 @@
 package expression.parser.generic.parseInterpreters;
 
-import static expression.parser.generic.tokens.OperatorToken.ARITHMETICAL_SHIFT;
-import static expression.parser.generic.tokens.OperatorToken.DIVIDE;
-import static expression.parser.generic.tokens.OperatorToken.LOG;
-import static expression.parser.generic.tokens.OperatorToken.LOGICAL_SHIFT_RIGHT;
-import static expression.parser.generic.tokens.OperatorToken.MINUS;
-import static expression.parser.generic.tokens.OperatorToken.MULTIPLY;
-import static expression.parser.generic.tokens.OperatorToken.PLUS;
-import static expression.parser.generic.tokens.OperatorToken.POW;
-import static expression.parser.generic.tokens.OperatorToken.SHIFT_LEFT;
-
-import expression.Add;
-import expression.exceptions.CheckedAdd;
-import expression.exceptions.CheckedDivide;
-import expression.exceptions.CheckedMultiply;
-import expression.exceptions.CheckedSubtract;
 import expression.general.ParenthesesTrackingExpression;
 import expression.parser.generic.tokens.AbstractOperationToken;
 import expression.parser.generic.tokens.FunctionToken;
 import expression.parser.generic.tokens.OperatorToken;
-import expression.parser.generic.tokens.OperatorToken.*;
 
 
 public abstract class TokenMatcher<Element> implements ParseInterpreter<Element> {
