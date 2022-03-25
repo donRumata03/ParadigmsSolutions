@@ -2,6 +2,11 @@ package expression.generic;
 
 import expression.general.arithmetics.ArithmeticEngine;
 import expression.general.GenericTripleExpression;
+import expression.general.arithmetics.UncheckedIntegerArithmetics;
+import expression.parser.ExpressionParser;
+import expression.parser.generic.parseInterpreters.ParseInterpreter;
+
+
 
 public class GenericExpressionComputer<T, Engine extends ArithmeticEngine<T>> {
 
@@ -10,7 +15,7 @@ public class GenericExpressionComputer<T, Engine extends ArithmeticEngine<T>> {
 
     GenericExpressionComputer(String expression, Engine engine) {
         this.engine = engine;
-        this.expression = new expression.exceptions.ExpressionParser().parse(expression);
+        this.expression = new GenericParser<>(engine).parse(expression);
     }
 
     String compute(int x, int y, int z) {

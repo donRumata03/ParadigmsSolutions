@@ -4,7 +4,9 @@ import expression.general.exceptions.ExpressionArithmeticException;
 
 public interface ArithmeticEngine<Element> {
     Element fromInt(int value);
-    Element parseSignedInt(String toParse);
+    default Element parseSignedInt(String toParse) { // Should be overridden of you want to parse big numbers
+        return fromInt(Integer.parseInt(toParse));
+    }
 
     // Unary stuff
     Element abs(Element argument);
