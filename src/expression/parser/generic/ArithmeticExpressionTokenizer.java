@@ -18,7 +18,7 @@ import expression.parser.generic.tokens.VariableToken;
 
 public class ArithmeticExpressionTokenizer {
 
-    private ParsableSource source;
+    private final ParsableSource source;
     private Optional<ArithmeticExpressionToken> cachedNextToken = Optional.empty(); // To meet LL(1) conception requirements
     private boolean hasConsumedSpacesAfterLastToken = false;
     private int lastTouchedTokenStartIndex = 0;

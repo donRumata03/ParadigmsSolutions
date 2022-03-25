@@ -10,7 +10,7 @@ import expression.parser.generic.tokens.AbstractOperationToken;
  */
 public class MaybeCheckedParseInterpreter extends TokenMatcher<Integer> {
 
-    private boolean checked = false;
+    private final boolean checked;
 
     public MaybeCheckedParseInterpreter(boolean checked) {
         this.checked = checked;

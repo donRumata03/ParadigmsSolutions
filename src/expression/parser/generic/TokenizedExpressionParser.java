@@ -16,7 +16,7 @@ import java.util.function.Function;
 
 
 public class TokenizedExpressionParser<
-    T, Engine extends ArithmeticEngine<T>, Interpreter extends ParseInterpreter<T>
+    T, Interpreter extends ParseInterpreter<T>
 > {
     private final BaseTokenParser tokenParser;
     private final Interpreter interpreter;
@@ -68,7 +68,7 @@ public class TokenizedExpressionParser<
     }
 
     private ParenthesesTrackingExpression<T> parseLeftAssociativePriorityLayer (
-        Function<TokenizedExpressionParser<T, Engine, Interpreter>, ParenthesesTrackingExpression<T>> prevLayer,
+        Function<TokenizedExpressionParser<T, Interpreter>, ParenthesesTrackingExpression<T>> prevLayer,
         List<OperatorToken> operators
     ) throws ParseException
     {

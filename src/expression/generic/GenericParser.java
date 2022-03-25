@@ -7,13 +7,17 @@ import expression.parser.generic.ArithmeticExpressionTokenizer;
 import expression.parser.generic.ParsableSource;
 import expression.parser.generic.ParseException;
 import expression.parser.generic.TokenizedExpressionParser;
+import expression.parser.generic.parseInterpreters.GenericParseInterpreter;
 import java.io.StringReader;
 
-public class GenericParser<T, Engine extends ArithmeticEngine<T>> {
+public record GenericParser<T, Engine extends ArithmeticEngine<T>>(Engine engine) {
+
     public GenericTripleExpression<T> parse(String expression) throws ParseException {
-        return new TokenizedExpressionParser<T, Engine>(
+        return new TokenizedExpressionParser<>(
             new ArithmeticExpressionTokenizer(
                 new ParsableSource(new ReaderBufferizer(new StringReader(expression)))
-            ), interpreter).parseAll();
+            ),
+            new GenericParseInterpreter<>(engine)
+        ).parseAll();
     }
 }

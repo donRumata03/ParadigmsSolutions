@@ -24,7 +24,7 @@ public class GenericParseInterpreter<T, Engine extends ArithmeticEngine<T>> exte
 
     Engine engine;
 
-    GenericParseInterpreter(Engine engine) {
+    public GenericParseInterpreter(Engine engine) {
         this.engine = engine;
     }
 
