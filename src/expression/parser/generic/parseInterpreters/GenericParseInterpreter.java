@@ -17,6 +17,9 @@ import expression.general.operations.Subtract;
 import expression.general.operations.TrailingZeroes;
 
 
+/**
+ * Produces templated operation nodes from expression.general.operations with given engine
+ */
 public class GenericParseInterpreter<T, Engine extends ArithmeticEngine<T>> extends TokenMatcher<T> {
 
     Engine engine;

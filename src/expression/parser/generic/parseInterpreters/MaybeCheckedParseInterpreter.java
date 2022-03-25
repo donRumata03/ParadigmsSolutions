@@ -5,6 +5,9 @@ import expression.exceptions.CheckedAdd;
 import expression.general.ParenthesesTrackingExpression;
 import expression.parser.generic.tokens.AbstractOperationToken;
 
+/**
+ * Depending on `checked` parameter generates checked or unchecked integer nodes
+ */
 public class MaybeCheckedParseInterpreter extends TokenMatcher<Integer> {
 
     private boolean checked = false;
