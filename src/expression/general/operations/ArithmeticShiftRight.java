@@ -3,10 +3,11 @@ package expression.general.operations;
 import expression.general.BinaryOperation;
 import expression.general.OperatorTraits;
 import expression.general.ParenthesesTrackingExpression;
+import expression.general.arithmetics.ArithmeticEngine;
 import java.math.BigDecimal;
 
 
-public class ArithmeticShiftRight extends BinaryOperation {
+public class ArithmeticShiftRight<T, Engine extends ArithmeticEngine<T>> extends BinaryOperation<T, Engine> {
     public static final OperatorTraits OPERATOR_INFO = new OperatorTraits(
         1,
         false,
@@ -14,17 +15,13 @@ public class ArithmeticShiftRight extends BinaryOperation {
         ">>"
     );
 
-    public ArithmeticShiftRight(ParenthesesTrackingExpression left, ParenthesesTrackingExpression right) {
+    public ArithmeticShiftRight(ParenthesesTrackingExpression<T> left, ParenthesesTrackingExpression<T> right, Engine engine) {
         super(left, right, engine, OPERATOR_INFO);
     }
 
     @Override
-    public int reductionOperation(int leftResult, int rightResult) {
-        return leftResult >> rightResult;
+    public T reductionOperation(T leftResult, T rightResult) {
+        return engine.arithmeticShiftRight(leftResult, rightResult);
     }
 
-    @Override
-    public BigDecimal reductionOperation(BigDecimal leftResult, BigDecimal rightResult) {
-        throw new RuntimeException("Only int supported");
-    }
 }
