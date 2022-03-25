@@ -17,7 +17,7 @@ public class ExpressionParser implements Parser {
     @Override
     public TripleExpression parse(String expression) {
         return (TripleExpression)
-            new TokenizedExpressionParser<Integer, UncheckedIntegerArithmetics, MaybeCheckedParseInterpreter>(
+            new TokenizedExpressionParser<Integer, MaybeCheckedParseInterpreter>(
                 new ArithmeticExpressionTokenizer(
                     new ParsableSource(new ReaderBufferizer(new StringReader(expression)))
                 ),

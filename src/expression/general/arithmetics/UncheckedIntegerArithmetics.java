@@ -3,24 +3,19 @@ package expression.general.arithmetics;
 import expression.general.exceptions.ExpressionArithmeticException;
 public class UncheckedIntegerArithmetics implements ArithmeticEngine<Integer> {
 
-        @Override
-        public Integer fromInt(int value) {
+    @Override
+    public Integer fromInt(int value) {
             return value;
         }
 
     @Override
-    public Integer parseSignedInt(String toParse) {
-        return null;
-    }
-
-    @Override
     public Integer abs(Integer argument) {
-        return null;
+        return argument > 0 ? argument : -argument;
     }
 
     @Override
     public Integer negate(Integer argument) {
-        return null;
+        return -argument;
     }
 
     @Override
@@ -44,23 +39,23 @@ public class UncheckedIntegerArithmetics implements ArithmeticEngine<Integer> {
     }
 
     @Override
-        public Integer add(Integer left, Integer right) {
+    public Integer add(Integer left, Integer right) {
             return left + right;
         }
 
     @Override
     public Integer subtract(Integer left, Integer right) throws ExpressionArithmeticException {
-        return null;
+        return left - right;
     }
 
     @Override
     public Integer multiply(Integer left, Integer right) throws ExpressionArithmeticException {
-        return null;
+        return left * right;
     }
 
     @Override
     public Integer divide(Integer left, Integer right) throws ExpressionArithmeticException {
-        return null;
+        return left / right;
     }
 
     @Override
