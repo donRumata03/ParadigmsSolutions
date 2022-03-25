@@ -1,16 +1,18 @@
 package expression.exceptions;
 
+import expression.BigDecimalOperationDiscarder;
+import expression.general.IntOperationUnwrapper;
 import expression.general.ParenthesesTrackingExpression;
+import expression.general.arithmetics.CheckedIntegerArithmetics;
+import expression.general.operations.Add;
+import expression.general.operations.Subtract;
 
-public class CheckedSubtract extends Subtract {
+public class CheckedSubtract
+    extends Subtract<Integer, CheckedIntegerArithmetics>
+    implements IntOperationUnwrapper, BigDecimalOperationDiscarder
+{
 
-    public CheckedSubtract(ParenthesesTrackingExpression left,
-        ParenthesesTrackingExpression right) {
-        super(left, right);
-    }
-
-    @Override
-    public int reductionOperation(int leftResult, int rightResult) {
-       return CheckedIntMath.checkedSubtract(leftResult, rightResult);
+    public CheckedSubtract(ParenthesesTrackingExpression<Integer> left, ParenthesesTrackingExpression<Integer> right) {
+        super(left, right, new CheckedIntegerArithmetics());
     }
 }

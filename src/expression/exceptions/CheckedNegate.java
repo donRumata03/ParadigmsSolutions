@@ -1,15 +1,18 @@
 package expression.exceptions;
 
+import expression.BigDecimalOperationDiscarder;
+import expression.general.IntOperationUnwrapper;
 import expression.general.ParenthesesTrackingExpression;
+import expression.general.arithmetics.CheckedIntegerArithmetics;
+import expression.general.operations.Multiply;
+import expression.general.operations.Negate;
 
-public class CheckedNegate extends Negate {
+public class CheckedNegate
+    extends Negate<Integer, CheckedIntegerArithmetics>
+    implements IntOperationUnwrapper, BigDecimalOperationDiscarder
+{
 
-    public CheckedNegate(ParenthesesTrackingExpression child) {
-        super(child);
-    }
-
-    @Override
-    public int reductionOperation(int childResult) {
-        return CheckedIntMath.checkedNegate(childResult);
+    public CheckedNegate(ParenthesesTrackingExpression<Integer> child) {
+        super(child, new CheckedIntegerArithmetics());
     }
 }
