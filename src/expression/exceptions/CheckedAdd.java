@@ -1,6 +1,5 @@
 package expression.exceptions;
 
-import expression.BigDecimalOperationDiscarder;
 import expression.Expression;
 import expression.TripleExpression;
 import expression.general.IntOperationUnwrapper;
@@ -10,7 +9,7 @@ import expression.general.ParenthesesTrackingExpression;
 
 public class CheckedAdd
     extends Add<Integer, CheckedIntegerArithmetics>
-    implements IntOperationUnwrapper, BigDecimalOperationDiscarder
+    implements IntOperationUnwrapper
 {
 
     public CheckedAdd(ParenthesesTrackingExpression<Integer> left, ParenthesesTrackingExpression<Integer> right) {

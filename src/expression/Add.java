@@ -12,7 +12,7 @@ import java.math.BigInteger;
  */
 public class Add
     extends expression.general.operations.Add<Integer, UncheckedIntegerArithmetics>
-    implements IntOperationUnwrapper, BigDecimalOperationDiscarder
+    implements IntOperationUnwrapper
 {
 
 //    public Add integerAdd(
@@ -29,13 +29,6 @@ public class Add
         super(left, right, new UncheckedIntegerArithmetics());
     }
 
-
-    @Override
-    public BigDecimal evaluate(BigDecimal x) {
-        // TODO: Special arithmetics type that supports both Integer and BigDecimal operations
-        // TODO: And special layer that implements specific `evaluate`s through generic one
-        throw new UnsupportedOperationException();
-    }
 
 //    @Override
 //    public int evaluate(int x) {

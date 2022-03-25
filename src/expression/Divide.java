@@ -5,7 +5,7 @@ import expression.general.ParenthesesTrackingExpression;
 import expression.general.arithmetics.UncheckedIntegerArithmetics;
 
 public class Divide extends expression.general.operations.Divide<Integer, UncheckedIntegerArithmetics>
-    implements IntOperationUnwrapper, BigDecimalOperationDiscarder
+    implements IntOperationUnwrapper
 {
 
     public Divide(ParenthesesTrackingExpression<Integer> left, ParenthesesTrackingExpression<Integer> right) {

@@ -1,6 +1,5 @@
 package expression.exceptions;
 
-import expression.BigDecimalOperationDiscarder;
 import expression.general.IntOperationUnwrapper;
 import expression.general.ParenthesesTrackingExpression;
 import expression.general.arithmetics.CheckedIntegerArithmetics;
@@ -9,7 +8,7 @@ import expression.general.operations.Negate;
 
 public class CheckedNegate
     extends Negate<Integer, CheckedIntegerArithmetics>
-    implements IntOperationUnwrapper, BigDecimalOperationDiscarder
+    implements IntOperationUnwrapper
 {
 
     public CheckedNegate(ParenthesesTrackingExpression<Integer> child) {

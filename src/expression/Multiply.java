@@ -5,7 +5,7 @@ import expression.general.ParenthesesTrackingExpression;
 import expression.general.arithmetics.UncheckedIntegerArithmetics;
 
 public class Multiply extends expression.general.operations.Multiply<Integer, UncheckedIntegerArithmetics>
-    implements IntOperationUnwrapper, BigDecimalOperationDiscarder
+    implements IntOperationUnwrapper
 {
 
     public Multiply(ParenthesesTrackingExpression<Integer> left, ParenthesesTrackingExpression<Integer> right) {
