@@ -3,7 +3,7 @@ package expression.general.operations;
 import expression.general.AtomicParenthesesTrackingExpression;
 import java.util.Objects;
 
-public final class Variable<T> extends AtomicParenthesesTrackingExpression<T> {
+public class Variable<T> extends AtomicParenthesesTrackingExpression<T> {
     private final String varName;
 
     public Variable(String varName) {
