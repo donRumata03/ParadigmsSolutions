@@ -18,6 +18,8 @@ src/queue/Queues.java
 src/expression/common/*
 src/expression/Expression.java
 src/expression/ToMiniString.java
+src/expression/BigDecimalExpression.java
+src/expression/BigIntegerExpression.java
 src/expression/TripleExpression.java
 
 # expression/parser
