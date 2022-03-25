@@ -4,7 +4,6 @@ import expression.general.ParenthesesTrackingExpression;
 import expression.general.UnaryOperation;
 import expression.general.UnaryOperatorTraits;
 import expression.general.arithmetics.ArithmeticEngine;
-import java.math.BigDecimal;
 
 public class Negate<T, Engine extends ArithmeticEngine<T>> extends UnaryOperation<T, Engine> {
     static UnaryOperatorTraits OPERATOR_INFO = new UnaryOperatorTraits(

@@ -1,7 +1,6 @@
 package expression.general.operations;
 
 import expression.general.AtomicParenthesesTrackingExpression;
-import java.math.BigDecimal;
 import java.util.Objects;
 
 public final class Variable<T> extends AtomicParenthesesTrackingExpression<T> {

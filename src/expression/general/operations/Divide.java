@@ -4,7 +4,6 @@ import expression.general.BinaryOperation;
 import expression.general.OperatorTraits;
 import expression.general.ParenthesesTrackingExpression;
 import expression.general.arithmetics.ArithmeticEngine;
-import java.math.BigDecimal;
 
 public class Divide<T, Engine extends ArithmeticEngine<T>> extends BinaryOperation<T, Engine> {
 
