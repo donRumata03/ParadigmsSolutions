@@ -13,7 +13,7 @@ public class GenericTabulator implements Tabulator {
         // Use designated dispatcher for choosing computation type based on mode string
 
         // Build Expression
-        TripleExpression buildExpression = null; // If we can't build, let exception unwind up the stack
+        ExpressionModeSelector builtExpression = new ExpressionModeSelector(expression, mode); // If we can't build, let exception unwind up the stack
 
         Object[][][] res = new Object[x2 - x1 + 1][y2 - y1 + 1][z2 - z1 + 1];
 
@@ -22,7 +22,7 @@ public class GenericTabulator implements Tabulator {
                 for (int z = z1; z <= z2; z++) {
                     Object cellRes;
                     try {
-                        cellRes = buildExpression.evaluate(x, y, z);
+                        cellRes = builtExpression.compute(x, y, z);
                     } catch (ExpressionArithmeticException e) {
                         cellRes = null;
                     }
