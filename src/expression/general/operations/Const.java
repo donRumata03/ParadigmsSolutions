@@ -3,7 +3,7 @@ package expression.general.operations;
 import expression.general.AtomicParenthesesTrackingExpression;
 import java.util.Objects;
 
-public final class Const<T> extends AtomicParenthesesTrackingExpression<T> {
+public class Const<T> extends AtomicParenthesesTrackingExpression<T> {
     private final T value;
 
     public Const(T value) {
