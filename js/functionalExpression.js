@@ -12,6 +12,16 @@ let divide = binaryOp((x, y) => x / y)
 
 let negate = (child) => (x, y, z) => -child(x, y, z)
 
+let binaryOperators = {
+    "+": add,
+    "-": subtract,
+    "*": multiply,
+    "/": divide
+}
+let unaryOperators = {
+    "negate": negate
+}
+
 let lexer = function (string) {
     let ptr = 0;
     let scanWhile = predicate => {
@@ -19,13 +29,7 @@ let lexer = function (string) {
         while (newPtr < string.length && predicate(string[newPtr])) newPtr++;
         return newPtr;
     }
-    let operators = {
-        "+": add,
-        "-": subtract,
-        "*": multiply,
-        ".": divide
-    }
-    let isDigit = ch => ch.match(/[1-9]/i);
+    let isDigit = ch => ch.match(/[0-9]/i);
     let isAlpha = ch => ch.toLowerCase().match(/[a-z]/i);
 
     return () => {
@@ -40,22 +44,35 @@ let lexer = function (string) {
             ptr = afterDigitEnd;
             return cnst(Number.parseInt(res));
         } else {
-            if (!string[ptr] in operators) throw new Error()
-            return operators[string[ptr++]];
+            if (!string[ptr] in binaryOperators) throw new Error()
+            return binaryOperators[string[ptr++]];
         }
     }
 }
+
 let parse = function (string) {
     let lex = lexer(string)
+    let stack = [];
+    console.log("Parsing " + string)
 
     while (true) {
         let next = lex();
-        if (next === undefined) return;
-        console.log(next());
+        if (next === undefined) break;
+
+        if (Object.values(binaryOperators).includes(next)) {
+            let r = stack.pop()
+            let l = stack.pop();
+            stack.push(next(l, r));
+        } else {
+            stack.push(next);
+        }
     }
+    if (stack.length !== 1) throw new Error();
+    return stack[0];
 }
 
-parse("x x 2 - * x * 1 +")
+// console.log(parse("x x 2 - * x * 1 +")(5, 0, 0))
+// console.log(parse("100000")(0.00000000000000000000,0.00000000000000000000,0.00000000000000000000))
 
 //
 // let expr = subtract(
