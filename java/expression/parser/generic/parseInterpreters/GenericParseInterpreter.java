@@ -5,6 +5,7 @@ import expression.general.arithmetics.ArithmeticEngine;
 import expression.general.operations.Abs;
 import expression.general.operations.Add;
 import expression.general.operations.ArithmeticShiftRight;
+import expression.general.operations.Const;
 import expression.general.operations.Divide;
 import expression.general.operations.LeadingZeroes;
 import expression.general.operations.Log;
@@ -15,6 +16,7 @@ import expression.general.operations.Pow;
 import expression.general.operations.ShiftLeft;
 import expression.general.operations.Subtract;
 import expression.general.operations.TrailingZeroes;
+import expression.general.operations.Variable;
 
 
 /**
@@ -31,6 +33,16 @@ public class GenericParseInterpreter<T, Engine extends ArithmeticEngine<T>> exte
     @Override
     public T parseSignedInt(String toParse) {
         return engine.parseSignedInt(toParse);
+    }
+
+    @Override
+    public ParenthesesTrackingExpression<T> constructVariable(String name) {
+        return new Variable<T>(name);
+    }
+
+    @Override
+    public ParenthesesTrackingExpression<T> constructConst(T value) {
+        return new Const<>(value);
     }
 
 

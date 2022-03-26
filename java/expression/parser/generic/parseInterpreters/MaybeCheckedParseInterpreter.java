@@ -1,9 +1,10 @@
 package expression.parser.generic.parseInterpreters;
 
 import expression.Add;
+import expression.Const;
+import expression.Variable;
 import expression.exceptions.CheckedAdd;
 import expression.general.ParenthesesTrackingExpression;
-import expression.parser.generic.tokens.AbstractOperationToken;
 
 /**
  * Depending on `checked` parameter generates checked or unchecked integer nodes
@@ -19,6 +20,16 @@ public class MaybeCheckedParseInterpreter extends TokenMatcher<Integer> {
     @Override
     public Integer parseSignedInt(String toParse) {
         return Integer.parseInt(toParse);
+    }
+
+    @Override
+    public ParenthesesTrackingExpression<Integer> constructVariable(String name) {
+        return new Variable(name);
+    }
+
+    @Override
+    public ParenthesesTrackingExpression<Integer> constructConst(Integer value) {
+        return new Const(value);
     }
 
 

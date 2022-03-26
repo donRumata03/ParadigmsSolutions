@@ -2,8 +2,6 @@ package expression.parser.generic;
 
 import expression.general.arithmetics.ArithmeticEngine;
 import expression.general.ParenthesesTrackingExpression;
-import expression.general.operations.Const;
-import expression.general.operations.Variable;
 import expression.parser.generic.parseInterpreters.ParseInterpreter;
 import expression.parser.generic.tokens.AbstractOperationToken;
 import expression.parser.generic.tokens.NumberToken;
@@ -121,7 +119,7 @@ public class TokenizedExpressionParser<
 
     private Optional<ParenthesesTrackingExpression<T>> maybeParsePositiveNumber() {
         return tokenParser.tryMatchToken(token -> token instanceof NumberToken)
-            .map(token -> new Const<>(
+            .map(token -> interpreter.constructConst(
                 interpreter.parseSignedInt(((NumberToken)token).nonParsedValue())
             ));
     }
@@ -133,7 +131,7 @@ public class TokenizedExpressionParser<
                 if (unaryOpToken == OperatorToken.MINUS) {
                     var tryIntToken = tokenParser.tryMatchToken(t -> t instanceof NumberToken, false);
                     if (tryIntToken.isPresent()) {
-                        return new Const<>(interpreter.parseSignedInt(
+                        return interpreter.constructConst(interpreter.parseSignedInt(
                             "-" + ((NumberToken) tryIntToken.get()).nonParsedValue()
                         ));
                     }
@@ -145,7 +143,7 @@ public class TokenizedExpressionParser<
     private Optional<ParenthesesTrackingExpression<T>> maybeParseVariable() {
         return tokenParser
             .tryMatchToken(token -> token instanceof VariableToken)
-            .map(varToken -> new Variable<>(((VariableToken)varToken).varName()));
+            .map(varToken -> interpreter.constructVariable(((VariableToken) varToken).varName()));
     }
 
     private Optional<ParenthesesTrackingExpression<T>> maybeParseExpressionInParentheses() {
