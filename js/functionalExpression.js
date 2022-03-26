@@ -3,24 +3,41 @@
 let cnst = value => (_x, _y, _z) => value;
 let variable = name => (x, y, z) => name === "x" ? x : (name === "y" ? y : z);
 
-let binaryOp = (op) => (l, r) => (x, y, z) => op(l(x, y, z), r(x, y, z));
+let nAryReductionNode = reductionOp => function (...children) {
+    return function (x, y, z) {
+        return reductionOp(...(children.map(child => child(x, y, z))));
+    };
+}
 
-let add = binaryOp((x, y) => x + y);
-let subtract = binaryOp((x, y) => x - y);
-let multiply = binaryOp((x, y) => x * y);
-let divide = binaryOp((x, y) => x / y);
+let constNode = () => cnst;
+let variableNode = () => variable;
 
-let negate = (child) => (x, y, z) => -child(x, y, z);
+let add = nAryReductionNode((x, y) => x + y);
+let subtract = nAryReductionNode((x, y) => x - y);
+let multiply = nAryReductionNode((x, y) => x * y);
+let divide = nAryReductionNode((x, y) => x / y);
+let negate = nAryReductionNode(v => -v) // (child) => (x, y, z) => -child(x, y, z);
 
-let binaryOperators = {
-    "+": add,
-    "-": subtract,
-    "*": multiply,
-    "/": divide
+let avg3 = nAryReductionNode((a, b, c) => [a, b, c].reduce((l, r) => l + r) / 3);
+let med5 = nAryReductionNode((a, b, c, d, e) => [a, b, c, d, e].sort()[2]);
+
+
+let operators = {
+    "pi": [nAryReductionNode(() => Math.PI), 0],
+    "e": [nAryReductionNode(() => Math.E), 0],
+    "negate": [negate, 1],
+    "+": [add, 2],
+    "-": [subtract, 2],
+    "*": [multiply, 2],
+    "/": [divide, 2],
+    "avg3": [avg3, 3],
+    "med5": [med5, 5]
 };
-let unaryOperators = {
-    "negate": negate
-};
+
+let constants = Object.fromEntries(Object.entries({
+    "pi": Math.PI,
+    "e": Math.E
+}).map(([k, v]) => [k, () => v]))
 
 let lexer = function (string) {
     let ptr = 0;
@@ -86,7 +103,7 @@ let parse = function (string) {
 
 // console.log(parse("x x 2 - * x * 1 +")(5, 0, 0))
 // console.log(parse("100000")(0.00000000000000000000,0.00000000000000000000,0.00000000000000000000))
-console.log(parse("-314 negate -819 x - *")(5, 0, 0))
+// console.log(parse("-314 negate -819 x - *")(5, 0, 0))
 //
 // let expr = subtract(
 //     multiply(
