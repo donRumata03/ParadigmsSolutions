@@ -22,7 +22,7 @@ public class ExpressionModeSelector {
         };
     }
 
-    String compute(int x, int y, int z) {
+    Object compute(int x, int y, int z) {
         return computer.compute(x, y, z);
     }
 }

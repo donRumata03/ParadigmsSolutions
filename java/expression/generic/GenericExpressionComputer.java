@@ -18,8 +18,8 @@ public class GenericExpressionComputer<T, Engine extends ArithmeticEngine<T>> {
         this.expression = new GenericParser<>(engine).parse(expression);
     }
 
-    String compute(int x, int y, int z) {
-        return expression.evaluate(engine.fromInt(x), engine.fromInt(y), engine.fromInt(z)).toString();
+    Object compute(int x, int y, int z) {
+        return expression.evaluate(engine.fromInt(x), engine.fromInt(y), engine.fromInt(z));
     }
 
 }
