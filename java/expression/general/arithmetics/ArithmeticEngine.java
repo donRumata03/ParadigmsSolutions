@@ -19,6 +19,9 @@ public interface ArithmeticEngine<Element> {
     Element trailingZeroes(Element argument) throws ExpressionArithmeticException;
 
 
+    Element count(Element argument) throws ExpressionArithmeticException;
+
+
     // Binary stuff
     Element add(Element left, Element right) throws ExpressionArithmeticException;
     Element subtract(Element left, Element right) throws ExpressionArithmeticException;
