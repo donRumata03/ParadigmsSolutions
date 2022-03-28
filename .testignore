@@ -5,32 +5,32 @@
 *Tester.java
 *TestSet.java
 *package-info.java
-src/base/*
+java/base/*
 
 # Specific GK's files:
 
 # Queues:
-src/queue/Queues.java
+java/queue/Queues.java
 
 
 
 # Expressions:
-src/expression/common/*
-src/expression/Expression.java
-src/expression/ToMiniString.java
-src/expression/BigDecimalExpression.java
-src/expression/BigIntegerExpression.java
-src/expression/TripleExpression.java
+java/expression/common/*
+java/expression/Expression.java
+java/expression/ToMiniString.java
+java/expression/BigDecimalExpression.java
+java/expression/BigIntegerExpression.java
+java/expression/TripleExpression.java
 
 # expression/parser
-src/expression/parser/Operations.java
-src/expression/parser/TripleParser.java
+java/expression/parser/Operations.java
+java/expression/parser/TripleParser.java
 
 # expression/parser
 # (nothing special yet)
 
 # expression/generic
-# Not src/expression/generic/Tabulator.java because I modify it
+# Not java/expression/generic/Tabulator.java because I modify it
 
 # Search
 # (nothing special)
