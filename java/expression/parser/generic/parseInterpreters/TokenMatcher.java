@@ -1,6 +1,7 @@
 package expression.parser.generic.parseInterpreters;
 
 import expression.general.ParenthesesTrackingExpression;
+import expression.parser.generic.ParseException;
 import expression.parser.generic.tokens.AbstractOperationToken;
 import expression.parser.generic.tokens.FunctionToken;
 import expression.parser.generic.tokens.OperatorToken;
@@ -20,12 +21,14 @@ public abstract class TokenMatcher<Element> implements ParseInterpreter<Element>
                 case l0 -> constructLeadingZeroes(child);
                 case t0 -> constructTrailingZeroes(child);
                 case abs -> constructAbs(child);
+                case count -> constructCount(child);
+                case min, max -> throw new ParseException("These operations can't be unary");
             };
         } else if (token instanceof OperatorToken operationToken) {
             return constructUnaryMinus(child);
         }
 
-        throw new UnsupportedOperationException("Unsupported token type");
+        throw new ParseException("Unsupported token type");
     }
 
     @Override
@@ -37,7 +40,12 @@ public abstract class TokenMatcher<Element> implements ParseInterpreter<Element>
         assert token.canBeBinary();
 
         if (token instanceof FunctionToken functionToken) {
-            // TODO: Add min and max
+            return switch (functionToken) {
+                case min -> constructMin(left, right);
+                case max -> constructMax(left, right);
+                case abs, l0, t0, count ->
+                    throw new ParseException("These operations can't be unary"); // «Default» is evil
+            };
         } else if (token instanceof OperatorToken operationToken) {
             return switch (operationToken) {
                 case PLUS -> constructAdd(left, right);
@@ -56,19 +64,18 @@ public abstract class TokenMatcher<Element> implements ParseInterpreter<Element>
     }
 
     ///! Required constructing
-
     // Function tokens; unary
     abstract ParenthesesTrackingExpression<Element> constructLeadingZeroes(ParenthesesTrackingExpression<Element> child);
     abstract ParenthesesTrackingExpression<Element> constructTrailingZeroes(ParenthesesTrackingExpression<Element> child);
     abstract ParenthesesTrackingExpression<Element> constructAbs(ParenthesesTrackingExpression<Element> child);
-    // TODO: „count“ function
-
+    abstract ParenthesesTrackingExpression<Element> constructCount(ParenthesesTrackingExpression<Element> child);
     // Operator tokens, unary
     abstract ParenthesesTrackingExpression<Element> constructUnaryMinus(ParenthesesTrackingExpression<Element> child);
 
 
     // Function tokens, binary
-    // TODO: min, max…
+    protected abstract ParenthesesTrackingExpression<Element> constructMin(ParenthesesTrackingExpression<Element> left, ParenthesesTrackingExpression<Element> right);
+    protected abstract ParenthesesTrackingExpression<Element> constructMax(ParenthesesTrackingExpression<Element> left, ParenthesesTrackingExpression<Element> right);
 
     // Operator tokens, binary
     abstract ParenthesesTrackingExpression<Element> constructAdd(ParenthesesTrackingExpression<Element> left, ParenthesesTrackingExpression<Element> right);

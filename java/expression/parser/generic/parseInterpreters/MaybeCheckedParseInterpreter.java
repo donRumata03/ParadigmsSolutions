@@ -49,7 +49,24 @@ public class MaybeCheckedParseInterpreter extends TokenMatcher<Integer> {
     }
 
     @Override
+    ParenthesesTrackingExpression<Integer> constructCount(ParenthesesTrackingExpression<Integer> child) {
+        return null;
+    }
+
+    @Override
     ParenthesesTrackingExpression<Integer> constructUnaryMinus(ParenthesesTrackingExpression<Integer> child) {
+        return null;
+    }
+
+    @Override
+    protected ParenthesesTrackingExpression<Integer> constructMin(ParenthesesTrackingExpression<Integer> left,
+        ParenthesesTrackingExpression<Integer> right) {
+        return null;
+    }
+
+    @Override
+    protected ParenthesesTrackingExpression<Integer> constructMax(ParenthesesTrackingExpression<Integer> left,
+        ParenthesesTrackingExpression<Integer> right) {
         return null;
     }
 

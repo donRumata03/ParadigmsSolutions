@@ -6,10 +6,13 @@ import expression.general.operations.Abs;
 import expression.general.operations.Add;
 import expression.general.operations.ArithmeticShiftRight;
 import expression.general.operations.Const;
+import expression.general.operations.Count;
 import expression.general.operations.Divide;
 import expression.general.operations.LeadingZeroes;
 import expression.general.operations.Log;
 import expression.general.operations.LogicalShiftRight;
+import expression.general.operations.Max;
+import expression.general.operations.Min;
 import expression.general.operations.Multiply;
 import expression.general.operations.Negate;
 import expression.general.operations.Pow;
@@ -62,8 +65,25 @@ public class GenericParseInterpreter<T, Engine extends ArithmeticEngine<T>> exte
     }
 
     @Override
+    ParenthesesTrackingExpression<T> constructCount(ParenthesesTrackingExpression<T> child) {
+        return new Count<>(child, engine);
+    }
+
+    @Override
     ParenthesesTrackingExpression<T> constructUnaryMinus(ParenthesesTrackingExpression<T> child) {
         return new Negate<>(child, engine);
+    }
+
+    @Override
+    protected ParenthesesTrackingExpression<T> constructMin(ParenthesesTrackingExpression<T> left,
+        ParenthesesTrackingExpression<T> right) {
+        return new Min<>(left, right, engine);
+    }
+
+    @Override
+    protected ParenthesesTrackingExpression<T> constructMax(ParenthesesTrackingExpression<T> left,
+        ParenthesesTrackingExpression<T> right) {
+        return new Max<>(left, right, engine);
     }
 
     @Override
