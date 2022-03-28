@@ -48,7 +48,7 @@ def update_tests():
 		dirs_exist_ok=True
 	)
 	shutil.copytree(
-		tests_dir / "java", solutions_dir / "src",
+		tests_dir / "java", solutions_dir / "java",
 		dirs_exist_ok=True
 	)
 
@@ -56,7 +56,7 @@ def update_tests():
 
 
 def present_solutions(subfolder: str):
-	solution_path = solutions_dir / "src" / subfolder
+	solution_path = solutions_dir / "java" / subfolder
 	assert solution_path.exists()
 
 	# Ensure target exists and is clear

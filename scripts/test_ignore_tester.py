@@ -4,12 +4,12 @@ from scripts.test_path_filterer import test_detector
 
 
 tested_paths = [
-	("src/queue/QueueTest.java", True),
-	("src/base/Either.java", True),
-	("src/queue/Queues.java", True),                                # Special test
+	("java/queue/QueueTest.java", True),
+	("java/base/Either.java", True),
+	("java/queue/Queues.java", True),                                # Special test
 
-	("src/queue/QueueTestMy.java", False),                          # My test
-	("src/search/DiscreteIterativeBinarySearch.java", False),       # Just code
+	("java/queue/QueueTestMy.java", False),                          # My test
+	("java/search/DiscreteIterativeBinarySearch.java", False),       # Just code
 ]
 
 for (f, ans) in tested_paths:
