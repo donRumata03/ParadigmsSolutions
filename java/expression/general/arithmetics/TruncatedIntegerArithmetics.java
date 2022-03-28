@@ -1,5 +1,7 @@
 package expression.general.arithmetics;
 
+import static expression.general.exceptions.ExpressionArithmeticException.wrapComputationWithException;
+
 import expression.exceptions.CheckedIntMath;
 import expression.general.exceptions.ExpressionArithmeticException;
 
@@ -66,7 +68,7 @@ public class TruncatedIntegerArithmetics implements ArithmeticEngine<Integer> {
 
     @Override
     public Integer divide(Integer left, Integer right) throws ExpressionArithmeticException {
-        return truncate10(left / right);
+        return wrapComputationWithException(() -> truncate10(left / right));
     }
 
     @Override

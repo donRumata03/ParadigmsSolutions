@@ -23,7 +23,7 @@ public class GenericTabulator implements Tabulator {
                     Object cellRes;
                     try {
                         cellRes = builtExpression.compute(x, y, z);
-                    } catch (ExpressionArithmeticException e) {
+                    } catch (ExpressionArithmeticException | ArithmeticException e) {
                         cellRes = null;
                     }
 

@@ -1,5 +1,7 @@
 package expression.general.arithmetics;
 
+import static expression.general.exceptions.ExpressionArithmeticException.wrapComputationWithException;
+
 import expression.general.exceptions.ExpressionArithmeticException;
 import java.math.BigInteger;
 
@@ -27,7 +29,7 @@ public class BigIntegerArithmetics implements ArithmeticEngine<BigInteger> {
 
     @Override
     public BigInteger pow(BigInteger left, BigInteger right) throws ExpressionArithmeticException {
-        return ExpressionArithmeticException.wrapComputationWithException(() ->  left.pow(right.intValue()));
+        return wrapComputationWithException(() ->  left.pow(right.intValue()));
     }
 
     @Override
@@ -67,7 +69,7 @@ public class BigIntegerArithmetics implements ArithmeticEngine<BigInteger> {
 
     @Override
     public BigInteger divide(BigInteger left, BigInteger right) throws ExpressionArithmeticException {
-        return ExpressionArithmeticException.wrapComputationWithException(() ->  left.divide(right));
+        return wrapComputationWithException(() ->  left.divide(right));
     }
 
     @Override
