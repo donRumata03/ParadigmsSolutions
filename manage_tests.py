@@ -22,7 +22,7 @@ import colorama
 
 from scripts.git_manager import update_tests_repo
 from scripts.test_path_filterer import filter_tests, filter_out_tests, \
-	test_detector
+	test_detector, non_presented_detector
 
 colorama.init(autoreset=True)
 
@@ -70,16 +70,21 @@ def present_solutions(subfolder: str):
 
 	def inspect(full_path):
 		is_test = test_detector(full_path)
+		is_non_presented = non_presented_detector(full_path)
 		if not Path(full_path).is_dir():
-			print(f"{Path(full_path).relative_to(solution_path)}: {'TEST' if is_test else 'SOLUTION'}")
-		return is_test
+			print(f"{Path(full_path).relative_to(solution_path)}: "
+				f"{'TEST' if is_test else ('NON-PRESENTED-SOLUTION' if is_non_presented else 'SOLUTION')}"
+			)
+		return is_test or is_non_presented
 
 	# Copy excluding tests
 	shutil.copytree(
 		str(solution_path),
 		str(presentation_path),
-		ignore=lambda path, filenames: list(filter(lambda name: inspect(os.path.join(path, name)), filenames))
+		ignore=lambda path, filenames: list(
+			filter(lambda name: inspect(os.path.join(path, name)), filenames))
 	)
+
 
 assert len(argv) >= 2
 match argv[1]:
@@ -95,7 +100,6 @@ match argv[1]:
 		delete_tests()
 	case "update-tests":
 		# TODO:
-		#  3. support Present-ignore files
 		#  1. if COPIED test appears first time and doesn't match .testignore, add it there
 		#  2. Enable partial test updating (by folder)
 		update_tests()

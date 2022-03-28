@@ -5,6 +5,7 @@ import gitignore_parser
 from scripts.location_detector import solutions_dir
 
 test_detector = gitignore_parser.parse_gitignore(solutions_dir / ".testignore")
+non_presented_detector = gitignore_parser.parse_gitignore(solutions_dir / ".presentignore")
 
 
 def filter_tests(paths: Iterable[Path]) -> Iterable[Path]:
