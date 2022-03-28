@@ -1,5 +1,6 @@
 package expression.general.arithmetics;
 
+import expression.exceptions.CheckedIntMath;
 import expression.general.exceptions.ExpressionArithmeticException;
 public class UncheckedIntegerArithmetics implements ArithmeticEngine<Integer> {
 
@@ -20,22 +21,22 @@ public class UncheckedIntegerArithmetics implements ArithmeticEngine<Integer> {
 
     @Override
     public Integer pow(Integer left, Integer right) throws ExpressionArithmeticException {
-        return null;
+        return CheckedIntMath.checkedPow(left, right);
     }
 
     @Override
     public Integer log(Integer left, Integer right) throws ExpressionArithmeticException {
-        return null;
+        return CheckedIntMath.checkedLog(left, right);
     }
 
     @Override
     public Integer leadingZeroes(Integer argument) throws ExpressionArithmeticException {
-        return null;
+        return Integer.numberOfLeadingZeros(argument);
     }
 
     @Override
     public Integer trailingZeroes(Integer argument) throws ExpressionArithmeticException {
-        return null;
+        return Integer.numberOfTrailingZeros(argument);
     }
 
     @Override
@@ -60,28 +61,26 @@ public class UncheckedIntegerArithmetics implements ArithmeticEngine<Integer> {
 
     @Override
     public Integer logicalShiftRight(Integer left, Integer right) throws ExpressionArithmeticException {
-        return null;
+        return left >>> right;
     }
 
     @Override
     public Integer logicalShiftLeft(Integer left, Integer right) throws ExpressionArithmeticException {
-        return null;
+        return left << right;
     }
 
     @Override
     public Integer arithmeticShiftRight(Integer left, Integer right) throws ExpressionArithmeticException {
-        return null;
+        return left >> right;
     }
 
     @Override
     public Integer max(Integer left, Integer right) throws ExpressionArithmeticException {
-        return null;
+        return Integer.max(left, right);
     }
 
     @Override
     public Integer min(Integer left, Integer right) throws ExpressionArithmeticException {
-        return null;
+        return Integer.max(left, right);
     }
-
-    // …
-    }
+}
