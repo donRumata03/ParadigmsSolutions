@@ -47,6 +47,11 @@ public class CheckedIntegerArithmetics implements ArithmeticEngine<Integer> {
     }
 
     @Override
+    public Integer count(Integer argument) throws ExpressionArithmeticException {
+        return Integer.bitCount(argument);
+    }
+
+    @Override
     public Integer add(Integer left, Integer right) throws ExpressionArithmeticException {
         return CheckedIntMath.checkedAdd(left, right);
     }

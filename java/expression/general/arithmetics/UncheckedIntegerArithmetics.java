@@ -40,6 +40,11 @@ public class UncheckedIntegerArithmetics implements ArithmeticEngine<Integer> {
     }
 
     @Override
+    public Integer count(Integer argument) throws ExpressionArithmeticException {
+        return Integer.bitCount(argument);
+    }
+
+    @Override
     public Integer add(Integer left, Integer right) {
             return left + right;
         }

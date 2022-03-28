@@ -6,15 +6,18 @@ import expression.general.ParenthesesTrackingExpression;
 public enum FunctionToken implements AbstractOperationToken {
     l0,
     t0,
-    abs;
+    abs,
+    min,
+    max,
+    count;
 
     @Override
     public boolean canBeUnary() {
-        return true;
+        return this != min && this != max;
     }
 
     @Override
     public boolean canBeBinary() {
-        return false;
+        return this == min || this == max;
     }
 }

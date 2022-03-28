@@ -46,6 +46,11 @@ public class BigIntegerArithmetics implements ArithmeticEngine<BigInteger> {
     }
 
     @Override
+    public BigInteger count(BigInteger argument) throws ExpressionArithmeticException {
+        return BigInteger.valueOf(argument.bitCount());
+    }
+
+    @Override
     public BigInteger add(BigInteger left, BigInteger right) throws ExpressionArithmeticException {
         return left.add(right);
     }

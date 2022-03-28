@@ -40,6 +40,11 @@ public class UncheckedDoubleArithmetics implements ArithmeticEngine<Double> {
     }
 
     @Override
+    public Double count(Double argument) throws ExpressionArithmeticException {
+        return (double) Long.bitCount(Double.doubleToLongBits(argument));
+    }
+
+    @Override
     public Double add(Double left, Double right) {
         return left + right;
     }
