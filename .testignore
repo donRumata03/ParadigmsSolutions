@@ -27,7 +27,7 @@ java/expression/parser/Operations.java
 java/expression/parser/TripleParser.java
 
 # expression/parser
-# (nothing special yet)
+java/expression/parser/Parser.java
 
 # expression/generic
 # Not java/expression/generic/Tabulator.java because I modify it

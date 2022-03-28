@@ -10,7 +10,7 @@ import expression.parser.generic.TokenizedExpressionParser;
 import expression.parser.generic.parseInterpreters.MaybeCheckedParseInterpreter;
 import java.io.StringReader;
 
-public class ExpressionParser implements Parser {
+public class ExpressionParser implements TripleParser {
 
     public ExpressionParser() {}
 
