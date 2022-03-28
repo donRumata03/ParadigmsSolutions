@@ -17,32 +17,32 @@ public class BigIntegerArithmetics implements ArithmeticEngine<BigInteger> {
 
     @Override
     public BigInteger abs(BigInteger argument) {
-        return null;
+        return argument.abs();
     }
 
     @Override
     public BigInteger negate(BigInteger argument) {
-        return null;
+        return argument.negate();
     }
 
     @Override
     public BigInteger pow(BigInteger left, BigInteger right) throws ExpressionArithmeticException {
-        return null;
+        return ExpressionArithmeticException.wrapComputationWithException(() ->  left.pow(right.intValue()));
     }
 
     @Override
     public BigInteger log(BigInteger left, BigInteger right) throws ExpressionArithmeticException {
-        return null;
+        throw new ExpressionArithmeticException("«log» isn't supported by BigIntegers");
     }
 
     @Override
     public BigInteger leadingZeroes(BigInteger argument) throws ExpressionArithmeticException {
-        return null;
+        throw new ExpressionArithmeticException("«leadingZeroes» aren't supported by BigIntegers");
     }
 
     @Override
     public BigInteger trailingZeroes(BigInteger argument) throws ExpressionArithmeticException {
-        return null;
+        throw new ExpressionArithmeticException("«trailingZeroes» aren't supported by BigIntegers");
     }
 
     @Override
@@ -52,41 +52,41 @@ public class BigIntegerArithmetics implements ArithmeticEngine<BigInteger> {
 
     @Override
     public BigInteger subtract(BigInteger left, BigInteger right) throws ExpressionArithmeticException {
-        return null;
+        return left.subtract(right);
     }
 
     @Override
     public BigInteger multiply(BigInteger left, BigInteger right) throws ExpressionArithmeticException {
-        return null;
+        return left.multiply(right);
     }
 
     @Override
     public BigInteger divide(BigInteger left, BigInteger right) throws ExpressionArithmeticException {
-        return null;
+        return ExpressionArithmeticException.wrapComputationWithException(() ->  left.divide(right));
     }
 
     @Override
     public BigInteger logicalShiftRight(BigInteger left, BigInteger right) throws ExpressionArithmeticException {
-        return null;
+        throw new ExpressionArithmeticException("«logicalShiftRight» isn't supported by BigIntegers");
     }
 
     @Override
     public BigInteger logicalShiftLeft(BigInteger left, BigInteger right) throws ExpressionArithmeticException {
-        return null;
+        return left.shiftLeft(right.intValue());
     }
 
     @Override
     public BigInteger arithmeticShiftRight(BigInteger left, BigInteger right) throws ExpressionArithmeticException {
-        return null;
+        return left.shiftRight(right.intValue());
     }
 
     @Override
     public BigInteger max(BigInteger left, BigInteger right) throws ExpressionArithmeticException {
-        return null;
+        return left.max(right);
     }
 
     @Override
     public BigInteger min(BigInteger left, BigInteger right) throws ExpressionArithmeticException {
-        return null;
+        return left.min(right);
     }
 }
