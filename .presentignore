@@ -5,7 +5,7 @@
 *.txt
 *.jar
 
-java/expression/myTests
-java/expression/parser/tests
+java/expression/myTests/*
+java/expression/parser/tests/*
 
 !*grammar*.txt
