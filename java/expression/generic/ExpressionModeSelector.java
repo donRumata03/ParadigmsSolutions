@@ -3,6 +3,7 @@ package expression.generic;
 import expression.general.arithmetics.ArithmeticEngine;
 import expression.general.arithmetics.BigIntegerArithmetics;
 import expression.general.arithmetics.CheckedIntegerArithmetics;
+import expression.general.arithmetics.TruncatedIntegerArithmetics;
 import expression.general.arithmetics.UncheckedDoubleArithmetics;
 import expression.general.arithmetics.UncheckedIntegerArithmetics;
 import expression.general.arithmetics.UncheckedLongArithmetics;
@@ -21,7 +22,7 @@ public class ExpressionModeSelector {
             case "bi" -> new GenericExpressionComputer<>(expression, new BigIntegerArithmetics());
             case "u" -> new GenericExpressionComputer<>(expression, new UncheckedIntegerArithmetics());
             case "l" -> new GenericExpressionComputer<>(expression, new UncheckedLongArithmetics());
-            case "t" -> new GenericExpressionComputer<>(expression, new TrucatedIntegerArithmetics());
+            case "t" -> new GenericExpressionComputer<>(expression, new TruncatedIntegerArithmetics());
 //            case "" -> {}
             default -> throw new RuntimeException("Unknown command line mode: " + mode);
         };
