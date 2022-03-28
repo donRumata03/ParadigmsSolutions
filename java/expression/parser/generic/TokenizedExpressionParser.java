@@ -4,6 +4,7 @@ import expression.general.arithmetics.ArithmeticEngine;
 import expression.general.ParenthesesTrackingExpression;
 import expression.parser.generic.parseInterpreters.ParseInterpreter;
 import expression.parser.generic.tokens.AbstractOperationToken;
+import expression.parser.generic.tokens.FunctionToken;
 import expression.parser.generic.tokens.NumberToken;
 import expression.parser.generic.tokens.OperatorToken;
 import expression.parser.generic.tokens.ParenthesesToken;
@@ -48,7 +49,9 @@ public class TokenizedExpressionParser<
             TokenizedExpressionParser::parseExpression, List.of(
                 OperatorToken.SHIFT_LEFT,
                 OperatorToken.ARITHMETICAL_SHIFT,
-                OperatorToken.LOGICAL_SHIFT_RIGHT
+                OperatorToken.LOGICAL_SHIFT_RIGHT,
+                FunctionToken.max,
+                FunctionToken.min
             )
         );
     }
@@ -67,24 +70,24 @@ public class TokenizedExpressionParser<
 
     private ParenthesesTrackingExpression<T> parseLeftAssociativePriorityLayer (
         Function<TokenizedExpressionParser<T, Interpreter>, ParenthesesTrackingExpression<T>> prevLayer,
-        List<OperatorToken> operators
+        List<AbstractOperationToken> operators
     ) throws ParseException
     {
         ParenthesesTrackingExpression<T> left = prevLayer.apply(this);
 
         while (true) {
-            var mayBeOperator = tokenParser.tryMatchToken(token -> {
-                if (!(token instanceof OperatorToken operator)) {
+            var mayBeThisLayerOperation = tokenParser.tryMatchToken(token -> {
+                if (!(token instanceof AbstractOperationToken operator)) {
                     return false;
                 }
                 return operators.contains(operator);
             });
-            if (mayBeOperator.isEmpty()) {
+            if (mayBeThisLayerOperation.isEmpty()) {
                 break;
             }
 
             left = interpreter.constructBinaryExpression(
-                (AbstractOperationToken)mayBeOperator.get(),
+                (AbstractOperationToken)mayBeThisLayerOperation.get(),
                 left,
                 prevLayer.apply(this)
             );

@@ -86,6 +86,6 @@ public class UncheckedIntegerArithmetics implements ArithmeticEngine<Integer> {
 
     @Override
     public Integer min(Integer left, Integer right) throws ExpressionArithmeticException {
-        return Integer.max(left, right);
+        return Integer.min(left, right);
     }
 }

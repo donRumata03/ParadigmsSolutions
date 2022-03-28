@@ -1,8 +1,12 @@
 package expression.parser.tests;
 
 import expression.TripleExpression;
+import expression.general.GenericTripleExpression;
+import expression.general.arithmetics.ArithmeticEngine;
+import expression.general.arithmetics.CheckedIntegerArithmetics;
 import expression.general.exceptions.IntegerOverflowException;
 import java.io.IOException;
+import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,6 +14,10 @@ public class ParserTests {
 
     public TripleExpression parseFrom(String testCase) {
         return new expression.parser.ExpressionParser().parse(testCase);
+    }
+
+    public <T, Engine extends ArithmeticEngine<T>> GenericTripleExpression<T> parseGenericFrom(String testCase, Engine engine) {
+        return new expression.generic.GenericParser<>(engine).parse(testCase);
     }
 
     public TripleExpression parseCheckedFrom(String testCase) {
@@ -61,5 +69,12 @@ public class ParserTests {
     public void macOSProblem() {
         var e = parseCheckedFrom("    (2147483647 / 10)");
     }
+
+    @Test
+    public void parseMin() {
+        var e = parseGenericFrom("-100 min 4", new CheckedIntegerArithmetics());
+        Assert.assertEquals(Integer.valueOf(-100),  e.evaluate(1, 2, 3));
+    }
+
 
 }
