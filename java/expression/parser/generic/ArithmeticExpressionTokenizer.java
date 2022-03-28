@@ -145,15 +145,16 @@ public class ArithmeticExpressionTokenizer {
     }
 
     private Optional<ArithmeticExpressionToken> tryGetFunctionToken(String word) {
-        if (word.equals("l0")) {
-            return Optional.of(FunctionToken.l0);
-        } else if (word.equals("t0")) {
-            return Optional.of(FunctionToken.t0);
-        } else if (word.equals("abs")) {
-            return Optional.of(FunctionToken.abs);
-        }
+        return Optional.ofNullable(switch (word) {
+            case "l0" ->  FunctionToken.l0;
+            case "t0" ->  FunctionToken.t0;
+            case "abs" -> FunctionToken.abs;
+            case "min" -> FunctionToken.min;
+            case "max" -> FunctionToken.max;
+            case "count" -> FunctionToken.count;
+            default -> null;
+        });
 
-        return Optional.empty();
     }
 
 
