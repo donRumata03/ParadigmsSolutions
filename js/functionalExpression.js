@@ -9,8 +9,6 @@ let nAryReductionNode = reductionOp => function (...children) {
 	};
 }
 
-let constNode = () => cnst;
-let variableNode = () => variable;
 
 let add = nAryReductionNode((x, y) => x + y);
 let subtract = nAryReductionNode((x, y) => x - y);
@@ -130,10 +128,11 @@ let parse = function (string) {
 // 	med5(avg3(negate(variable('y')), variable('x'), multiply(cnst(-33), med5(variable('x'), variable('z'), med5(variable('z'), variable('x'), variable('x'), pi, variable('y')), e, add(cnst(927), variable('y'))))), variable('y'), subtract(divide(subtract(cnst(-372), variable('y')), multiply(variable('z'), variable('z'))), avg3(negate(pi), variable('z'), variable('x'))), negate(variable('y')), med5(med5(variable('z'), avg3(variable('z'), cnst(468), e), avg3(variable('z'), pi, cnst(997)), variable('x'), cnst(-240)), avg3(avg3(pi, cnst(-859), e), avg3(e, cnst(-49), e), variable('y')), divide(avg3(variable('y'), cnst(449), variable('z')), pi), med5(add(cnst(296), e), multiply(variable('x'), negate(cnst(639))), pi, negate(negate(avg3(divide(variable('y'), e), divide(variable('y'), variable('x')), variable('x')))), avg3(variable('x'), add(e, variable('y')), multiply(variable('z'), divide(cnst(-126), e)))), add(avg3(variable('z'), variable('y'), e), cnst(719))))
 // 	(0.68864586032785150000,0.42444473032207786000,0.27974754266318080000))
 
-console.log(parse("1 2 -10 100 -100 med5")(5, 0, 0))
-console.log(parse("1 2 3 avg3")(5, 0, 0))
-console.log(parse("pi")(5, 0, 0))
-console.log(parse("e")(5, 0, 0))
+// console.log(parse("1 2 -10 100 -100 med5")(5, 0, 0))
+// console.log(parse("1 2 3 avg3")(5, 0, 0))
+// console.log(parse("pi")(5, 0, 0))
+console.log(parse("x - y")(5, 0, 0))
+// console.log(parse("e")(5, 0, 0))
 
 // let expr = subtract(
 //     multiply(
