@@ -17,24 +17,23 @@ let divide = nAryReductionNode((x, y) => x / y);
 let negate = nAryReductionNode(v => -v) // (child) => (x, y, z) => -child(x, y, z);
 
 let avg3 = nAryReductionNode((a, b, c) => (a + b + c) / 3);
-let med5 = nAryReductionNode((a, b, c, d, e) => {
-	let srt = [a, b, c, d, e].sort();
-	let res = srt[2];
-	console.log("Computing med5 of: " + srt.toString() + ", res is: " + res);
-	return res;
-});
+let med5 = nAryReductionNode((a, b, c, d, e) => [a, b, c, d, e].sort((a, b) => a - b)[2]);
+let abs = nAryReductionNode((a) => Math.abs(a));
+let iff = nAryReductionNode((a, b, c) => a >= 0 ? b : c);
 
 
 let operators = {
 	"pi": [nAryReductionNode(() => Math.PI), 0],
 	"e": [nAryReductionNode(() => Math.E), 0],
 	"negate": [negate, 1],
+	"abs": [abs, 1],
 	"+": [add, 2],
 	"-": [subtract, 2],
 	"*": [multiply, 2],
 	"/": [divide, 2],
 	"avg3": [avg3, 3],
-	"med5": [med5, 5]
+	"iff": [iff, 3],
+	"med5": [med5, 5],
 };
 let pi = operators.pi[0]();
 let e = operators.e[0]();
@@ -103,7 +102,6 @@ let lexer = function (string) {
 let parse = function (string) {
 	let lex = lexer(string)
 	let stack = [];
-	console.log("Parsing " + string)
 
 	while (true) {
 		let next = lex();
@@ -131,7 +129,7 @@ let parse = function (string) {
 // console.log(parse("1 2 -10 100 -100 med5")(5, 0, 0))
 // console.log(parse("1 2 3 avg3")(5, 0, 0))
 // console.log(parse("pi")(5, 0, 0))
-console.log(parse("x - y")(5, 0, 0))
+// console.log(parse("x y -")(5, 0, 0))
 // console.log(parse("e")(5, 0, 0))
 
 // let expr = subtract(
