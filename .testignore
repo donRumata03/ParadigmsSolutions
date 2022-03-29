@@ -1,10 +1,10 @@
 # «ignored» files are considered tests
 
 # «General» rules
-*Test.java
-*Tester.java
-*TestSet.java
-*package-info.java
+java/**/*Test.java
+java/**/*Tester.java
+java/**/*TestSet.java
+java/**/*package-info.java
 java/base/*
 
 # Specific GK's files:
