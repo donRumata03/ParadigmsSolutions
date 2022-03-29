@@ -79,3 +79,85 @@ let Negate = createReductionNode((x) => -x)("negate");
 
 
 ////////////////////////////////////////////////////////////////////////////
+let operators = {
+	"negate": [Negate, 1],
+	"+": [Add, 2],
+	"-": [Subtract, 2],
+	"*": [Multiply, 2],
+	"/": [Divide, 2],
+};
+
+let lexer = function (string) {
+	let ptr = 0;
+	let scanWhile = predicate => start => {
+		let newPtr = start;
+		while (newPtr < string.length && predicate(string[newPtr])) newPtr++;
+		return newPtr;
+	}
+	let matchNextPositions = saluteCutting => startPosition => function (...matchers) {
+		let tmpPtr = startPosition;
+		for (const positionMatcher of matchers) {
+			if (tmpPtr === string.length) return saluteCutting;
+			if (!positionMatcher(tmpPtr)) return false;
+			tmpPtr++;
+		}
+		return true;
+	}
+	let positionizeCharPredicate = f => pos => f(string[pos])
+	let matchNextChars = saluteCutting => startPosition => (...args) =>
+		matchNextPositions(saluteCutting)(startPosition)(...args.map(positionizeCharPredicate))
+	let isNonZeroDigit = ch => ch.match(/[1-9]/i);
+	let isDigit = ch => ch.match(/[0-9]/i);
+	let isAlpha = ch => ch.toLowerCase().match(/[a-z]/i);
+	let isPositiveNumberStart = pos =>
+		pos < string.length && (
+			isNonZeroDigit(string[pos]) ||
+			(string[pos] === '0' && matchNextChars(true)(pos + 1)(ch => !isDigit(ch)))
+		);
+
+	return () => {
+		ptr = scanWhile(ch => ch.trim() === '')(ptr)
+		if (ptr === string.length) return undefined;
+
+		if (
+			isPositiveNumberStart(ptr)
+			|| matchNextPositions(false)(ptr)(positionizeCharPredicate(ch => ch === '-'), isPositiveNumberStart)
+		) {
+			// Numbers
+			let afterNumberEnd = scanWhile(isDigit)(ptr + 1);
+			let res = string.substring(ptr, afterNumberEnd);
+			ptr = afterNumberEnd;
+			return [() => Const(Number.parseInt(res)), 0];
+		} else if (string[ptr] in operators) {
+			// Single-symbol operators
+			return operators[string[ptr++]];
+		} else if (isAlpha(string[ptr])) {
+			// Words
+			let afterWordEnd = scanWhile(ch => isAlpha(ch) || isDigit(ch))(ptr + 1);
+			let word = string.substring(ptr, afterWordEnd);
+			ptr = afterWordEnd;
+
+			if (word in operators) return operators[word];
+			return [() => Variable(word), 0];
+		} else throw new Error();
+	}
+}
+
+let parse = function (string) {
+	let lex = lexer(string)
+	let stack = [];
+
+	while (true) {
+		let next = lex();
+		if (next === undefined) break;
+
+		let nodeChildren = [];
+		for (let i = 0; i < next[1]; i++) {
+			nodeChildren.push(stack.pop());
+		}
+		stack.push(new next[0](...nodeChildren.reverse()));
+	}
+	if (stack.length !== 1) throw new Error();
+	return stack[0];
+}
+
