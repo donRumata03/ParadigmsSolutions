@@ -16,6 +16,7 @@ let createReductionNode = reductionOp => symbol => {
 		this.op = reductionOp;
 		this.name = symbol;
 		this.children = children;
+		deriveToString(this);
 	};
 
 	constructor.prototype = { op: undefined, name: undefined, children: undefined }
@@ -23,20 +24,17 @@ let createReductionNode = reductionOp => symbol => {
 		return this.op(...(this.children.map(child => child.evaluate(...args))));
 	}
 	constructor.prototype.toStringBuilder = function(builder) {
-		for (let i = 0; i < this.children.length; i++) {
-			this.children[i].toStringBuilder(builder);
-			if (i === 0) builder.push(" ");
-		}
+		this.children.forEach(child => { child.toStringBuilder(builder); builder.push(" "); });
 		builder.push(symbol);
 	}
 
-	deriveToString(constructor.prototype)
 	return constructor;
 }
 
 
 let Const = function (value) {
 	this.value = value;
+	deriveToString(this);
 }
 Const.prototype = { value: 0 };
 Const.prototype.toStringBuilder = function (builder) {
@@ -46,19 +44,18 @@ Const.prototype.evaluate = function(..._args) {
 	return this.value;
 }
 
-deriveToString(Const.prototype);
 
 let Variable = function (name) {
 	this.name = name;
-
-	this.toStringBuilder = function (builder) {
-		builder.push(name);
-	}
-	this.evaluate = function(x, y, z) {
-		return name === "x" ? x : (name === "y" ? y : z);
-	}
+	deriveToString(this);
 }
-deriveToString(Variable.prototype);
+Variable.prototype.toStringBuilder = function (builder) {
+	builder.push(name);
+}
+Variable.prototype.evaluate = function(x, y, z) {
+	return name === "x" ? x : (name === "y" ? y : z);
+}
+
 
 
 // TODO: add function to produce aliases for custom expressions:
@@ -70,10 +67,15 @@ deriveToString(Variable.prototype);
 
 let Multiply = createReductionNode((x, y) => x * y)("*");
 let Add = createReductionNode((x, y) => x + y)("+");
+let Subtract = createReductionNode((x, y) => x - y)("-");
+let Divide = createReductionNode((x, y) => x / y)("/");
+let Negate = createReductionNode((x) => -x)("negate");
 
-let node = new Multiply(new Add(new Const(10), new Const(30)), new Const(566));
+// let node = new Multiply(new Const(566), new Variable("x"));
+//
+// console.log(node.evaluate(1, 2, 3));
+// console.log(node.evaluate(1, 2, 3));
+// console.log("«" + node.toString() + "»");
 
-console.log(node.evaluate(1, 2, 3));
-console.log(new Const(10).toString());
-console.log(node.toString());
 
+////////////////////////////////////////////////////////////////////////////
