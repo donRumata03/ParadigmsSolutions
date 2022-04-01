@@ -75,6 +75,8 @@ let Subtract = createReductionNode((x, y) => x - y)("-");
 let Multiply = createReductionNode((x, y) => x * y)("*");
 let Divide = createReductionNode((x, y) => x / y)("/");
 let Negate = createReductionNode((x) => -x)("negate");
+let Exponentiate = createReductionNode((x) => Math.exp(x))("exp");
+
 
 Add.prototype.diff = function (varName) {
 	return new Add(
@@ -110,6 +112,10 @@ Divide.prototype.diff = function (varName) {
 
 Negate.prototype.diff = function (varName) {
 	return new Negate(this.children[0].diff(varName));
+}
+
+Exponentiate.prototype.diff = function (varName) {
+	return new Multiply(this, this.children[0].diff(varName));
 }
 
 
