@@ -1,4 +1,7 @@
-
+function namedTreeToStringBuilder(builder, children, name) {
+	children.forEach(child => { child.toStringBuilder(builder); builder.push(" "); });
+	builder.push(name);
+}
 
 function deriveToString(obj) {
 	obj.toString = function () {
@@ -21,8 +24,7 @@ let createReductionNode = reductionOp => symbol => {
 		return this.op(...(this.children.map(child => child.evaluate(...args))));
 	}
 	constructor.prototype.toStringBuilder = function(builder) {
-		this.children.forEach(child => { child.toStringBuilder(builder); builder.push(" "); });
-		builder.push(symbol);
+		namedTreeToStringBuilder(builder, this.children, symbol);
 	}
 	deriveToString(constructor.prototype);
 
@@ -121,12 +123,17 @@ Exponentiate.prototype.diff = function (varName) {
 
 function labelParametrizedTree(treeConstructor, label) {
 	let newNode = function (...trees) {
-		this.node = this();
+		this.treeList = Array.from(trees);
+		this.inner = treeConstructor(...trees);
+		this.name = label;
 	};
-	newNode.prototype =
 	newNode.prototype.diff = function (varName) {
-
+		this.inner.diff(varName);
 	}
+	newNode.prototype.toStringBuilder = function (builder) {
+		namedTreeToStringBuilder(builder, this.treeList, this.name);
+	}
+	deriveToString(newNode.prototype);
 }
 
 let node = new Multiply(new Const(566), new Variable("x"));
