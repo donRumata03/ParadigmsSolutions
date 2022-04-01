@@ -124,7 +124,7 @@ let lexer = function (string) {
 			let afterNumberEnd = scanWhile(isDigit)(ptr + 1);
 			let res = string.substring(ptr, afterNumberEnd);
 			ptr = afterNumberEnd;
-			return [() => Const(Number.parseInt(res)), 0];
+			return [function() { return new Const(Number.parseInt(res)) }, 0];
 		} else if (string[ptr] in operators) {
 			// Single-symbol operators
 			return operators[string[ptr++]];
@@ -135,7 +135,7 @@ let lexer = function (string) {
 			ptr = afterWordEnd;
 
 			if (word in operators) return operators[word];
-			return [() => Variable(word), 0];
+			return [function() { return new Variable(word) }, 0];
 		} else throw new Error();
 	}
 }
