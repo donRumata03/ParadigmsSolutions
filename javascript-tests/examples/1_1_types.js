@@ -1,5 +1,6 @@
 "use strict";
 
+lecture("1. Types and Functions");
 chapter("Types");
 section("Variables are typeless");
 

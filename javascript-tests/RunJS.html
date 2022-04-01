@@ -23,7 +23,10 @@
         if (file.endsWith(".mjs")) {
             println(`ES module loading not supported: ${file}`);
         } else {
-            document.write(`<script src="${file}" charset="UTF-8"></` + `script>`);
+            const script = document.createElement("script");
+            script.src = file;
+            script.charset = "UTF-8";
+            document.head.appendChild(script);
         }
     }
 
