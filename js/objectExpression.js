@@ -128,7 +128,10 @@ function labelParametrizedTree(treeConstructor, label) {
 		this.name = label;
 	};
 	newNode.prototype.diff = function (varName) {
-		this.inner.diff(varName);
+		return this.inner.diff(varName);
+	}
+	newNode.prototype.evaluate = function (...args) {
+		return this.inner.evaluate(...args);
 	}
 	newNode.prototype.toStringBuilder = function (builder) {
 		namedTreeToStringBuilder(builder, this.treeList, this.name);
@@ -141,19 +144,20 @@ function labelParametrizedTree(treeConstructor, label) {
 let Gauss = labelParametrizedTree(
 	(a, b, c, x) => {
 		let shift = new Subtract(x, b);
-		new Multiply(a, new Exponentiate(
+		return new Multiply(a, new Exponentiate(
 			new Negate(new Divide(
 				new Multiply(shift, shift),
 				new Multiply(new Const(2), new Multiply(c, c))
 			)))
 		)
 	},
-	"Gauss"
+	"gauss"
 );
 
-let node = new Multiply(new Const(566), new Variable("x"));
+// let node = new Multiply(new Const(566), new Variable("x"));
+let node = new Gauss(new Const(1), new Const(2), new Const(3), new Const(4));
 //
-// console.log(node.evaluate(1, 2, 3));
+console.log(node.evaluate(1, 2, 3));
 // console.log(node.evaluate(1, 2, 3));
 // console.log("«" + node.toString() + "»");
 // console.log("«" + node.diff("x").toString() + "»");
@@ -167,6 +171,7 @@ let operators = {
 	"-": [Subtract, 2],
 	"*": [Multiply, 2],
 	"/": [Divide, 2],
+	"gauss": [Gauss, 4],
 };
 
 let lexer = function (string) {
