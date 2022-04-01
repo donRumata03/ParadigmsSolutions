@@ -70,12 +70,24 @@ Variable.prototype.diff = function(varName) {
 //       its evaluation and differentiation is equivalent to expression with a_s and b_s substituted
 //       Whereas toString yields children with name
 
-let Multiply = createReductionNode((x, y) => x * y)("*");
 let Add = createReductionNode((x, y) => x + y)("+");
 let Subtract = createReductionNode((x, y) => x - y)("-");
+let Multiply = createReductionNode((x, y) => x * y)("*");
 let Divide = createReductionNode((x, y) => x / y)("/");
 let Negate = createReductionNode((x) => -x)("negate");
 
+Add.prototype.diff = function (varName) {
+	return new Add(
+		this.children[0].diff(varName),
+		this.children[1].diff(varName)
+	);
+}
+Subtract.prototype.diff = function (varName) {
+	return new Subtract(
+		this.children[0].diff(varName),
+		this.children[1].diff(varName)
+	);
+}
 Multiply.prototype.diff = function (varName) {
 	const l = this.children[0];
 	const r = this.children[1];
@@ -84,13 +96,29 @@ Multiply.prototype.diff = function (varName) {
 		new Multiply(l.diff(varName), r)
 	);
 }
+Divide.prototype.diff = function (varName) {
+	const l = this.children[0];
+	const r = this.children[1];
+	return new Divide(
+		new Subtract(
+			new Multiply(l.diff(varName), r),
+			new Multiply(l, r.diff(varName))
+		),
+		new Multiply(r, r)
+	);
+}
+
+Negate.prototype.diff = function (varName) {
+	return new Negate(this.children[0].diff(varName));
+}
+
 
 let node = new Multiply(new Const(566), new Variable("x"));
 //
 // console.log(node.evaluate(1, 2, 3));
 // console.log(node.evaluate(1, 2, 3));
 // console.log("«" + node.toString() + "»");
-console.log("«" + node.diff("x").toString() + "»");
+// console.log("«" + node.diff("x").toString() + "»");
 
 
 
