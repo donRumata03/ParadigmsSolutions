@@ -36,11 +36,13 @@ let Const = function (value) {
 Const.prototype.toStringBuilder = function (builder) {
 	builder.push(this.value.toString());
 }
+deriveToString(Const.prototype);
 Const.prototype.evaluate = function(..._args) {
 	return this.value;
 }
-deriveToString(Const.prototype);
-
+Const.prototype.diff = function(varName) {
+	return new Const(0);
+}
 
 let Variable = function (name) {
 	this.name = name;
@@ -48,10 +50,16 @@ let Variable = function (name) {
 Variable.prototype.toStringBuilder = function (builder) {
 	builder.push(this.name);
 }
+deriveToString(Variable.prototype);
 Variable.prototype.evaluate = function(x, y, z) {
 	return this.name === "x" ? x : (this.name === "y" ? y : z);
 }
-deriveToString(Variable.prototype);
+Variable.prototype.diff = function(varName) {
+	return new Const(
+		(varName === this.name) ? 1 : 0
+	);
+}
+
 
 
 
@@ -68,11 +76,22 @@ let Subtract = createReductionNode((x, y) => x - y)("-");
 let Divide = createReductionNode((x, y) => x / y)("/");
 let Negate = createReductionNode((x) => -x)("negate");
 
+Multiply.prototype.diff = function (varName) {
+	const l = this.children[0];
+	const r = this.children[1];
+	return new Add(
+		new Multiply(l, r.diff(varName)),
+		new Multiply(l.diff(varName), r)
+	);
+}
+
 let node = new Multiply(new Const(566), new Variable("x"));
 //
-console.log(node.evaluate(1, 2, 3));
-console.log(node.evaluate(1, 2, 3));
-console.log("«" + node.toString() + "»");
+// console.log(node.evaluate(1, 2, 3));
+// console.log(node.evaluate(1, 2, 3));
+// console.log("«" + node.toString() + "»");
+console.log("«" + node.diff("x").toString() + "»");
+
 
 
 ////////////////////////////////////////////////////////////////////////////
