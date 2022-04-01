@@ -134,7 +134,22 @@ function labelParametrizedTree(treeConstructor, label) {
 		namedTreeToStringBuilder(builder, this.treeList, this.name);
 	}
 	deriveToString(newNode.prototype);
+
+	return newNode;
 }
+
+let Gauss = labelParametrizedTree(
+	(a, b, c, x) => {
+		let shift = new Subtract(x, b);
+		new Multiply(a, new Exponentiate(
+			new Negate(new Divide(
+				new Multiply(shift, shift),
+				new Multiply(new Const(2), new Multiply(c, c))
+			)))
+		)
+	},
+	"Gauss"
+);
 
 let node = new Multiply(new Const(566), new Variable("x"));
 //
