@@ -119,6 +119,16 @@ Exponentiate.prototype.diff = function (varName) {
 }
 
 
+function labelParametrizedTree(treeConstructor, label) {
+	let newNode = function (...trees) {
+		this.node = this();
+	};
+	newNode.prototype =
+	newNode.prototype.diff = function (varName) {
+
+	}
+}
+
 let node = new Multiply(new Const(566), new Variable("x"));
 //
 // console.log(node.evaluate(1, 2, 3));
