@@ -38,47 +38,23 @@ let operators = {
 let pi = operators.pi[0]();
 let e = operators.e[0]();
 
-// let constants = Object.fromEntries(Object.entries({
-//     "pi": Math.PI,
-//     "e": Math.E
-// }).map(([k, v]) => [k, () => v]))
 
 let lexer = function (string) {
 	let ptr = 0;
 	let scanWhile = predicate => start => {
-		let newPtr = start;
-		while (newPtr < string.length && predicate(string[newPtr])) newPtr++;
-		return newPtr;
+		if (start === string.length || !predicate(string[start])) return start;
+		return scanWhile(predicate)(start + 1);
 	}
-	let matchNextPositions = saluteCutting => startPosition => function (...matchers) {
-		let tmpPtr = startPosition;
-		for (const positionMatcher of matchers) {
-			if (tmpPtr === string.length) return saluteCutting;
-			if (!positionMatcher(tmpPtr)) return false;
-			tmpPtr++;
-		}
-		return true;
-	}
-	let positionizeCharPredicate = f => pos => f(string[pos])
-	let matchNextChars = saluteCutting => startPosition => (...args) =>
-		matchNextPositions(saluteCutting)(startPosition)(...args.map(positionizeCharPredicate))
-	let isNonZeroDigit = ch => ch.match(/[1-9]/i);
+
 	let isDigit = ch => ch.match(/[0-9]/i);
 	let isAlpha = ch => ch.toLowerCase().match(/[a-z]/i);
-	let isPositiveNumberStart = pos =>
-		pos < string.length && (
-			isNonZeroDigit(string[pos]) ||
-			(string[pos] === '0' && matchNextChars(true)(pos + 1)(ch => !isDigit(ch)))
-		);
+	let isPositiveNumberStart = pos => pos < string.length && isDigit(string[pos]);
 
 	return () => {
 		ptr = scanWhile(ch => ch.trim() === '')(ptr)
 		if (ptr === string.length) return undefined;
 
-		if (
-			isPositiveNumberStart(ptr)
-			|| matchNextPositions(false)(ptr)(positionizeCharPredicate(ch => ch === '-'), isPositiveNumberStart)
-		) {
+		if (isPositiveNumberStart(ptr) || (string[ptr] === '-' && isPositiveNumberStart(ptr + 1))) {
 			// Numbers
 			let afterNumberEnd = scanWhile(isDigit)(ptr + 1);
 			let res = string.substring(ptr, afterNumberEnd);
@@ -98,21 +74,28 @@ let lexer = function (string) {
 		} else throw new Error();
 	}
 }
+let mapIterator = f => it => {
+	let next = it();
+	if (next === undefined) return;
+	f(next);
+	mapIterator(f)(it);
+}
 
 let parse = function (string) {
 	let lex = lexer(string)
 	let stack = [];
 
-	while (true) {
-		let next = lex();
-		if (next === undefined) break;
-
-		let nodeChildren = [];
-		for (let i = 0; i < next[1]; i++) {
-			nodeChildren.push(stack.pop());
-		}
-		stack.push(next[0](...nodeChildren.reverse()));
-	}
+	mapIterator((next) => {
+		stack.push(next[0](...stack.splice(stack.length - next[1], next[1])));
+	})(lex);
 	if (stack.length !== 1) throw new Error();
 	return stack[0];
 }
+
+// let node = parse("x 2 +");
+// let lex = lexer("x 2 +");
+// let arr = [];
+// mapIterator((v) => arr.push(v))(lex)
+// console.log(arr);
+//
+// console.log(node(0, 0, 0));
