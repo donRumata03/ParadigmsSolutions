@@ -19,7 +19,7 @@ let add = nAryReductionNode((x, y) => x + y);
 let subtract = nAryReductionNode((x, y) => x - y);
 let multiply = nAryReductionNode((x, y) => x * y);
 let divide = nAryReductionNode((x, y) => x / y);
-let negate = nAryReductionNode(v => -v) // (child) => (x, y, z) => -child(x, y, z);
+let negate = nAryReductionNode(v => -v)
 
 let avg3 = nAryReductionNode((a, b, c) => (a + b + c) / 3);
 let med5 = nAryReductionNode((a, b, c, d, e) => [a, b, c, d, e].sort((a, b) => a - b)[2]);
@@ -101,11 +101,3 @@ let parse = function (string) {
 	if (stack.length !== 1) throw new Error();
 	return stack[0];
 }
-
-// let node = parse("x 2 +");
-// let lex = lexer("x 2 +");
-// let arr = [];
-// mapIterator((v) => arr.push(v))(lex)
-// console.log(arr);
-//
-// console.log(node(0, 0, 0));
