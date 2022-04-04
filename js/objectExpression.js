@@ -2,17 +2,22 @@ function namedTreeToStringBuilder(builder, children, name) {
 	children.forEach(child => { child.toStringBuilder(builder); builder.push(" "); });
 	builder.push(name);
 }
-
-function deriveToString(obj) {
-	obj.toString = function () {
-		let res = [];
-		this.toStringBuilder(res);
-		return res.join("");
-	}
+function namedTreeToPrefixBuilder(builder, children, name) {
+	builder.push("(");
+	builder.push(name);
+	children.forEach(child => { builder.push(" "); child.toStringBuilder(builder); });
+	builder.push(")");
 }
 
-// TODO: take derivative function of operation itself
-//  and then generate «diff» function by multiplying by nested derivatives
+function stringify(extendBuilder) {
+	let resBuilder = [];
+	extendBuilder(resBuilder);
+	return resBuilder.join("");
+}
+
+let deriveToString = obj => obj.toString = stringify(this.toStringBuilder);
+let derivePrefix = obj => obj.prefix = stringify(this.toPrefixBuilder);
+
 let createReductionNode = reductionOp => symbol => {
 	let constructor = function (...children) {
 		this.op = reductionOp;
@@ -25,6 +30,9 @@ let createReductionNode = reductionOp => symbol => {
 	}
 	constructor.prototype.toStringBuilder = function(builder) {
 		namedTreeToStringBuilder(builder, this.children, symbol);
+	}
+	constructor.prototype.toPrefixBuilder = function(builder) {
+		namedTreeToPrefixBuilder(builder, this.children, symbol);
 	}
 	deriveToString(constructor.prototype);
 
@@ -156,7 +164,6 @@ let Gauss = labelParametrizedTree(
 
 // let node = new Multiply(new Const(566), new Variable("x"));
 let node = new Gauss(new Const(1), new Const(2), new Const(3), new Const(4));
-//
 console.log(node.evaluate(1, 2, 3));
 // console.log(node.evaluate(1, 2, 3));
 // console.log("«" + node.toString() + "»");
@@ -174,6 +181,7 @@ let operators = {
 	"gauss": [Gauss, 4],
 };
 
+// TODO: add tokens «(» and «)»
 let lexer = function (string) {
 	let ptr = 0;
 	let scanWhile = predicate => start => {
@@ -230,6 +238,11 @@ let lexer = function (string) {
 	}
 }
 
+// TODO: add a number parser parsePrefix(string):
+//  rawPrefixExpression --> OPERATOR '(' prefixExpression ')' '(' prefixExpression ')' … '(' prefixExpression ')' prefixExpression
+//  prefixExpression --> rawPrefixExpression | '(' rawPrefixExpression ')'
+//
+// (in rawPrefixExpression definition the argument number should be match the operator's argument number)
 let parse = function (string) {
 	let lex = lexer(string)
 	let stack = [];
