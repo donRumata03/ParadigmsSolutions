@@ -3,10 +3,15 @@
 let cnst = value => (_x, _y, _z) => value;
 let variable = name => (x, y, z) => name === "x" ? x : (name === "y" ? y : z);
 
-let nAryReductionNode = reductionOp => function (...children) {
-	return function (x, y, z) {
-		return reductionOp(...(children.map(child => child(x, y, z))));
-	};
+let nAryReductionNode = reductionOp => {
+	let res = function (...children) {
+		return function (x, y, z) {
+			return reductionOp(...(children.map(child => child(x, y, z))));
+		};
+	}
+	res.arity = reductionOp.length;
+	return res;
+
 }
 
 
@@ -23,20 +28,20 @@ let iff = nAryReductionNode((a, b, c) => a >= 0 ? b : c);
 
 
 let operators = {
-	"pi": [nAryReductionNode(() => Math.PI), 0],
-	"e": [nAryReductionNode(() => Math.E), 0],
-	"negate": [negate, 1],
-	"abs": [abs, 1],
-	"+": [add, 2],
-	"-": [subtract, 2],
-	"*": [multiply, 2],
-	"/": [divide, 2],
-	"avg3": [avg3, 3],
-	"iff": [iff, 3],
-	"med5": [med5, 5],
+	"pi": nAryReductionNode(() => Math.PI),
+	"e": nAryReductionNode(() => Math.E),
+	"negate": negate,
+	"abs": abs,
+	"+": add,
+	"-": subtract,
+	"*": multiply,
+	"/": divide,
+	"avg3": avg3,
+	"iff": iff,
+	"med5": med5,
 };
-let pi = operators.pi[0]();
-let e = operators.e[0]();
+let pi = operators.pi();
+let e = operators.e();
 
 
 let lexer = function (string) {
@@ -59,7 +64,9 @@ let lexer = function (string) {
 			let afterNumberEnd = scanWhile(isDigit)(ptr + 1);
 			let res = string.substring(ptr, afterNumberEnd);
 			ptr = afterNumberEnd;
-			return [() => cnst(Number.parseInt(res)), 0];
+			let num = () => cnst(Number.parseInt(res));
+			num.arity = 0;
+			return num;
 		} else if (string[ptr] in operators) {
 			// Single-symbol operators
 			return operators[string[ptr++]];
@@ -70,7 +77,9 @@ let lexer = function (string) {
 			ptr = afterWordEnd;
 
 			if (word in operators) return operators[word];
-			return [() => variable(word), 0];
+			let v = () => variable(word);
+			v.arity = 0;
+			return v;
 		} else throw new Error();
 	}
 }
@@ -86,7 +95,8 @@ let parse = function (string) {
 	let stack = [];
 
 	mapIterator((next) => {
-		stack.push(next[0](...stack.splice(stack.length - next[1], next[1])));
+		console.assert(next.arity !== undefined)
+		stack.push(next(...stack.splice(stack.length - next.arity, next.arity)));
 	})(lex);
 	if (stack.length !== 1) throw new Error();
 	return stack[0];
