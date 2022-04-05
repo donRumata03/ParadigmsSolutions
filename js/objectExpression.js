@@ -1,3 +1,8 @@
+let polishTreeFormatter = (operator, children, builder, formatChild) => {
+	children.forEach(child => { formatChild(builder); builder.push(" "); });
+	builder.push(name);
+}
+
 function namedTreeToStringBuilder(builder, children, name) {
 	children.forEach(child => { child.toStringBuilder(builder); builder.push(" "); });
 	builder.push(name);
@@ -286,12 +291,12 @@ let parse = function (string) {
 }
 
 // Grammar:
-//      rawPrefixExpression --> OPERATOR_SYMBOL [ '(' prefixExpression ')' | nullaryOperator ]* prefixExpression
-//      prefixExpression --> '(' prefixExpression ')' | rawPrefixExpression
+//      operatorPrefixExpression --> OPERATOR_SYMBOL [ prefixExpression ]+
+//      prefixExpression --> '(' operatorPrefixExpression ')' | NULLARY_OPERATOR
 // (in rawPrefixExpression definition the argument number should match the operator's argument number)
-// Note that this perfectly works for nullary operators
 
 let undefinedIntoEOF = token => (token === undefined) ? String.raw`<EOF>` : token.toString()
+let checkHasArity = token => { if (token === undefined || token.arity === undefined) { throw new ParseError("Token " + undefinedIntoEOF(token) + " can't be an operator but stays at its place"); } }
 
 function unexpectedToken(expected, actual, context = undefined) {
 	throw new ParseError("Bad token" + (context !== undefined ? " at " + context : "") + ". Expected: " + expected + ", actual: „" + undefinedIntoEOF(actual) + "“");
@@ -303,28 +308,16 @@ function expectClosingParentheses(lexer, context = undefined) {
 	lexer();
 }
 
-function parseRawTokenizedPrefix(lexer) {
+function parseOperatorTokenizedPrefix(lexer) {
 	let operator = lexer();
-	if (operator === undefined || operator.arity === undefined) { throw new ParseError("Token " + undefinedIntoEOF(operator) + " can't be an operator but stays at its place"); }
+	checkHasArity(operator);
+	if (operator.arity === 0) {
+		throw new ParseError("Can't use nullary operator as a normal one… Don't know why…");
+	}
 
 	let arguments = [];
 	for (let i = 0; i < operator.arity; i++) {
-		if (i === operator.arity - 1) {
-			arguments.push(parseTokenizedPrefix(lexer));
-		} else {
-			let wrappingContext = "obligate wrapping operator's arguments (except the last and nullary ones) into parentheses";
-			if (lexer.nextIsOpeningParentheses()) {
-				lexer();
-				arguments.push(parseRawTokenizedPrefix(lexer));
-				expectClosingParentheses(lexer, wrappingContext);
-			} else {
-				let next = lexer();
-				if (next.arity !== 0) {
-					unexpectedToken("nullary operator or expression in parentheses", next, "ordinary argument");
-				}
-				arguments.push(new next());
-			}
-		}
+		arguments.push(parseTokenizedPrefix(lexer));
 	}
 
 	return new operator(...arguments);
@@ -332,16 +325,30 @@ function parseRawTokenizedPrefix(lexer) {
 function parseTokenizedPrefix(lexer) {
 	if (lexer.nextIsOpeningParentheses()) {
 		lexer();
-		let res = parseTokenizedPrefix(lexer);
-		expectClosingParentheses(lexer, "optional wrapping expression with parentheses");
+		let res = parseOperatorTokenizedPrefix(lexer);
+		expectClosingParentheses(lexer, "operator expression ending");
 		return res;
 	} else {
-		return parseRawTokenizedPrefix(lexer);
+		let nextNullary = lexer();
+		checkHasArity(nextNullary);
+		if (nextNullary.arity !== 0) {
+			unexpectedToken("nullary operator or expression in parentheses", nextNullary, "regular parsing");
+		}
+		return new nextNullary();
 	}
 }
 function parsePrefix(string) {
 	let lexer = Lexer(string);
-	let parsed = parseTokenizedPrefix(lexer);
+
+	let parsed;
+	try {
+		parsed = parseTokenizedPrefix(lexer);
+	} catch(e) {
+		console.log(e);
+		console.log(string);
+		throw e;
+	}
+
 	if (lexer() !== undefined) {
 		throw new ParseError("Couldn't parse the whole expression…");
 	}
@@ -349,4 +356,5 @@ function parsePrefix(string) {
 }
 
 
-let emptyInput = parsePrefix("");
+// let emptyInput = parsePrefix("");
+let nullaryWith0Args = parsePrefix("1");
