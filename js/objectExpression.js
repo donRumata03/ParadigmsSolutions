@@ -286,24 +286,18 @@ let parse = function (string) {
 	return stack[0];
 }
 
-// TODO: add a number parser parsePrefix(string):
-//  rawPrefixExpression --> OPERATOR_SYMBOL [ '(' prefixExpression ')' | nullaryOperator ]* prefixExpression
-//  prefixExpression --> '(' prefixExpression ')' | rawPrefixExpression
-//  (in rawPrefixExpression definition the argument number should be match the operator's argument number)
-//  Note that this perfectly works for nullary operators
+// Grammar:
+//      rawPrefixExpression --> OPERATOR_SYMBOL [ '(' prefixExpression ')' | nullaryOperator ]* prefixExpression
+//      prefixExpression --> '(' prefixExpression ')' | rawPrefixExpression
+// (in rawPrefixExpression definition the argument number should match the operator's argument number)
+// Note that this perfectly works for nullary operators
 
-function unexpectedToken(expected, lexer, context = undefined) {
-	throw new ParseError("Bad token" + (context !== undefined ? " at " + context : "") + ". Expected: " + expected + ", actual: „" + lexer() + "“");
-}
-function expectOpeningParentheses(lexer, context = undefined) {
-	if (!lexer.nextIsOpeningParentheses()) {
-		unexpectedToken('(', lexer, context);
-	}
-	lexer();
+function unexpectedToken(expected, actual, context = undefined) {
+	throw new ParseError("Bad token" + (context !== undefined ? " at " + context : "") + ". Expected: " + expected + ", actual: „" + actual + "“");
 }
 function expectClosingParentheses(lexer, context = undefined) {
 	if (!lexer.nextIsClosingParentheses()) {
-		unexpectedToken(')', lexer, context);
+		unexpectedToken(')', lexer(), context);
 	}
 	lexer();
 }
@@ -324,8 +318,9 @@ function parseRawTokenizedPrefix(lexer) {
 				expectClosingParentheses(lexer, wrappingContext);
 			} else {
 				let next = lexer();
-				if (next.arity !== 0) throw new ParseError("Bad token: " + next
-					+ ". Expected: nullary operator or expression in parentheses");
+				if (next.arity !== 0) {
+					unexpectedToken("nullary operator or expression in parentheses", next, "ordinary argument");
+				}
 				arguments.push(new next());
 			}
 		}
@@ -351,7 +346,3 @@ function parsePrefix(string) {
 	}
 	return parsed;
 }
-
-// let nd = parse("2 x +");
-// let nd_pref = parsePrefix("(- (* 2 x) 3)");
-// console.log(nd_pref.prefix())
