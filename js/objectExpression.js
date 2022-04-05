@@ -212,7 +212,6 @@ TokenizeError.prototype.name = "TokenizeError";
 TokenizeError.prototype.constructor = TokenizeError;
 
 
-// TODO: add tokens «(» and «)»
 let Lexer = function (string) {
 	let ptr = 0;
 	let scanWhile = predicate => start => {
@@ -292,8 +291,10 @@ let parse = function (string) {
 // (in rawPrefixExpression definition the argument number should match the operator's argument number)
 // Note that this perfectly works for nullary operators
 
+let undefinedIntoEOF = token => (token === undefined) ? String.raw`<EOF>` : token.toString()
+
 function unexpectedToken(expected, actual, context = undefined) {
-	throw new ParseError("Bad token" + (context !== undefined ? " at " + context : "") + ". Expected: " + expected + ", actual: „" + actual + "“");
+	throw new ParseError("Bad token" + (context !== undefined ? " at " + context : "") + ". Expected: " + expected + ", actual: „" + undefinedIntoEOF(actual) + "“");
 }
 function expectClosingParentheses(lexer, context = undefined) {
 	if (!lexer.nextIsClosingParentheses()) {
@@ -304,7 +305,7 @@ function expectClosingParentheses(lexer, context = undefined) {
 
 function parseRawTokenizedPrefix(lexer) {
 	let operator = lexer();
-	if (operator.arity === undefined) { throw new ParseError("Token " + operator + " can't be an operator but stays at its place"); }
+	if (operator === undefined || operator.arity === undefined) { throw new ParseError("Token " + undefinedIntoEOF(operator) + " can't be an operator but stays at its place"); }
 
 	let arguments = [];
 	for (let i = 0; i < operator.arity; i++) {
@@ -346,3 +347,6 @@ function parsePrefix(string) {
 	}
 	return parsed;
 }
+
+
+let emptyInput = parsePrefix("");
