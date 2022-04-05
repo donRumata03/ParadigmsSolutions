@@ -5,7 +5,7 @@ function namedTreeToStringBuilder(builder, children, name) {
 function namedTreeToPrefixBuilder(builder, children, name) {
 	builder.push("(");
 	builder.push(name);
-	children.forEach(child => { builder.push(" "); child.toStringBuilder(builder); });
+	children.forEach(child => { builder.push(" "); child.toPrefixBuilder(builder); });
 	builder.push(")");
 }
 
@@ -15,8 +15,9 @@ function stringify(extendBuilder) {
 	return resBuilder.join("");
 }
 
-let deriveToString = obj => obj.toString = function() { return stringify(this.toStringBuilder); };
-let derivePrefix = obj => obj.prefix = function() { return stringify(this.toPrefixBuilder); };
+// «This» in JS is such a gotcha…
+let deriveToString = obj => obj.toString = function() { return stringify((b) => this.toStringBuilder(b)); };
+let derivePrefix = obj => obj.prefix = function() { return stringify((b) => this.toPrefixBuilder(b)); };
 
 let createReductionNode = reductionOp => symbol => {
 	let constructor = function (...children) {
@@ -24,7 +25,7 @@ let createReductionNode = reductionOp => symbol => {
 		this.name = symbol;
 		this.children = children;
 	};
-	constructor.prototype.arity = reductionOp.length;
+	constructor.arity = reductionOp.length; // Arity is a constructor's, not prototype's property
 	constructor.prototype.evaluate = function (...args) {
 		return this.op(...(this.children.map(child => child.evaluate(...args))));
 	}
@@ -135,7 +136,7 @@ function labelParametrizedTree(treeConstructor, label) {
 		this.inner = treeConstructor(...trees);
 		this.name = label;
 	};
-	newNode.prototype.arity = treeConstructor.length;
+	newNode.arity = treeConstructor.length;
 	newNode.prototype.diff = function (varName) {
 		return this.inner.diff(varName);
 	}
@@ -164,10 +165,10 @@ let Gauss = labelParametrizedTree(
 );
 
 // let node = new Multiply(new Const(566), new Variable("x"));
-let node = new Gauss(new Const(1), new Const(2), new Const(3), new Const(4));
-console.log(node.evaluate(1, 2, 3));
+// let node = new Gauss(new Const(1), new Const(2), new Const(3), new Const(4));
 // console.log(node.evaluate(1, 2, 3));
 // console.log("«" + node.toString() + "»");
+// console.log(node.evaluate(1, 2, 3));
 // console.log("«" + node.diff("x").toString() + "»");
 
 
@@ -262,7 +263,8 @@ let parse = function (string) {
 		console.assert(next.arity !== undefined)
 		stack.push(new next(...stack.splice(stack.length - next.arity, next.arity)));
 	})(lex);
-	if (stack.length !== 1) throw new Error();
+	if (stack.length !== 1) {
+		console.log(stack.length); throw new Error(); }
 	return stack[0];
 }
 
@@ -289,5 +291,5 @@ let parse = function (string) {
 // 	return stack[0];
 // }
 
-let nd = parse("+ 2 x");
+// let nd = parse("2 x +");
 
