@@ -24,7 +24,7 @@ let createReductionNode = reductionOp => symbol => {
 		this.name = symbol;
 		this.children = children;
 	};
-
+	constructor.prototype.arity = reductionOp.length;
 	constructor.prototype.evaluate = function (...args) {
 		return this.op(...(this.children.map(child => child.evaluate(...args))));
 	}
@@ -43,6 +43,7 @@ let createReductionNode = reductionOp => symbol => {
 let Const = function (value) {
 	this.value = value;
 }
+Const.prototype.arity = 0;
 Const.prototype.toStringBuilder = function (builder) {
 	builder.push(this.value.toString());
 }
@@ -57,6 +58,7 @@ Const.prototype.diff = function(varName) {
 let Variable = function (name) {
 	this.name = name;
 }
+Variable.prototype.arity = 0;
 Variable.prototype.toStringBuilder = function (builder) {
 	builder.push(this.name);
 }
@@ -135,6 +137,7 @@ function labelParametrizedTree(treeConstructor, label) {
 		this.inner = treeConstructor(...trees);
 		this.name = label;
 	};
+	newNode.prototype.arity = treeConstructor.length;
 	newNode.prototype.diff = function (varName) {
 		return this.inner.diff(varName);
 	}
@@ -173,12 +176,12 @@ console.log(node.evaluate(1, 2, 3));
 
 ////////////////////////////////////////////////////////////////////////////
 let operators = {
-	"negate": [Negate, 1],
-	"+": [Add, 2],
-	"-": [Subtract, 2],
-	"*": [Multiply, 2],
-	"/": [Divide, 2],
-	"gauss": [Gauss, 4],
+	"negate": Negate,
+	"+": Add,
+	"-": Subtract,
+	"*": Multiply,
+	"/": Divide,
+	"gauss": Gauss,
 };
 
 // TODO: add tokens «(» and «)»
@@ -239,7 +242,7 @@ let lexer = function (string) {
 }
 
 // TODO: add a number parser parsePrefix(string):
-//  rawPrefixExpression --> OPERATOR '(' prefixExpression ')' '(' prefixExpression ')' … '(' prefixExpression ')' prefixExpression
+//  rawPrefixExpression --> OPERATOR_SYMBOL '(' prefixExpression ')' '(' prefixExpression ')' … '(' prefixExpression ')' prefixExpression
 //  prefixExpression --> rawPrefixExpression | '(' rawPrefixExpression ')'
 //
 // (in rawPrefixExpression definition the argument number should be match the operator's argument number)
