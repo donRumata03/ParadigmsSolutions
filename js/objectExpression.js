@@ -82,22 +82,12 @@ Variable.prototype.diff = function(varName) {
 	);
 }
 
-
-
-
-// TODO: add function to produce aliases for custom expressions:
-// TODO: It takes name and expression tree and somehow says the number of arguments
-// TODO: for example — Gauss of 4 arguments is a tree
-// TODO: When gauss is given the arguments,
-//       its evaluation and differentiation is equivalent to expression with a_s and b_s substituted
-//       Whereas toString yields children with name
-
 let Add = createReductionNode((x, y) => x + y)("+");
 let Subtract = createReductionNode((x, y) => x - y)("-");
 let Multiply = createReductionNode((x, y) => x * y)("*");
 let Divide = createReductionNode((x, y) => x / y)("/");
 let Negate = createReductionNode((x) => -x)("negate");
-let Exponentiate = createReductionNode((x) => Math.exp(x))("exp");
+let Exponentiate = createReductionNode(Math.exp)("exp");
 
 
 Add.prototype.diff = function (varName) {
@@ -224,8 +214,15 @@ let Lexer = function (string) {
 		return scanWhile(predicate)(start + 1);
 	}
 
-	let isDigit = ch => ch.match(/[0-9]/i);
-	let isAlpha = ch => ch.toLowerCase().match(/[a-z]/i);
+	let isDigit = ch => !!([!0, !0, !0, !0, !0, !0, !0, !0, !0, !0][ch]);
+	let isAlpha = ch => {
+		try {
+			eval("function " + ch + "(){}");
+			return ch.trim().length === 1 && true;
+		} catch {
+			return false;
+		}
+	}
 	let skipSpaces = () => ptr = scanWhile(ch => ch.trim() === '')(ptr);
 	let isPositiveNumberStart = pos => pos < string.length && isDigit(string[pos]);
 	let nullaryWithArity = (constructedNode) => { let res = function() { return constructedNode; }; res.arity = 0; return res; }
