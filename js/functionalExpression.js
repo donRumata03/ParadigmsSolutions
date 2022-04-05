@@ -54,6 +54,7 @@ let lexer = function (string) {
 	let isDigit = ch => ch.match(/[0-9]/i);
 	let isAlpha = ch => ch.toLowerCase().match(/[a-z]/i);
 	let isPositiveNumberStart = pos => pos < string.length && isDigit(string[pos]);
+	let nullaryWithArity = (constructedNode) => { let res = () => constructedNode; res.arity = 0; return res; }
 
 	return () => {
 		ptr = scanWhile(ch => ch.trim() === '')(ptr)
@@ -64,9 +65,7 @@ let lexer = function (string) {
 			let afterNumberEnd = scanWhile(isDigit)(ptr + 1);
 			let res = string.substring(ptr, afterNumberEnd);
 			ptr = afterNumberEnd;
-			let num = () => cnst(Number.parseInt(res));
-			num.arity = 0;
-			return num;
+			return nullaryWithArity(cnst(Number.parseInt(res)));
 		} else if (string[ptr] in operators) {
 			// Single-symbol operators
 			return operators[string[ptr++]];
@@ -77,9 +76,7 @@ let lexer = function (string) {
 			ptr = afterWordEnd;
 
 			if (word in operators) return operators[word];
-			let v = () => variable(word);
-			v.arity = 0;
-			return v;
+			return nullaryWithArity(variable(word));
 		} else throw new Error();
 	}
 }
