@@ -92,7 +92,6 @@ let parse = function (string) {
 	let stack = [];
 
 	mapIterator((next) => {
-		console.assert(next.arity !== undefined)
 		stack.push(next(...stack.splice(stack.length - next.arity, next.arity)));
 	})(lex);
 	if (stack.length !== 1) throw new Error();

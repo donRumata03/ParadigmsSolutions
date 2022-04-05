@@ -15,8 +15,8 @@ function stringify(extendBuilder) {
 	return resBuilder.join("");
 }
 
-let deriveToString = obj => obj.toString = stringify(this.toStringBuilder);
-let derivePrefix = obj => obj.prefix = stringify(this.toPrefixBuilder);
+let deriveToString = obj => obj.toString = function() { return stringify(this.toStringBuilder); };
+let derivePrefix = obj => obj.prefix = function() { return stringify(this.toPrefixBuilder); };
 
 let createReductionNode = reductionOp => symbol => {
 	let constructor = function (...children) {
@@ -43,7 +43,6 @@ let createReductionNode = reductionOp => symbol => {
 let Const = function (value) {
 	this.value = value;
 }
-Const.prototype.arity = 0;
 Const.prototype.toStringBuilder = function (builder) {
 	builder.push(this.value.toString());
 }
@@ -58,7 +57,6 @@ Const.prototype.diff = function(varName) {
 let Variable = function (name) {
 	this.name = name;
 }
-Variable.prototype.arity = 0;
 Variable.prototype.toStringBuilder = function (builder) {
 	builder.push(this.name);
 }
@@ -184,61 +182,88 @@ let operators = {
 	"gauss": Gauss,
 };
 
+let allowedVariableNames = [
+	"x", "y", "z"
+];
+
+function ParseError(message) {
+	this.message = message;
+}
+ParseError.prototype = Object.create(Error.prototype);
+ParseError.prototype.name = "ParseError";
+ParseError.prototype.constructor = ParseError;
+
+function TokenizeError(message) {
+	this.message = message;
+}
+TokenizeError.prototype = Object.create(Error.prototype);
+TokenizeError.prototype.name = "TokenizeError";
+TokenizeError.prototype.constructor = TokenizeError;
+
+
 // TODO: add tokens «(» and «)»
 let lexer = function (string) {
 	let ptr = 0;
 	let scanWhile = predicate => start => {
-		let newPtr = start;
-		while (newPtr < string.length && predicate(string[newPtr])) newPtr++;
-		return newPtr;
+		if (start === string.length || !predicate(string[start])) return start;
+		return scanWhile(predicate)(start + 1);
 	}
-	let matchNextPositions = saluteCutting => startPosition => function (...matchers) {
-		let tmpPtr = startPosition;
-		for (const positionMatcher of matchers) {
-			if (tmpPtr === string.length) return saluteCutting;
-			if (!positionMatcher(tmpPtr)) return false;
-			tmpPtr++;
-		}
-		return true;
-	}
-	let positionizeCharPredicate = f => pos => f(string[pos])
-	let matchNextChars = saluteCutting => startPosition => (...args) =>
-		matchNextPositions(saluteCutting)(startPosition)(...args.map(positionizeCharPredicate))
-	let isNonZeroDigit = ch => ch.match(/[1-9]/i);
+
 	let isDigit = ch => ch.match(/[0-9]/i);
 	let isAlpha = ch => ch.toLowerCase().match(/[a-z]/i);
-	let isPositiveNumberStart = pos =>
-		pos < string.length && (
-			isNonZeroDigit(string[pos]) ||
-			(string[pos] === '0' && matchNextChars(true)(pos + 1)(ch => !isDigit(ch)))
-		);
+	let isPositiveNumberStart = pos => pos < string.length && isDigit(string[pos]);
+	let nullaryWithArity = (constructedNode) => { let res = function() { return constructedNode; }; res.arity = 0; return res; }
 
 	return () => {
 		ptr = scanWhile(ch => ch.trim() === '')(ptr)
 		if (ptr === string.length) return undefined;
 
-		if (
-			isPositiveNumberStart(ptr)
-			|| matchNextPositions(false)(ptr)(positionizeCharPredicate(ch => ch === '-'), isPositiveNumberStart)
-		) {
+		if (isPositiveNumberStart(ptr) || (string[ptr] === '-' && isPositiveNumberStart(ptr + 1))) {
 			// Numbers
 			let afterNumberEnd = scanWhile(isDigit)(ptr + 1);
 			let res = string.substring(ptr, afterNumberEnd);
 			ptr = afterNumberEnd;
-			return [function() { return new Const(Number.parseInt(res)) }, 0];
+			return nullaryWithArity(new Const(Number.parseInt(res)));
 		} else if (string[ptr] in operators) {
 			// Single-symbol operators
 			return operators[string[ptr++]];
+		} else if (['(', ')'].includes(string[ptr])) {
+			return string[ptr++];
 		} else if (isAlpha(string[ptr])) {
 			// Words
 			let afterWordEnd = scanWhile(ch => isAlpha(ch) || isDigit(ch))(ptr + 1);
 			let word = string.substring(ptr, afterWordEnd);
 			ptr = afterWordEnd;
-
 			if (word in operators) return operators[word];
-			return [function() { return new Variable(word) }, 0];
-		} else throw new Error();
+
+			if (!(allowedVariableNames.includes(word))) {
+				throw new TokenizeError(
+					"I've just seen a word „" + word + "“ at position " + ptr +
+					". It isn't an operator name and variables with this name are also not allowed");
+			}
+			return nullaryWithArity(new Variable(word));
+		} else {
+			throw new TokenizeError("At position " + ptr + " there's nor a word neither { an operator, a number, parentheses }");
+		}
 	}
+}
+let mapIterator = f => it => {
+	let next = it();
+	if (next === undefined) return;
+	f(next);
+	mapIterator(f)(it);
+}
+
+let parse = function (string) {
+	let lex = lexer(string)
+	let stack = [];
+
+	mapIterator((next) => {
+		console.assert(next.arity !== undefined)
+		stack.push(new next(...stack.splice(stack.length - next.arity, next.arity)));
+	})(lex);
+	if (stack.length !== 1) throw new Error();
+	return stack[0];
 }
 
 // TODO: add a number parser parsePrefix(string):
@@ -246,21 +271,23 @@ let lexer = function (string) {
 //  prefixExpression --> rawPrefixExpression | '(' rawPrefixExpression ')'
 //
 // (in rawPrefixExpression definition the argument number should be match the operator's argument number)
-let parse = function (string) {
-	let lex = lexer(string)
-	let stack = [];
+// let parse = function (string) {
+// 	let lex = lexer(string)
+// 	let stack = [];
+//
+// 	while (true) {
+// 		let next = lex();
+// 		if (next === undefined) break;
+//
+// 		let nodeChildren = [];
+// 		for (let i = 0; i < next[1]; i++) {
+// 			nodeChildren.push(stack.pop());
+// 		}
+// 		stack.push(new next[0](...nodeChildren.reverse()));
+// 	}
+// 	if (stack.length !== 1) throw new Error();
+// 	return stack[0];
+// }
 
-	while (true) {
-		let next = lex();
-		if (next === undefined) break;
-
-		let nodeChildren = [];
-		for (let i = 0; i < next[1]; i++) {
-			nodeChildren.push(stack.pop());
-		}
-		stack.push(new next[0](...nodeChildren.reverse()));
-	}
-	if (stack.length !== 1) throw new Error();
-	return stack[0];
-}
+let nd = parse("+ 2 x");
 
