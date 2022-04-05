@@ -55,6 +55,33 @@ public interface Operations {
         });
     }
 
+    static Operation min(final int arity) {
+        return fix("min", "Min", arity, DoubleStream::min);
+    }
+
+    static Operation max(final int arity) {
+        return fix("max", "Max", arity, DoubleStream::max);
+    }
+
+    Operation MEAN = any("mean", "Mean", 1, 5, Operations::mean);
+    Operation VAR = any("var", "Var", 1, 5, Operations::var);
+
+    Operation SUMEXP = any("sumexp", "Sumexp", 0, 3, Operations::sumexp);
+    Operation SOFTMAX = any("softmax", "Softmax", 1, 5, args -> Math.exp(args[0]) / sumexp(args));
+
+    private static double sumexp(final double[] args) {
+        return Arrays.stream(args).map(Math::exp).sum();
+    }
+
+    private static double mean(final double[] args) {
+        return Arrays.stream(args).sum() / args.length;
+    }
+
+    private static double var(final double[] args) {
+        final double mean = mean(args);
+        return Arrays.stream(args).map(a -> a - mean).map(a -> a * a).sum() / args.length;
+    }
+
     private static Operation fix(final String name, final String alias, final int arity, final Function<DoubleStream, OptionalDouble> f) {
         final BaseTester.Func wf = args -> f.apply(Arrays.stream(args)).orElseThrow();
         return arity >= 0
