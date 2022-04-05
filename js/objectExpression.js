@@ -35,6 +35,7 @@ let createReductionNode = reductionOp => symbol => {
 	constructor.prototype.toPrefixBuilder = function(builder) {
 		namedTreeToPrefixBuilder(builder, this.children, symbol);
 	}
+	derivePrefix(constructor.prototype);
 	deriveToString(constructor.prototype);
 
 	return constructor;
@@ -48,6 +49,8 @@ Const.prototype.toStringBuilder = function (builder) {
 	builder.push(this.value.toString());
 }
 deriveToString(Const.prototype);
+Const.prototype.toPrefixBuilder = Const.prototype.toStringBuilder;
+derivePrefix(Const.prototype);
 Const.prototype.evaluate = function(..._args) {
 	return this.value;
 }
@@ -62,6 +65,9 @@ Variable.prototype.toStringBuilder = function (builder) {
 	builder.push(this.name);
 }
 deriveToString(Variable.prototype);
+Variable.prototype.toPrefixBuilder = Variable.prototype.toStringBuilder;
+derivePrefix(Variable.prototype);
+
 Variable.prototype.evaluate = function(x, y, z) {
 	return this.name === "x" ? x : (this.name === "y" ? y : z);
 }
@@ -146,6 +152,10 @@ function labelParametrizedTree(treeConstructor, label) {
 	newNode.prototype.toStringBuilder = function (builder) {
 		namedTreeToStringBuilder(builder, this.treeList, this.name);
 	}
+	newNode.prototype.toPrefixBuilder = function (builder) {
+		namedTreeToPrefixBuilder(builder, this.treeList, this.name);
+	}
+	derivePrefix(newNode.prototype);
 	deriveToString(newNode.prototype);
 
 	return newNode;
@@ -203,7 +213,7 @@ TokenizeError.prototype.constructor = TokenizeError;
 
 
 // TODO: add tokens «(» and «)»
-let lexer = function (string) {
+let Lexer = function (string) {
 	let ptr = 0;
 	let scanWhile = predicate => start => {
 		if (start === string.length || !predicate(string[start])) return start;
@@ -212,11 +222,12 @@ let lexer = function (string) {
 
 	let isDigit = ch => ch.match(/[0-9]/i);
 	let isAlpha = ch => ch.toLowerCase().match(/[a-z]/i);
+	let skipSpaces = () => ptr = scanWhile(ch => ch.trim() === '')(ptr);
 	let isPositiveNumberStart = pos => pos < string.length && isDigit(string[pos]);
 	let nullaryWithArity = (constructedNode) => { let res = function() { return constructedNode; }; res.arity = 0; return res; }
 
-	return () => {
-		ptr = scanWhile(ch => ch.trim() === '')(ptr)
+	let lexer = () => {
+		skipSpaces();
 		if (ptr === string.length) return undefined;
 
 		if (isPositiveNumberStart(ptr) || (string[ptr] === '-' && isPositiveNumberStart(ptr + 1))) {
@@ -246,7 +257,14 @@ let lexer = function (string) {
 		} else {
 			throw new TokenizeError("At position " + ptr + " there's nor a word neither { an operator, a number, parentheses }");
 		}
-	}
+	};
+	let nextIs = symbol => () => {
+		skipSpaces();
+		return ptr !== string.length && string[ptr] === symbol;
+	};
+	lexer.nextIsOpeningParentheses = nextIs('(');
+	lexer.nextIsClosingParentheses = nextIs(')');
+	return lexer;
 }
 let mapIterator = f => it => {
 	let next = it();
@@ -256,7 +274,7 @@ let mapIterator = f => it => {
 }
 
 let parse = function (string) {
-	let lex = lexer(string)
+	let lex = Lexer(string)
 	let stack = [];
 
 	mapIterator((next) => {
@@ -269,27 +287,71 @@ let parse = function (string) {
 }
 
 // TODO: add a number parser parsePrefix(string):
-//  rawPrefixExpression --> OPERATOR_SYMBOL '(' prefixExpression ')' '(' prefixExpression ')' … '(' prefixExpression ')' prefixExpression
-//  prefixExpression --> rawPrefixExpression | '(' rawPrefixExpression ')'
-//
-// (in rawPrefixExpression definition the argument number should be match the operator's argument number)
-// let parse = function (string) {
-// 	let lex = lexer(string)
-// 	let stack = [];
-//
-// 	while (true) {
-// 		let next = lex();
-// 		if (next === undefined) break;
-//
-// 		let nodeChildren = [];
-// 		for (let i = 0; i < next[1]; i++) {
-// 			nodeChildren.push(stack.pop());
-// 		}
-// 		stack.push(new next[0](...nodeChildren.reverse()));
-// 	}
-// 	if (stack.length !== 1) throw new Error();
-// 	return stack[0];
-// }
+//  rawPrefixExpression --> OPERATOR_SYMBOL [ '(' prefixExpression ')' | nullaryOperator ]* prefixExpression
+//  prefixExpression --> '(' prefixExpression ')' | rawPrefixExpression
+//  (in rawPrefixExpression definition the argument number should be match the operator's argument number)
+//  Note that this perfectly works for nullary operators
+
+function unexpectedToken(expected, lexer, context = undefined) {
+	throw new ParseError("Bad token" + (context !== undefined ? " at " + context : "") + ". Expected: " + expected + ", actual: „" + lexer() + "“");
+}
+function expectOpeningParentheses(lexer, context = undefined) {
+	if (!lexer.nextIsOpeningParentheses()) {
+		unexpectedToken('(', lexer, context);
+	}
+	lexer();
+}
+function expectClosingParentheses(lexer, context = undefined) {
+	if (!lexer.nextIsClosingParentheses()) {
+		unexpectedToken(')', lexer, context);
+	}
+	lexer();
+}
+
+function parseRawTokenizedPrefix(lexer) {
+	let operator = lexer();
+	if (operator.arity === undefined) { throw new ParseError("Token " + operator + " can't be an operator but stays at its place"); }
+
+	let arguments = [];
+	for (let i = 0; i < operator.arity; i++) {
+		if (i === operator.arity - 1) {
+			arguments.push(parseTokenizedPrefix(lexer));
+		} else {
+			let wrappingContext = "obligate wrapping operator's arguments (except the last and nullary ones) into parentheses";
+			if (lexer.nextIsOpeningParentheses()) {
+				lexer();
+				arguments.push(parseRawTokenizedPrefix(lexer));
+				expectClosingParentheses(lexer, wrappingContext);
+			} else {
+				let next = lexer();
+				if (next.arity !== 0) throw new ParseError("Bad token: " + next
+					+ ". Expected: nullary operator or expression in parentheses");
+				arguments.push(new next());
+			}
+		}
+	}
+
+	return new operator(...arguments);
+}
+function parseTokenizedPrefix(lexer) {
+	if (lexer.nextIsOpeningParentheses()) {
+		lexer();
+		let res = parseTokenizedPrefix(lexer);
+		expectClosingParentheses(lexer, "optional wrapping expression with parentheses");
+		return res;
+	} else {
+		return parseRawTokenizedPrefix(lexer);
+	}
+}
+function parsePrefix(string) {
+	let lexer = Lexer(string);
+	let parsed = parseTokenizedPrefix(lexer);
+	if (lexer() !== undefined) {
+		throw new ParseError("Couldn't parse the whole expression…");
+	}
+	return parsed;
+}
 
 // let nd = parse("2 x +");
-
+// let nd_pref = parsePrefix("(- (* 2 x) 3)");
+// console.log(nd_pref.prefix())
