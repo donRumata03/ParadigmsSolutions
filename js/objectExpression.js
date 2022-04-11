@@ -1,6 +1,18 @@
-let polishTreeFormatter = (operator, children, builder, formatChild) => {
-	children.forEach(child => { formatChild(builder); builder.push(" "); });
-	builder.push(name);
+let polishTreeFormatter = (operatorSymbol, children, builder, formatChild) => {
+	children.forEach(child => { formatChild(child, builder); builder.push(" "); });
+	builder.push(operatorSymbol);
+}
+let prefixTreeFormatter = (operatorSymbol, children, builder, formatChild) => {
+	builder.push("(");
+	builder.push(operatorSymbol);
+	children.forEach(child => { builder.push(" "); formatChild(child, builder); });
+	builder.push(")");
+}
+let postfixTreeFormatter = (operatorSymbol, children, builder, formatChild) => {
+	builder.push("(");
+	children.forEach(child => { formatChild(child, builder); builder.push(" "); });
+	builder.push(operatorSymbol);
+	builder.push(")");
 }
 
 function namedTreeToStringBuilder(builder, children, name) {
@@ -358,3 +370,5 @@ function parsePrefix(string) {
 
 // let emptyInput = parsePrefix("");
 let nullaryWith0Args = parsePrefix("1");
+
+// TODO: idea - parse postfix from right to left?
