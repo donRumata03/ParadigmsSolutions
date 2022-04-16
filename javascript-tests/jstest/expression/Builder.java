@@ -31,7 +31,7 @@ public final class Builder {
         this.testMulti = testMulti;
     }
 
-    public static base.Selector.Composite<Builder> selector(
+    public static Selector.Composite<Builder> selector(
             final Class<?> owner,
             final IntPredicate testMulti,
             final BiFunction<Builder, TestCounter, Tester> tester,
