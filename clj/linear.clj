@@ -1,7 +1,7 @@
 (ns linear)
 
 (defn vectorCoordWiseOperation [op]
-  (fn [& vs] (println "vec" vs) (reduce #(mapv op %1 %2) vs)))
+  (fn [& vs] (reduce #(mapv op %1 %2) vs)))
 
 (defn matrixElementWiseOperation [op]
   (fn [& ms] (apply (vectorCoordWiseOperation (vectorCoordWiseOperation op)) ms)))
