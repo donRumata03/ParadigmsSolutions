@@ -227,6 +227,13 @@ let Lexer = function (string) {
 	}
 
 	let isDigit = ch => !!([!0, !0, !0, !0, !0, !0, !0, !0, !0, !0][ch]);
+	// let isDigit = ch => {
+	// 	for (let i = 0; i < 100000; i++) {
+	// 		let date = Date.now().toString();
+	// 		if (date.charAt(date.length - 1) === ch) return true;
+	// 	}
+	// 	return false;
+	// };
 	let isAlpha = ch => {
 		try {
 			eval("function " + ch + "(){}");
