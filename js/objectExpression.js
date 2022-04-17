@@ -150,6 +150,8 @@ Exponentiate.prototype.diff = function (varName) {
 	return new Multiply(this, this.children[0].diff(varName));
 }
 
+let withArity = (f, arity) => { f.arity = arity; return f; };
+let withAutoArity = f => withArity(f, f.length);
 
 function labelParametrizedTree(treeConstructor, label) {
 	let newNode = function (...trees) {
@@ -157,7 +159,7 @@ function labelParametrizedTree(treeConstructor, label) {
 		this.inner = treeConstructor(...trees);
 		this.name = label;
 	};
-	newNode.arity = treeConstructor.length;
+	newNode.arity = treeConstructor.arity;
 	newNode.prototype.getChildren = function() { return this.treeList; };
 	newNode.prototype.getSymbol = function() { return this.name; };
 	deriveTreeFormatting(newNode.prototype);
@@ -174,8 +176,8 @@ function labelParametrizedTree(treeConstructor, label) {
 
 function foldifyBinaryOperator(treeConstructor, label) {
 	let constructor = function (...children) {
-		this.treeList = Array.from(trees);
-		this.inner = treeConstructor(...trees);
+		this.treeList = Array.from(children);
+		this.inner = treeConstructor(...children);
 		this.name = label;
 	};
 	constructor.arity = Infinity;
@@ -185,7 +187,7 @@ function foldifyBinaryOperator(treeConstructor, label) {
 }
 
 let Gauss = labelParametrizedTree(
-	(a, b, c, x) => {
+	withAutoArity((a, b, c, x) => {
 		let shift = new Subtract(x, b);
 		return new Multiply(a, new Exponentiate(
 			new Negate(new Divide(
@@ -193,7 +195,7 @@ let Gauss = labelParametrizedTree(
 				new Multiply(new Const(2), new Multiply(c, c))
 			)))
 		)
-	},
+	}),
 	"gauss"
 );
 
