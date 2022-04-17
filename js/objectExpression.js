@@ -172,6 +172,18 @@ function labelParametrizedTree(treeConstructor, label) {
 	return newNode;
 }
 
+function foldifyBinaryOperator(treeConstructor, label) {
+	let constructor = function (...children) {
+		this.treeList = Array.from(trees);
+		this.inner = treeConstructor(...trees);
+		this.name = label;
+	};
+	constructor.arity = Infinity;
+	constructor.prototype.getChildren = function() { return this.treeList; };
+
+	// …
+}
+
 let Gauss = labelParametrizedTree(
 	(a, b, c, x) => {
 		let shift = new Subtract(x, b);
@@ -184,6 +196,9 @@ let Gauss = labelParametrizedTree(
 	},
 	"gauss"
 );
+
+// TODO:
+//  let Sumexp = labelParametrizedTree(foldifyBinaryOperator(), "sumexp");
 
 // let node = new Multiply(new Const(566), new Variable("x"));
 // let node = new Gauss(new Const(1), new Const(2), new Const(3), new Const(4));
@@ -399,9 +414,7 @@ function parsePostfix(string) {
 
 
 // let emptyInput = parsePrefix("");
-let nullaryWith0Args = parsePrefix("1");
-
-// TODO: idea - parse postfix from right to left?
+// let nullaryWith0Args = parsePrefix("1");
 
 // console.log(new Const(10).prefix());
 // console.log(new Add(new Variable('x'), new Const(2)).prefix());
@@ -410,4 +423,4 @@ let nullaryWith0Args = parsePrefix("1");
 // console.log("====================");
 // mapIterator(v => console.log(v), reverseTokenStream(Lexer("(((()")));
 
-console.log(parsePostfix("(x 2 +)"));
+// console.log(parsePostfix("(x 2 +)"));
