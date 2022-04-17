@@ -2,29 +2,38 @@ let polishTreeFormatter = (operatorSymbol, children, builder, formatChild) => {
 	children.forEach(child => { formatChild(child, builder); builder.push(" "); });
 	builder.push(operatorSymbol);
 }
+function withParenthesesIfNotNullary(b, c, ext) {
+	if (c.length >= 1) {
+		b.push("(");
+	}
+	ext();
+	if (c.length >= 1) {
+		b.push(")");
+	}
+}
 let prefixTreeFormatter = (operatorSymbol, children, builder, formatChild) => {
-	builder.push("(");
-	builder.push(operatorSymbol);
-	children.forEach(child => { builder.push(" "); formatChild(child, builder); });
-	builder.push(")");
+	withParenthesesIfNotNullary(builder, children, () => {
+		builder.push(operatorSymbol);
+		children.forEach(child => { builder.push(" "); formatChild(child, builder); });
+	});
 }
 let postfixTreeFormatter = (operatorSymbol, children, builder, formatChild) => {
-	builder.push("(");
-	children.forEach(child => { formatChild(child, builder); builder.push(" "); });
-	builder.push(operatorSymbol);
-	builder.push(")");
+	withParenthesesIfNotNullary(builder, children, () => {
+		children.forEach(child => { formatChild(child, builder); builder.push(" "); });
+		builder.push(operatorSymbol);
+	});
 }
 
-function namedTreeToStringBuilder(builder, children, name) {
-	children.forEach(child => { child.toStringBuilder(builder); builder.push(" "); });
-	builder.push(name);
-}
-function namedTreeToPrefixBuilder(builder, children, name) {
-	builder.push("(");
-	builder.push(name);
-	children.forEach(child => { builder.push(" "); child.toPrefixBuilder(builder); });
-	builder.push(")");
-}
+// function namedTreeToStringBuilder(builder, children, name) {
+// 	children.forEach(child => { child.toStringBuilder(builder); builder.push(" "); });
+// 	builder.push(name);
+// }
+// function namedTreeToPrefixBuilder(builder, children, name) {
+// 	builder.push("(");
+// 	builder.push(name);
+// 	children.forEach(child => { builder.push(" "); child.toPrefixBuilder(builder); });
+// 	builder.push(")");
+// }
 
 function stringify(extendBuilder) {
 	let resBuilder = [];
@@ -32,9 +41,17 @@ function stringify(extendBuilder) {
 	return resBuilder.join("");
 }
 
-// «This» in JS is such a gotcha…
-let deriveToString = obj => obj.toString = function() { return stringify((b) => this.toStringBuilder(b)); };
-let derivePrefix = obj => obj.prefix = function() { return stringify((b) => this.toPrefixBuilder(b)); };
+let deriveTreeFormatting = function (obj) {
+	obj.toXBuilder = function (b, formatter) {
+		formatter(this.getSymbol(), this.getChildren(), b, (c, b) => c.toXBuilder(b, formatter));
+	};
+	obj.toX = function (formatter) {
+		return stringify(b => this.toXBuilder(b, formatter));
+	};
+	obj.toString = function() { return this.toX(polishTreeFormatter); };
+	obj.prefix = function() { return this.toX(prefixTreeFormatter); };
+	obj.postfix = function() { return this.toX(postfixTreeFormatter); };
+}
 
 let createReductionNode = reductionOp => symbol => {
 	let constructor = function (...children) {
@@ -46,14 +63,10 @@ let createReductionNode = reductionOp => symbol => {
 	constructor.prototype.evaluate = function (...args) {
 		return this.op(...(this.children.map(child => child.evaluate(...args))));
 	}
-	constructor.prototype.toStringBuilder = function(builder) {
-		namedTreeToStringBuilder(builder, this.children, symbol);
-	}
-	constructor.prototype.toPrefixBuilder = function(builder) {
-		namedTreeToPrefixBuilder(builder, this.children, symbol);
-	}
-	derivePrefix(constructor.prototype);
-	deriveToString(constructor.prototype);
+	constructor.prototype.getChildren = function() { return this.children; };
+	constructor.prototype.getSymbol = function() { return this.name; };
+
+	deriveTreeFormatting(constructor.prototype);
 
 	return constructor;
 }
@@ -62,28 +75,23 @@ let createReductionNode = reductionOp => symbol => {
 let Const = function (value) {
 	this.value = value;
 }
-Const.prototype.toStringBuilder = function (builder) {
-	builder.push(this.value.toString());
-}
-deriveToString(Const.prototype);
-Const.prototype.toPrefixBuilder = Const.prototype.toStringBuilder;
-derivePrefix(Const.prototype);
+Const.prototype.getChildren = function() { return []; };
+Const.prototype.getSymbol = function() { return this.value.toString(); };
 Const.prototype.evaluate = function(..._args) {
 	return this.value;
 }
-Const.prototype.diff = function(varName) {
+Const.prototype.diff = function(_varName) {
 	return new Const(0);
 }
+deriveTreeFormatting(Const.prototype);
+
 
 let Variable = function (name) {
 	this.name = name;
 }
-Variable.prototype.toStringBuilder = function (builder) {
-	builder.push(this.name);
-}
-deriveToString(Variable.prototype);
-Variable.prototype.toPrefixBuilder = Variable.prototype.toStringBuilder;
-derivePrefix(Variable.prototype);
+Variable.prototype.getChildren = function() { return []; };
+Variable.prototype.getSymbol = function() { return this.name; };
+deriveTreeFormatting(Variable.prototype);
 
 Variable.prototype.evaluate = function(x, y, z) {
 	return this.name === "x" ? x : (this.name === "y" ? y : z);
@@ -150,20 +158,16 @@ function labelParametrizedTree(treeConstructor, label) {
 		this.name = label;
 	};
 	newNode.arity = treeConstructor.length;
+	newNode.prototype.getChildren = function() { return this.treeList; };
+	newNode.prototype.getSymbol = function() { return this.name; };
+	deriveTreeFormatting(newNode.prototype);
+
 	newNode.prototype.diff = function (varName) {
 		return this.inner.diff(varName);
 	}
 	newNode.prototype.evaluate = function (...args) {
 		return this.inner.evaluate(...args);
 	}
-	newNode.prototype.toStringBuilder = function (builder) {
-		namedTreeToStringBuilder(builder, this.treeList, this.name);
-	}
-	newNode.prototype.toPrefixBuilder = function (builder) {
-		namedTreeToPrefixBuilder(builder, this.treeList, this.name);
-	}
-	derivePrefix(newNode.prototype);
-	deriveToString(newNode.prototype);
 
 	return newNode;
 }
@@ -376,3 +380,6 @@ function parsePrefix(string) {
 let nullaryWith0Args = parsePrefix("1");
 
 // TODO: idea - parse postfix from right to left?
+
+// console.log(new Const(10).prefix());
+console.log(new Add(new Variable('x'), new Const(2)).prefix());
