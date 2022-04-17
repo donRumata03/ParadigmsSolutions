@@ -290,21 +290,36 @@ let Lexer = function (string) {
 	lexer.nextIsClosingParentheses = nextIs(')');
 	return lexer;
 }
-let mapIterator = f => it => {
+let mapTokenStream = (f, it) => {
 	let next = it();
 	if (next === undefined) return;
 	f(next);
-	mapIterator(f)(it);
+	mapTokenStream(f, it);
 }
+let reverseTokenStream = it => {
+	let collected = [];
+	mapTokenStream(v => collected.push(v), it);
+	let viewThroughMirror = ch => ch === '(' ? ')' : (ch === ')' ? '(' : ch);
+	let i = collected.length;
+
+	let res = () => i === 0 ? undefined : viewThroughMirror(collected[--i]);
+
+	let nextIs = symbol => () => {
+		return i !== 0 && viewThroughMirror(collected[i - 1]) === symbol;
+	};
+	res.nextIsOpeningParentheses = nextIs('(');
+	res.nextIsClosingParentheses = nextIs(')');
+	return res;
+};
 
 let parse = function (string) {
 	let lex = Lexer(string)
 	let stack = [];
 
-	mapIterator((next) => {
+	mapTokenStream((next) => {
 		console.assert(next.arity !== undefined)
 		stack.push(new next(...stack.splice(stack.length - next.arity, next.arity)));
-	})(lex);
+	}, lex);
 	if (stack.length !== 1) {
 		console.log(stack.length); throw new Error(); }
 	return stack[0];
@@ -328,8 +343,8 @@ function expectClosingParentheses(lexer, context = undefined) {
 	lexer();
 }
 
-function parseOperatorTokenizedPrefix(lexer) {
-	let operator = lexer();
+function parseOperatorTokenizedStream(stream, reverseArguments) {
+	let operator = stream();
 	checkHasArity(operator);
 	if (operator.arity === 0) {
 		throw new ParseError("Can't use nullary operator as a normal one… Don't know why…");
@@ -337,19 +352,19 @@ function parseOperatorTokenizedPrefix(lexer) {
 
 	let arguments = [];
 	for (let i = 0; i < operator.arity; i++) {
-		arguments.push(parseTokenizedPrefix(lexer));
+		arguments.push(parseTokenizedStream(stream, reverseArguments));
 	}
 
-	return new operator(...arguments);
+	return new operator(...(reverseArguments ? arguments.reverse() : arguments));
 }
-function parseTokenizedPrefix(lexer) {
-	if (lexer.nextIsOpeningParentheses()) {
-		lexer();
-		let res = parseOperatorTokenizedPrefix(lexer);
-		expectClosingParentheses(lexer, "operator expression ending");
+function parseTokenizedStream(stream, reverseArguments) {
+	if (stream.nextIsOpeningParentheses()) {
+		stream();
+		let res = parseOperatorTokenizedStream(stream, reverseArguments);
+		expectClosingParentheses(stream, "operator expression ending");
 		return res;
 	} else {
-		let nextNullary = lexer();
+		let nextNullary = stream();
 		checkHasArity(nextNullary);
 		if (nextNullary.arity !== 0) {
 			unexpectedToken("nullary operator or expression in parentheses", nextNullary, "regular parsing");
@@ -357,20 +372,27 @@ function parseTokenizedPrefix(lexer) {
 		return new nextNullary();
 	}
 }
-function parsePrefix(string) {
-	let lexer = Lexer(string);
+function parseTokenStream(stream, reverseArguments) {
+	let parsed = parseTokenizedStream(stream, reverseArguments);
 
+	if (stream() !== undefined) {
+		throw new ParseError("Couldn't parse the whole expression…");
+	}
+	return parsed;
+}
+
+function parsePrefix(string) {
+	return parseTokenStream(Lexer(string), false);
+}
+
+function parsePostfix(string) {
 	let parsed;
 	try {
-		parsed = parseTokenizedPrefix(lexer);
+		parsed = parseTokenStream(reverseTokenStream(Lexer(string)), true);
 	} catch(e) {
 		console.log(e);
 		console.log(string);
 		throw e;
-	}
-
-	if (lexer() !== undefined) {
-		throw new ParseError("Couldn't parse the whole expression…");
 	}
 	return parsed;
 }
@@ -382,4 +404,10 @@ let nullaryWith0Args = parsePrefix("1");
 // TODO: idea - parse postfix from right to left?
 
 // console.log(new Const(10).prefix());
-console.log(new Add(new Variable('x'), new Const(2)).prefix());
+// console.log(new Add(new Variable('x'), new Const(2)).prefix());
+
+// mapIterator(v => console.log(v), Lexer("(((()"));
+// console.log("====================");
+// mapIterator(v => console.log(v), reverseTokenStream(Lexer("(((()")));
+
+console.log(parsePostfix("(x 2 +)"));
