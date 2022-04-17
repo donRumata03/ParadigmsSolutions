@@ -174,6 +174,11 @@ function labelParametrizedTree(treeConstructor, label) {
 	return newNode;
 }
 
+/**
+ * Internally, constructs folding tree
+ * Uses it for evaluation and differentiation
+ * But overloads displaying as flat vararg expression
+ */
 function foldifyBinaryOperator(treeConstructor, label) {
 	let constructor = function (...children) {
 		this.treeList = Array.from(children);
@@ -368,8 +373,14 @@ function parseOperatorTokenizedStream(stream, reverseArguments) {
 	}
 
 	let arguments = [];
-	for (let i = 0; i < operator.arity; i++) {
+	// for (let i = 0; i < operator.arity; i++) {
+	while (!stream.nextIsClosingParentheses()) {
 		arguments.push(parseTokenizedStream(stream, reverseArguments));
+	}
+	if (operator.arity !== Infinity && operator.arity !== arguments.length) {
+		throw new ParseError(
+			operator.arity + " arguments expected for operator " + operator +
+			", actual number of arguments: " + arguments.length);
 	}
 
 	return new operator(...(reverseArguments ? arguments.reverse() : arguments));
@@ -407,8 +418,8 @@ function parsePostfix(string) {
 	try {
 		parsed = parseTokenStream(reverseTokenStream(Lexer(string)), true);
 	} catch(e) {
-		console.log(e);
-		console.log(string);
+		// console.log(e);
+		// console.log(string);
 		throw e;
 	}
 	return parsed;
