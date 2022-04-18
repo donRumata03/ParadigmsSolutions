@@ -1,16 +1,26 @@
 (ns linear)
 
-(defn same-size
-  [& vs] (and (not-empty vs) (let [dim (count (nth vs 0))] (every? #(== (count %) dim) vs)))
+(defn same-deductible-property [deducer & vs] (and (not-empty vs) (let [prop (deducer (nth vs 0))]
+                                                                    (every? #(= (deducer %) prop) vs)))
   )
 
+(def same-size-vector-set
+  (partial same-deductible-property count))
+
+(defn matrix-dimension
+  [m] [(count m) (if (empty? m) 1 (count (nth m 0)))]
+  )
+
+(def same-size-matrix-set
+  (partial same-deductible-property matrix-dimension))
+
 (defn vectorCoordWiseOperation [op]
-  (fn [& vs]  {:pre [(apply same-size vs)]}
+  (fn [& vs]  {:pre [(apply same-size-vector-set vs)]}
     (vec (for [i (range(count (nth vs 0)))]
     (apply op (map #(nth % i) vs))))))
 
 (defn matrixElementWiseOperation [op]
-  (fn [& ms] (apply (vectorCoordWiseOperation (vectorCoordWiseOperation op)) ms)))
+  (fn [& ms] {:pre [(same-size-matrix-set ms)]} (apply (vectorCoordWiseOperation (vectorCoordWiseOperation op)) ms)))
 
 (defn foldify
   [f, neutral] (fn [& args] (reduce f neutral args))
@@ -79,13 +89,15 @@
 
 (defn -main []
   (println "==========")
-  (println (same-size [100 1] [15 6] [0 0]))
+  (println (same-size-vector-set [100 1] [15 6] [0 0]))
+  (println (matrix-dimension []))
   (println (v+ [1 2] [3 4] [5 6]))
   ;(println (v* [1 2] [3 4]))
   (println (m+ [[1 2] [3 4]] [[5 6] [7 8]]))
   (println (vect [1 2 3] [4 5 6]))
   (println (scalar [1 2 3] [4 5 6]))
   (println (transpose [[1 2 3] [4 5 6]]))
+  (println (transpose []))
   (println (v*s [1 2 3] 1 2 3))
   (println (m*s [[1 2 3] [4 5 6]] 1 2 3))
   (println (row*m [7 8] [[1 2 3] [4 5 6]]))
