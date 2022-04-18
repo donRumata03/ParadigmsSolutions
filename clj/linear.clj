@@ -1,7 +1,12 @@
-;(ns linear)
+(ns linear)
+
+(defn same-size
+  [& vs] (and (not-empty vs) (let [dim (count (nth vs 0))] (every? #(== (count %) dim) vs)))
+  )
 
 (defn vectorCoordWiseOperation [op]
-  (fn [& vs] (vec (for [i (range(count (nth vs 0)))]
+  (fn [& vs]  {:pre [(apply same-size vs)]}
+    (vec (for [i (range(count (nth vs 0)))]
     (apply op (map #(nth % i) vs))))))
 
 (defn matrixElementWiseOperation [op]
@@ -73,19 +78,8 @@
   )
 
 (defn -main []
-  (println)
-  (println (== 1 1.0))
-  (def x 10)
-  (println (+ x (* x 3)))
   (println "==========")
-
-  (println (vector 1 2 "Hello" 3 4))
-  (println (list 1 2 "Hello" 3 4))
-  (println (loop [i 0]
-    (if (< i 10)
-      (recur (inc i))
-      i)))
-  ;
+  (println (same-size [100 1] [15 6] [0 0]))
   (println (v+ [1 2] [3 4] [5 6]))
   ;(println (v* [1 2] [3 4]))
   (println (m+ [[1 2] [3 4]] [[5 6] [7 8]]))
