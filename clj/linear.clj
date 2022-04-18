@@ -14,7 +14,10 @@
   [m] [(count m) (if (empty? m) 1 (count (nth m 0)))]
   )
 
-(def is-correct-matrix (partial same-property count))
+(def number-matrix? (partial same-property count))
+(def number-vector? (partial same-property count))
+(defn number-matrix-of? [m dim] (and (number-matrix? m) (= dim (matrix-dimension m))))
+(defn number-vector-of? [v size] (and (number-vector? v) (= size (count v))))
 
 (defn matrices-match
   [ml mr] (let [dl (matrix-dimension ml), dr (matrix-dimension mr)]
@@ -30,7 +33,7 @@
     (apply op (map #(nth % i) vs))))))
 
 (defn matrixElementWiseOperation [op]
-  (fn [& ms] {:pre [(same-size-matrix-set ms), (every? is-correct-matrix ms)]} (apply (vectorCoordWiseOperation (vectorCoordWiseOperation op)) ms)))
+  (fn [& ms] {:pre [(same-size-matrix-set ms), (every? number-matrix? ms)]} (apply (vectorCoordWiseOperation (vectorCoordWiseOperation op)) ms)))
 
 (defn foldify
   [f neutral] (fn [& args] (reduce f neutral args))
