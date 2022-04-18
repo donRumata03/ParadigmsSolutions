@@ -36,6 +36,10 @@
 
 (def vect (reductify vect2))
 
+(defn scalar
+  [& vs] (reduce + 0 (apply v* vs))
+  )
+
 
 (defn -main []
   (println)
@@ -55,5 +59,6 @@
   ;(println (v* [1 2] [3 4]))
   (println (m+ [[1 2] [3 4]] [[5 6] [7 8]]))
   (println (vect [1 2 3] [4 5 6]))
+  (println (scalar [1 2 3] [4 5 6]))
   )
 
