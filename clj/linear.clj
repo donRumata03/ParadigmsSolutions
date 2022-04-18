@@ -40,6 +40,12 @@
   [& vs] (reduce + 0 (apply v* vs))
   )
 
+(defn transpose
+  [m] (vec (for [col (range (count (nth m 0)))]
+      (vec (for [row (range (count m))]
+        ((m row) col)))))
+  )
+
 
 (defn -main []
   (println)
@@ -60,5 +66,6 @@
   (println (m+ [[1 2] [3 4]] [[5 6] [7 8]]))
   (println (vect [1 2 3] [4 5 6]))
   (println (scalar [1 2 3] [4 5 6]))
+  (println (transpose [[1 2 3] [4 5 6]]))
   )
 
