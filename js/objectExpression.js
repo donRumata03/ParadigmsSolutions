@@ -2,29 +2,38 @@ let polishTreeFormatter = (operatorSymbol, children, builder, formatChild) => {
 	children.forEach(child => { formatChild(child, builder); builder.push(" "); });
 	builder.push(operatorSymbol);
 }
+function withParenthesesIfNotNullary(b, c, ext) {
+	if (c.length >= 1) {
+		b.push("(");
+	}
+	ext();
+	if (c.length >= 1) {
+		b.push(")");
+	}
+}
 let prefixTreeFormatter = (operatorSymbol, children, builder, formatChild) => {
-	builder.push("(");
-	builder.push(operatorSymbol);
-	children.forEach(child => { builder.push(" "); formatChild(child, builder); });
-	builder.push(")");
+	withParenthesesIfNotNullary(builder, children, () => {
+		builder.push(operatorSymbol);
+		children.forEach(child => { builder.push(" "); formatChild(child, builder); });
+	});
 }
 let postfixTreeFormatter = (operatorSymbol, children, builder, formatChild) => {
-	builder.push("(");
-	children.forEach(child => { formatChild(child, builder); builder.push(" "); });
-	builder.push(operatorSymbol);
-	builder.push(")");
+	withParenthesesIfNotNullary(builder, children, () => {
+		children.forEach(child => { formatChild(child, builder); builder.push(" "); });
+		builder.push(operatorSymbol);
+	});
 }
 
-function namedTreeToStringBuilder(builder, children, name) {
-	children.forEach(child => { child.toStringBuilder(builder); builder.push(" "); });
-	builder.push(name);
-}
-function namedTreeToPrefixBuilder(builder, children, name) {
-	builder.push("(");
-	builder.push(name);
-	children.forEach(child => { builder.push(" "); child.toPrefixBuilder(builder); });
-	builder.push(")");
-}
+// function namedTreeToStringBuilder(builder, children, name) {
+// 	children.forEach(child => { child.toStringBuilder(builder); builder.push(" "); });
+// 	builder.push(name);
+// }
+// function namedTreeToPrefixBuilder(builder, children, name) {
+// 	builder.push("(");
+// 	builder.push(name);
+// 	children.forEach(child => { builder.push(" "); child.toPrefixBuilder(builder); });
+// 	builder.push(")");
+// }
 
 function stringify(extendBuilder) {
 	let resBuilder = [];
@@ -32,9 +41,17 @@ function stringify(extendBuilder) {
 	return resBuilder.join("");
 }
 
-// «This» in JS is such a gotcha…
-let deriveToString = obj => obj.toString = function() { return stringify((b) => this.toStringBuilder(b)); };
-let derivePrefix = obj => obj.prefix = function() { return stringify((b) => this.toPrefixBuilder(b)); };
+let deriveTreeFormatting = function (obj) {
+	obj.toXBuilder = function (b, formatter) {
+		formatter(this.getSymbol(), this.getChildren(), b, (c, b) => c.toXBuilder(b, formatter));
+	};
+	obj.toX = function (formatter) {
+		return stringify(b => this.toXBuilder(b, formatter));
+	};
+	obj.toString = function() { return this.toX(polishTreeFormatter); };
+	obj.prefix = function() { return this.toX(prefixTreeFormatter); };
+	obj.postfix = function() { return this.toX(postfixTreeFormatter); };
+}
 
 let createReductionNode = reductionOp => symbol => {
 	let constructor = function (...children) {
@@ -46,14 +63,10 @@ let createReductionNode = reductionOp => symbol => {
 	constructor.prototype.evaluate = function (...args) {
 		return this.op(...(this.children.map(child => child.evaluate(...args))));
 	}
-	constructor.prototype.toStringBuilder = function(builder) {
-		namedTreeToStringBuilder(builder, this.children, symbol);
-	}
-	constructor.prototype.toPrefixBuilder = function(builder) {
-		namedTreeToPrefixBuilder(builder, this.children, symbol);
-	}
-	derivePrefix(constructor.prototype);
-	deriveToString(constructor.prototype);
+	constructor.prototype.getChildren = function() { return this.children; };
+	constructor.prototype.getSymbol = function() { return this.name; };
+
+	deriveTreeFormatting(constructor.prototype);
 
 	return constructor;
 }
@@ -62,28 +75,23 @@ let createReductionNode = reductionOp => symbol => {
 let Const = function (value) {
 	this.value = value;
 }
-Const.prototype.toStringBuilder = function (builder) {
-	builder.push(this.value.toString());
-}
-deriveToString(Const.prototype);
-Const.prototype.toPrefixBuilder = Const.prototype.toStringBuilder;
-derivePrefix(Const.prototype);
+Const.prototype.getChildren = function() { return []; };
+Const.prototype.getSymbol = function() { return this.value.toString(); };
 Const.prototype.evaluate = function(..._args) {
 	return this.value;
 }
-Const.prototype.diff = function(varName) {
+Const.prototype.diff = function(_varName) {
 	return new Const(0);
 }
+deriveTreeFormatting(Const.prototype);
+
 
 let Variable = function (name) {
 	this.name = name;
 }
-Variable.prototype.toStringBuilder = function (builder) {
-	builder.push(this.name);
-}
-deriveToString(Variable.prototype);
-Variable.prototype.toPrefixBuilder = Variable.prototype.toStringBuilder;
-derivePrefix(Variable.prototype);
+Variable.prototype.getChildren = function() { return []; };
+Variable.prototype.getSymbol = function() { return this.name; };
+deriveTreeFormatting(Variable.prototype);
 
 Variable.prototype.evaluate = function(x, y, z) {
 	return this.name === "x" ? x : (this.name === "y" ? y : z);
@@ -94,22 +102,12 @@ Variable.prototype.diff = function(varName) {
 	);
 }
 
-
-
-
-// TODO: add function to produce aliases for custom expressions:
-// TODO: It takes name and expression tree and somehow says the number of arguments
-// TODO: for example — Gauss of 4 arguments is a tree
-// TODO: When gauss is given the arguments,
-//       its evaluation and differentiation is equivalent to expression with a_s and b_s substituted
-//       Whereas toString yields children with name
-
 let Add = createReductionNode((x, y) => x + y)("+");
 let Subtract = createReductionNode((x, y) => x - y)("-");
 let Multiply = createReductionNode((x, y) => x * y)("*");
 let Divide = createReductionNode((x, y) => x / y)("/");
 let Negate = createReductionNode((x) => -x)("negate");
-let Exponentiate = createReductionNode((x) => Math.exp(x))("exp");
+let Exponentiate = createReductionNode(Math.exp)("exp");
 
 
 Add.prototype.diff = function (varName) {
@@ -152,6 +150,8 @@ Exponentiate.prototype.diff = function (varName) {
 	return new Multiply(this, this.children[0].diff(varName));
 }
 
+let withArity = (f, arity) => { f.arity = arity; return f; };
+let withAutoArity = f => withArity(f, f.length);
 
 function labelParametrizedTree(treeConstructor, label) {
 	let newNode = function (...trees) {
@@ -159,27 +159,35 @@ function labelParametrizedTree(treeConstructor, label) {
 		this.inner = treeConstructor(...trees);
 		this.name = label;
 	};
-	newNode.arity = treeConstructor.length;
+	newNode.arity = treeConstructor.arity;
+	newNode.prototype.getChildren = function() { return this.treeList; };
+	newNode.prototype.getSymbol = function() { return this.name; };
+	deriveTreeFormatting(newNode.prototype);
+
 	newNode.prototype.diff = function (varName) {
 		return this.inner.diff(varName);
 	}
 	newNode.prototype.evaluate = function (...args) {
 		return this.inner.evaluate(...args);
 	}
-	newNode.prototype.toStringBuilder = function (builder) {
-		namedTreeToStringBuilder(builder, this.treeList, this.name);
-	}
-	newNode.prototype.toPrefixBuilder = function (builder) {
-		namedTreeToPrefixBuilder(builder, this.treeList, this.name);
-	}
-	derivePrefix(newNode.prototype);
-	deriveToString(newNode.prototype);
 
 	return newNode;
 }
 
+function foldifyBinaryOperator(treeConstructor, label) {
+	let constructor = function (...children) {
+		this.treeList = Array.from(children);
+		this.inner = treeConstructor(...children);
+		this.name = label;
+	};
+	constructor.arity = Infinity;
+	constructor.prototype.getChildren = function() { return this.treeList; };
+
+	// …
+}
+
 let Gauss = labelParametrizedTree(
-	(a, b, c, x) => {
+	withAutoArity((a, b, c, x) => {
 		let shift = new Subtract(x, b);
 		return new Multiply(a, new Exponentiate(
 			new Negate(new Divide(
@@ -187,9 +195,12 @@ let Gauss = labelParametrizedTree(
 				new Multiply(new Const(2), new Multiply(c, c))
 			)))
 		)
-	},
+	}),
 	"gauss"
 );
+
+// TODO:
+//  let Sumexp = labelParametrizedTree(foldifyBinaryOperator(), "sumexp");
 
 // let node = new Multiply(new Const(566), new Variable("x"));
 // let node = new Gauss(new Const(1), new Const(2), new Const(3), new Const(4));
@@ -236,8 +247,22 @@ let Lexer = function (string) {
 		return scanWhile(predicate)(start + 1);
 	}
 
-	let isDigit = ch => ch.match(/[0-9]/i);
-	let isAlpha = ch => ch.toLowerCase().match(/[a-z]/i);
+	let isDigit = ch => !!([!0, !0, !0, !0, !0, !0, !0, !0, !0, !0][ch]);
+	// let isDigit = ch => {
+	// 	for (let i = 0; i < 100000; i++) {
+	// 		let date = Date.now().toString();
+	// 		if (date.charAt(date.length - 1) === ch) return true;
+	// 	}
+	// 	return false;
+	// };
+	let isAlpha = ch => {
+		try {
+			eval("function " + ch + "(){}");
+			return ch.trim().length === 1 && true;
+		} catch {
+			return false;
+		}
+	}
 	let skipSpaces = () => ptr = scanWhile(ch => ch.trim() === '')(ptr);
 	let isPositiveNumberStart = pos => pos < string.length && isDigit(string[pos]);
 	let nullaryWithArity = (constructedNode) => { let res = function() { return constructedNode; }; res.arity = 0; return res; }
@@ -282,21 +307,36 @@ let Lexer = function (string) {
 	lexer.nextIsClosingParentheses = nextIs(')');
 	return lexer;
 }
-let mapIterator = f => it => {
+let mapTokenStream = (f, it) => {
 	let next = it();
 	if (next === undefined) return;
 	f(next);
-	mapIterator(f)(it);
+	mapTokenStream(f, it);
 }
+let reverseTokenStream = it => {
+	let collected = [];
+	mapTokenStream(v => collected.push(v), it);
+	let viewThroughMirror = ch => ch === '(' ? ')' : (ch === ')' ? '(' : ch);
+	let i = collected.length;
+
+	let res = () => i === 0 ? undefined : viewThroughMirror(collected[--i]);
+
+	let nextIs = symbol => () => {
+		return i !== 0 && viewThroughMirror(collected[i - 1]) === symbol;
+	};
+	res.nextIsOpeningParentheses = nextIs('(');
+	res.nextIsClosingParentheses = nextIs(')');
+	return res;
+};
 
 let parse = function (string) {
 	let lex = Lexer(string)
 	let stack = [];
 
-	mapIterator((next) => {
+	mapTokenStream((next) => {
 		console.assert(next.arity !== undefined)
 		stack.push(new next(...stack.splice(stack.length - next.arity, next.arity)));
-	})(lex);
+	}, lex);
 	if (stack.length !== 1) {
 		console.log(stack.length); throw new Error(); }
 	return stack[0];
@@ -320,8 +360,8 @@ function expectClosingParentheses(lexer, context = undefined) {
 	lexer();
 }
 
-function parseOperatorTokenizedPrefix(lexer) {
-	let operator = lexer();
+function parseOperatorTokenizedStream(stream, reverseArguments) {
+	let operator = stream();
 	checkHasArity(operator);
 	if (operator.arity === 0) {
 		throw new ParseError("Can't use nullary operator as a normal one… Don't know why…");
@@ -329,19 +369,19 @@ function parseOperatorTokenizedPrefix(lexer) {
 
 	let arguments = [];
 	for (let i = 0; i < operator.arity; i++) {
-		arguments.push(parseTokenizedPrefix(lexer));
+		arguments.push(parseTokenizedStream(stream, reverseArguments));
 	}
 
-	return new operator(...arguments);
+	return new operator(...(reverseArguments ? arguments.reverse() : arguments));
 }
-function parseTokenizedPrefix(lexer) {
-	if (lexer.nextIsOpeningParentheses()) {
-		lexer();
-		let res = parseOperatorTokenizedPrefix(lexer);
-		expectClosingParentheses(lexer, "operator expression ending");
+function parseTokenizedStream(stream, reverseArguments) {
+	if (stream.nextIsOpeningParentheses()) {
+		stream();
+		let res = parseOperatorTokenizedStream(stream, reverseArguments);
+		expectClosingParentheses(stream, "operator expression ending");
 		return res;
 	} else {
-		let nextNullary = lexer();
+		let nextNullary = stream();
 		checkHasArity(nextNullary);
 		if (nextNullary.arity !== 0) {
 			unexpectedToken("nullary operator or expression in parentheses", nextNullary, "regular parsing");
@@ -349,26 +389,40 @@ function parseTokenizedPrefix(lexer) {
 		return new nextNullary();
 	}
 }
-function parsePrefix(string) {
-	let lexer = Lexer(string);
+function parseTokenStream(stream, reverseArguments) {
+	let parsed = parseTokenizedStream(stream, reverseArguments);
 
+	if (stream() !== undefined) {
+		throw new ParseError("Couldn't parse the whole expression…");
+	}
+	return parsed;
+}
+
+function parsePrefix(string) {
+	return parseTokenStream(Lexer(string), false);
+}
+
+function parsePostfix(string) {
 	let parsed;
 	try {
-		parsed = parseTokenizedPrefix(lexer);
+		parsed = parseTokenStream(reverseTokenStream(Lexer(string)), true);
 	} catch(e) {
 		console.log(e);
 		console.log(string);
 		throw e;
-	}
-
-	if (lexer() !== undefined) {
-		throw new ParseError("Couldn't parse the whole expression…");
 	}
 	return parsed;
 }
 
 
 // let emptyInput = parsePrefix("");
-let nullaryWith0Args = parsePrefix("1");
+// let nullaryWith0Args = parsePrefix("1");
 
-// TODO: idea - parse postfix from right to left?
+// console.log(new Const(10).prefix());
+// console.log(new Add(new Variable('x'), new Const(2)).prefix());
+
+// mapIterator(v => console.log(v), Lexer("(((()"));
+// console.log("====================");
+// mapIterator(v => console.log(v), reverseTokenStream(Lexer("(((()")));
+
+// console.log(parsePostfix("(x 2 +)"));
