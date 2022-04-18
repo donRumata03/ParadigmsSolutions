@@ -64,10 +64,10 @@ function deriveComputingFromInner(obj) {
 
 let createReductionNode = reductionOp => symbol => {
 	let constructor = function (...children) {
-		this.op = reductionOp;
-		this.name = symbol;
 		this.children = children;
 	};
+	constructor.prototype.name = symbol;
+	constructor.prototype.op = reductionOp;
 	constructor.arity = reductionOp.length; // Arity is a constructor's, not prototype's property
 	constructor.prototype.evaluate = function (...args) {
 		return this.op(...(this.children.map(child => child.evaluate(...args))));
@@ -166,8 +166,8 @@ function labelParametrizedTree(treeConstructor, label) {
 	let newNode = function (...trees) {
 		this.treeList = Array.from(trees);
 		this.inner = treeConstructor(...trees);
-		this.name = label;
 	};
+	newNode.prototype.name = label;
 	newNode.arity = treeConstructor.arity;
 	newNode.prototype.getChildren = function() { return this.treeList; };
 	newNode.prototype.getSymbol = function() { return this.name; };
@@ -187,8 +187,8 @@ function foldifyBinaryOperator(nodeConstructor, neutralConstNode, label) {
 		this.treeList = Array.from(children);
 		this.inner = children.length === 0 ? neutralConstNode :
 			children.reduce((previousTree, currentNode) => new nodeConstructor(previousTree, currentNode));
-		this.name = label;
 	};
+	constructor.prototype.name = label;
 	constructor.arity = Infinity;
 	constructor.prototype.getChildren = function() { return this.treeList; };
 	constructor.prototype.getSymbol = function() { return this.name; };
@@ -373,11 +373,23 @@ let parse = function (string) {
 //      prefixExpression --> '(' operatorPrefixExpression ')' | NULLARY_OPERATOR
 // (in rawPrefixExpression definition the argument number should match the operator's argument number)
 
-let undefinedIntoEOF = token => (token === undefined) ? String.raw`<EOF>` : token.toString()
-let checkHasArity = token => { if (token === undefined || token.arity === undefined) { throw new ParseError("Token " + undefinedIntoEOF(token) + " can't be an operator but stays at its place"); } }
+let formatToken = token => {
+	if (token === undefined) {return String.raw`<EOF>`; }
+
+	if (token instanceof Object) {
+		if ("getSymbol" in token) {
+			return token.getSymbol();
+		} else if ("prototype" in token && token.prototype instanceof Object && "getSymbol" in token.prototype) {
+			// Feeling the atmosphere of JS…
+			return token.prototype.getSymbol();
+		}
+	}
+	return token.toString();
+}
+let checkHasArity = token => { if (token === undefined || token.arity === undefined) { throw new ParseError("Token " + formatToken(token) + " can't be an operator but stays at its place"); } }
 
 function unexpectedToken(expected, actual, context = undefined) {
-	throw new ParseError("Bad token" + (context !== undefined ? " at " + context : "") + ". Expected: " + expected + ", actual: „" + undefinedIntoEOF(actual) + "“");
+	throw new ParseError("Bad token" + (context !== undefined ? " at " + context : "") + ". Expected: " + expected + ", actual: „" + formatToken(actual) + "“");
 }
 function expectClosingParentheses(lexer, context = undefined) {
 	if (!lexer.nextIsClosingParentheses()) {
@@ -390,7 +402,7 @@ function parseOperatorTokenizedStream(stream, reverseArguments) {
 	let operator = stream();
 	checkHasArity(operator);
 	if (operator.arity === 0) {
-		throw new ParseError("Can't use nullary operator as a normal one… Don't know why…");
+		throw new ParseError("Can't use nullary operator as a normal one… Don't know why… 😠");
 	}
 
 	let arguments = [];
@@ -398,9 +410,15 @@ function parseOperatorTokenizedStream(stream, reverseArguments) {
 	while (!stream.nextIsClosingParentheses()) {
 		arguments.push(parseTokenizedStream(stream, reverseArguments));
 	}
-	if (operator.arity !== Infinity && operator.arity !== arguments.length) {
+
+	let validateArity = (expected, actual) =>
+		expected === Infinity
+		|| actual === expected
+		|| (Array.isArray(expected) && expected[0] <= actual && actual <= expected[1]);
+
+	if (!validateArity(operator.arity, arguments.length)) {
 		throw new ParseError(
-			operator.arity + " arguments expected for operator " + operator +
+			operator.arity + " arguments expected for operator " + formatToken(operator) +
 			", actual number of arguments: " + arguments.length);
 	}
 
@@ -457,5 +475,8 @@ function parsePostfix(string) {
 // console.log("====================");
 // mapIterator(v => console.log(v), reverseTokenStream(Lexer("(((()")));
 
+// console.log(formatToken(Add));
+// console.log(parsePrefix("()"));
+// console.log(Add.prototype.getSymbol());
 // console.log(parsePostfix("(x 2 +)"));
 // console.log(parsePostfix("(1 2 3 softmax)").evaluate());
