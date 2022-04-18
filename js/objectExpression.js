@@ -1,29 +1,40 @@
 "use strict"
 
-let polishTreeFormatter = (operatorSymbol, children, builder, formatChild) => {
+let joinBuilder = (builder, children, extend) => {
+	for (let i = 0; i < children.length; i++) {
+		if (i !== 0) {
+			builder.push(" ");
+		}
+		extend(children[i], builder);
+	}
+}
+
+let polishTreeFormatter = (operatorSymbol, children, builder, formatChild, _isNullary) => {
 	children.forEach(child => { formatChild(child, builder); builder.push(" "); });
 	builder.push(operatorSymbol);
 }
-function withParenthesesIfNotNullary(b, c, ext) {
-	if (c.length >= 1) {
+function withParenthesesIfNotNullary(b, c, ext, isNullary) {
+	if (!isNullary) {
 		b.push("(");
 	}
 	ext();
-	if (c.length >= 1) {
+	if (!isNullary) {
 		b.push(")");
 	}
 }
-let prefixTreeFormatter = (operatorSymbol, children, builder, formatChild) => {
+let prefixTreeFormatter = (operatorSymbol, children, builder, formatChild, isNullary) => {
 	withParenthesesIfNotNullary(builder, children, () => {
 		builder.push(operatorSymbol);
-		children.forEach(child => { builder.push(" "); formatChild(child, builder); });
-	});
+		if (!isNullary) builder.push(" "); // Why?…
+		joinBuilder(builder, children, formatChild);
+	}, isNullary);
 }
-let postfixTreeFormatter = (operatorSymbol, children, builder, formatChild) => {
+let postfixTreeFormatter = (operatorSymbol, children, builder, formatChild, isNullary) => {
 	withParenthesesIfNotNullary(builder, children, () => {
-		children.forEach(child => { formatChild(child, builder); builder.push(" "); });
+		joinBuilder(builder, children, formatChild);
+		if (!isNullary) builder.push(" ");
 		builder.push(operatorSymbol);
-	});
+	}, isNullary);
 }
 
 // function namedTreeToStringBuilder(builder, children, name) {
@@ -43,9 +54,9 @@ function stringify(extendBuilder) {
 	return resBuilder.join("");
 }
 
-let deriveTreeFormatting = function (obj) {
+let deriveTreeFormatting = function (obj, isNullary) {
 	obj.toXBuilder = function (b, formatter) {
-		formatter(this.getSymbol(), this.getChildren(), b, (c, b) => c.toXBuilder(b, formatter));
+		formatter(this.getSymbol(), this.getChildren(), b, (c, b) => c.toXBuilder(b, formatter), isNullary);
 	};
 	obj.toX = function (formatter) {
 		return stringify(b => this.toXBuilder(b, formatter));
@@ -77,7 +88,7 @@ let createReductionNode = reductionOp => symbol => {
 	constructor.prototype.getChildren = function() { return this.children; };
 	constructor.prototype.getSymbol = function() { return this.name; };
 
-	deriveTreeFormatting(constructor.prototype);
+	deriveTreeFormatting(constructor.prototype, constructor.arity === 0);
 
 	return constructor;
 }
@@ -94,7 +105,7 @@ Const.prototype.evaluate = function(..._args) {
 Const.prototype.diff = function(_varName) {
 	return new Const(0);
 }
-deriveTreeFormatting(Const.prototype);
+deriveTreeFormatting(Const.prototype, true);
 
 
 let Variable = function (name) {
@@ -102,7 +113,7 @@ let Variable = function (name) {
 }
 Variable.prototype.getChildren = function() { return []; };
 Variable.prototype.getSymbol = function() { return this.name; };
-deriveTreeFormatting(Variable.prototype);
+deriveTreeFormatting(Variable.prototype, true);
 
 Variable.prototype.evaluate = function(x, y, z) {
 	return this.name === "x" ? x : (this.name === "y" ? y : z);
@@ -173,7 +184,7 @@ function labelParametrizedTree(treeConstructor, label) {
 	newNode.arity = treeConstructor.arity;
 	newNode.prototype.getChildren = function() { return this.treeList; };
 	newNode.prototype.getSymbol = function() { return this.name; };
-	deriveTreeFormatting(newNode.prototype);
+	deriveTreeFormatting(newNode.prototype, false);
 	deriveComputingFromInner(newNode.prototype);
 
 	return newNode;
@@ -195,7 +206,7 @@ function foldifyBinaryOperator(nodeConstructor, neutralConstNode, label) {
 	constructor.prototype.getChildren = function() { return this.treeList; };
 	constructor.prototype.getSymbol = function() { return this.name; };
 
-	deriveTreeFormatting(constructor.prototype);
+	deriveTreeFormatting(constructor.prototype, false);
 	deriveComputingFromInner(constructor.prototype);
 
 	return constructor;
@@ -482,3 +493,5 @@ function parsePostfix(string) {
 // console.log(Add.prototype.getSymbol());
 // console.log(parsePostfix("(x 2 +)"));
 // console.log(parsePostfix("(1 2 3 softmax)").evaluate());
+// console.log("«" + parsePostfix("( softmax)").postfix() + "»");
+// console.log("«" + parsePostfix("( softmax)").prefix() + "»");
