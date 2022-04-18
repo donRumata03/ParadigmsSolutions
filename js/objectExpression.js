@@ -1,3 +1,5 @@
+"use strict"
+
 let polishTreeFormatter = (operatorSymbol, children, builder, formatChild) => {
 	children.forEach(child => { formatChild(child, builder); builder.push(" "); });
 	builder.push(operatorSymbol);
@@ -405,10 +407,10 @@ function parseOperatorTokenizedStream(stream, reverseArguments) {
 		throw new ParseError("Can't use nullary operator as a normal one… Don't know why… 😠");
 	}
 
-	let arguments = [];
+	let args = [];
 	// for (let i = 0; i < operator.arity; i++) {
 	while (!stream.nextIsClosingParentheses()) {
-		arguments.push(parseTokenizedStream(stream, reverseArguments));
+		args.push(parseTokenizedStream(stream, reverseArguments));
 	}
 
 	let validateArity = (expected, actual) =>
@@ -416,13 +418,13 @@ function parseOperatorTokenizedStream(stream, reverseArguments) {
 		|| actual === expected
 		|| (Array.isArray(expected) && expected[0] <= actual && actual <= expected[1]);
 
-	if (!validateArity(operator.arity, arguments.length)) {
+	if (!validateArity(operator.arity, args.length)) {
 		throw new ParseError(
 			operator.arity + " arguments expected for operator " + formatToken(operator) +
-			", actual number of arguments: " + arguments.length);
+			", actual number of arguments: " + args.length);
 	}
 
-	return new operator(...(reverseArguments ? arguments.reverse() : arguments));
+	return new operator(...(reverseArguments ? args.reverse() : args));
 }
 function parseTokenizedStream(stream, reverseArguments) {
 	if (stream.nextIsOpeningParentheses()) {
