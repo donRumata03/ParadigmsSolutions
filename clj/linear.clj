@@ -56,6 +56,10 @@
   [row m] (let [transposed (transpose m)] (mapv #(scalar row %) transposed))
   )
 
+(defn m*m
+  [ml mr] (mapv #(row*m % mr) ml)
+  )
+
 
 (defn -main []
   (println)
@@ -80,5 +84,6 @@
   (println (v*s [1 2 3] 1 2 3))
   (println (m*s [[1 2 3] [4 5 6]] 1 2 3))
   (println (row*m [7 8] [[1 2 3] [4 5 6]]))
+  (println (m*m [[7 8 9] [10 11 12] [13 14 15]] [[1 2] [3 4] [5 6]]))
   )
 
