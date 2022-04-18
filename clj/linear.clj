@@ -1,7 +1,10 @@
-(ns linear)
+;(ns linear)
 
 (defn same-deductible-property [deducer & vs] (and (not-empty vs) (let [prop (deducer (nth vs 0))]
                                                                     (every? #(= (deducer %) prop) vs)))
+  )
+
+(defn same-property [deducer & vs] (or (empty? vs) (same-deductible-property deducer vs))
   )
 
 (def same-size-vector-set
@@ -9,6 +12,13 @@
 
 (defn matrix-dimension
   [m] [(count m) (if (empty? m) 1 (count (nth m 0)))]
+  )
+
+(def is-correct-matrix (partial same-property count))
+
+(defn matrices-match
+  [ml mr] (let [dl (matrix-dimension ml), dr (matrix-dimension mr)]
+    (= (nth dl 1) (nth dr 0)))
   )
 
 (def same-size-matrix-set
@@ -20,14 +30,14 @@
     (apply op (map #(nth % i) vs))))))
 
 (defn matrixElementWiseOperation [op]
-  (fn [& ms] {:pre [(same-size-matrix-set ms)]} (apply (vectorCoordWiseOperation (vectorCoordWiseOperation op)) ms)))
+  (fn [& ms] {:pre [(same-size-matrix-set ms), (every? is-correct-matrix ms)]} (apply (vectorCoordWiseOperation (vectorCoordWiseOperation op)) ms)))
 
 (defn foldify
-  [f, neutral] (fn [& args] (reduce f neutral args))
+  [f neutral] (fn [& args] (reduce f neutral args))
   )
 
 (defn reductify
-  [f] (fn [& args] (reduce f args))
+  [f] (fn [& args] {:pre [(not-empty args)]} (reduce f args))
   )
 
 
@@ -48,7 +58,7 @@
 (def md (matrixElementWiseOperation /))
 
 
-(defn vect2 [a, b]
+(defn vect2 [a b]
   [
    (- (* (nth a 1) (nth b 2)) (* (nth a 2) (nth b 1)))
    (- (* (nth a 2) (nth b 0)) (* (nth a 0) (nth b 2)))
@@ -72,11 +82,11 @@
   )
 
 (defn row*m
-  [row m] (let [transposed (transpose m)] (mapv #(scalar row %) transposed))
+  [row m] {:pre [(= (count row) (nth (matrix-dimension m) 0))]} (let [transposed (transpose m)] (mapv #(scalar row %) transposed))
   )
 
 (defn m*m_two
-  [ml mr] (mapv #(row*m % mr) ml)
+  [ml mr] {:pre [(matrices-match ml mr)]} (mapv #(row*m % mr) ml)
   )
 
 (def m*m
@@ -90,6 +100,7 @@
 (defn -main []
   (println "==========")
   (println (same-size-vector-set [100 1] [15 6] [0 0]))
+  (println (v+ [] []))
   (println (matrix-dimension []))
   (println (v+ [1 2] [3 4] [5 6]))
   ;(println (v* [1 2] [3 4]))
