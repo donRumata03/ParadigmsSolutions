@@ -18,11 +18,17 @@
 (def v+ (vectorCoordWiseOperation +))
 (def v- (vectorCoordWiseOperation -))
 (def v* (vectorCoordWiseOperation *))
+(defn v*s [v & ss]
+  (let [product (reduce * 1 ss)]
+    (mapv #(* product %) v)))
 (def vd (vectorCoordWiseOperation /))
 
 (def m+ (matrixElementWiseOperation +))
 (def m- (matrixElementWiseOperation -))
 (def m* (matrixElementWiseOperation *))
+(defn m*s [m & ss]
+  (let [product (reduce * 1 ss)]
+    (mapv #(mapv (fn [row] (* product row)) %) m)))
 (def md (matrixElementWiseOperation /))
 
 
@@ -67,5 +73,7 @@
   (println (vect [1 2 3] [4 5 6]))
   (println (scalar [1 2 3] [4 5 6]))
   (println (transpose [[1 2 3] [4 5 6]]))
+  (println (v*s [1 2 3] 1 2 3))
+  (println (m*s [[1 2 3] [4 5 6]] 1 2 3))
   )
 
