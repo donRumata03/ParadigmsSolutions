@@ -53,6 +53,15 @@ let deriveTreeFormatting = function (obj) {
 	obj.postfix = function() { return this.toX(postfixTreeFormatter); };
 }
 
+function deriveComputingFromInner(obj) {
+	obj.evaluate = function (...args) {
+		return this.inner.evaluate(...args);
+	}
+	obj.diff = function (varName) {
+		return this.inner.diff(varName);
+	}
+}
+
 let createReductionNode = reductionOp => symbol => {
 	let constructor = function (...children) {
 		this.op = reductionOp;
@@ -163,13 +172,7 @@ function labelParametrizedTree(treeConstructor, label) {
 	newNode.prototype.getChildren = function() { return this.treeList; };
 	newNode.prototype.getSymbol = function() { return this.name; };
 	deriveTreeFormatting(newNode.prototype);
-
-	newNode.prototype.diff = function (varName) {
-		return this.inner.diff(varName);
-	}
-	newNode.prototype.evaluate = function (...args) {
-		return this.inner.evaluate(...args);
-	}
+	deriveComputingFromInner(newNode.prototype);
 
 	return newNode;
 }
@@ -179,16 +182,21 @@ function labelParametrizedTree(treeConstructor, label) {
  * Uses it for evaluation and differentiation
  * But overloads displaying as flat vararg expression
  */
-function foldifyBinaryOperator(treeConstructor, label) {
+function foldifyBinaryOperator(nodeConstructor, neutralConstNode, label) {
 	let constructor = function (...children) {
 		this.treeList = Array.from(children);
-		this.inner = treeConstructor(...children);
+		this.inner = children.length === 0 ? neutralConstNode :
+			children.reduce((previousTree, currentNode) => new nodeConstructor(previousTree, currentNode));
 		this.name = label;
 	};
 	constructor.arity = Infinity;
 	constructor.prototype.getChildren = function() { return this.treeList; };
+	constructor.prototype.getSymbol = function() { return this.name; };
 
-	// …
+	deriveTreeFormatting(constructor.prototype);
+	deriveComputingFromInner(constructor.prototype);
+
+	return constructor;
 }
 
 let Gauss = labelParametrizedTree(
@@ -204,8 +212,19 @@ let Gauss = labelParametrizedTree(
 	"gauss"
 );
 
-// TODO:
-//  let Sumexp = labelParametrizedTree(foldifyBinaryOperator(), "sumexp");
+let Sum = foldifyBinaryOperator(Add, new Const(0), "sum"); // (sum … … …)
+let Sumexp = labelParametrizedTree((...trees) => new Sum(...trees.map(t => new Exponentiate(t))), "sumexp");
+let Softmax = labelParametrizedTree((...trees) => new Divide(new Exponentiate(trees[0]), new Sumexp(...trees)), "softmax");
+
+let sumNode = new Sum(new Const(10), new Variable("x"), new Multiply(new Const(11), new Const(13)));
+let sumExpNode = new Sumexp(new Const(10), new Variable("x"), new Multiply(new Const(11), new Const(13)));
+let softmaxNode = new Softmax(new Variable("x"), new Const(2), new Const(3));
+// console.log(sumNode.evaluate(1, 0, 0));
+// console.log(sumNode.prefix());
+// console.log(sumExpNode.evaluate(1, 0, 0));
+// console.log(sumExpNode.prefix());
+// console.log(softmaxNode.evaluate(1, 0, 0));
+
 
 // let node = new Multiply(new Const(566), new Variable("x"));
 // let node = new Gauss(new Const(1), new Const(2), new Const(3), new Const(4));
