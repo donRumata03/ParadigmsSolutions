@@ -1,7 +1,8 @@
-(ns linear)
+;(ns linear)
 
 (defn vectorCoordWiseOperation [op]
-  (fn [& vs] (reduce #(mapv op %1 %2) vs)))
+  (fn [& vs] (vec (for [i (range(count (nth vs 0)))]
+    (apply op (map #(nth % i) vs))))))
 
 (defn matrixElementWiseOperation [op]
   (fn [& ms] (apply (vectorCoordWiseOperation (vectorCoordWiseOperation op)) ms)))
@@ -47,17 +48,24 @@
   )
 
 (defn transpose
-  [m] (vec (for [col (range (count (nth m 0)))]
-      (vec (for [row (range (count m))]
-        ((m row) col)))))
+  [m] (if (empty? m)
+    [[]]
+    (vec (for [col (range (count (nth m 0)))]
+           (vec (for [row (range (count m))]
+                  ((m row) col)))))
+    )
   )
 
 (defn row*m
   [row m] (let [transposed (transpose m)] (mapv #(scalar row %) transposed))
   )
 
-(defn m*m
+(defn m*m_two
   [ml mr] (mapv #(row*m % mr) ml)
+  )
+
+(def m*m
+  (reductify m*m_two)
   )
 
 (defn m*v
@@ -89,5 +97,9 @@
   (println (row*m [7 8] [[1 2 3] [4 5 6]]))
   (println (m*m [[7 8 9] [10 11 12] [13 14 15]] [[1 2] [3 4] [5 6]]))
   (println (m*v [[7 8 9] [10 11 12] [13 14 15]] [1 2 3]))
+  (println (m*m [[]] []))
+  (println (m*v [[]] []))
+  (println (v- [8.3]))
+  (println (m*m (vector (vector 0.8))))
   )
 
