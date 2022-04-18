@@ -213,8 +213,8 @@ let Gauss = labelParametrizedTree(
 );
 
 let Sum = foldifyBinaryOperator(Add, new Const(0), "sum"); // (sum … … …)
-let Sumexp = labelParametrizedTree((...trees) => new Sum(...trees.map(t => new Exponentiate(t))), "sumexp");
-let Softmax = labelParametrizedTree((...trees) => new Divide(new Exponentiate(trees[0]), new Sumexp(...trees)), "softmax");
+let Sumexp = labelParametrizedTree(withArity((...trees) => new Sum(...trees.map(t => new Exponentiate(t))), Infinity), "sumexp");
+let Softmax = labelParametrizedTree(withArity((...trees) => new Divide(new Exponentiate(trees[0]), new Sumexp(...trees)), Infinity), "softmax");
 
 let sumNode = new Sum(new Const(10), new Variable("x"), new Multiply(new Const(11), new Const(13)));
 let sumExpNode = new Sumexp(new Const(10), new Variable("x"), new Multiply(new Const(11), new Const(13)));
@@ -243,6 +243,8 @@ let operators = {
 	"*": Multiply,
 	"/": Divide,
 	"gauss": Gauss,
+	"sumexp": Sumexp,
+	"softmax": Softmax,
 };
 
 let allowedVariableNames = [
@@ -456,3 +458,4 @@ function parsePostfix(string) {
 // mapIterator(v => console.log(v), reverseTokenStream(Lexer("(((()")));
 
 // console.log(parsePostfix("(x 2 +)"));
+// console.log(parsePostfix("(1 2 3 softmax)").evaluate());
