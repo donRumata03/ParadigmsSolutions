@@ -1,4 +1,4 @@
-;(ns linear)
+(ns linear)
 
 (defn same-deductible-property [deducer & vs] (and (not-empty vs) (let [prop (deducer (nth vs 0))]
                                                                     (every? #(= (deducer %) prop) vs)))
@@ -14,8 +14,13 @@
   [m] [(count m) (if (empty? m) 1 (count (nth m 0)))]
   )
 
-(def number-matrix? (partial same-property count))
-(def number-vector? (partial same-property count))
+(defn number-matrix? [m] (and
+                           (vector? m)
+                           (every? vector? m)
+                           (same-property count m)
+                           (every? (partial every? number?) m)
+))
+(defn number-vector? [v] (and (vector? v) (every? number? v)))
 (defn number-matrix-of? [m dim] (and (number-matrix? m) (= dim (matrix-dimension m))))
 (defn number-vector-of? [v size] (and (number-vector? v) (= size (count v))))
 
@@ -121,5 +126,15 @@
   (println (m*v [[]] []))
   (println (v- [8.3]))
   (println (m*m (vector (vector 0.8))))
+  (println "========")
+  (println (number-vector? [1 2 3]))
+  (println (number-vector? 1.0))
+  (println (number-vector-of? [1 2 3] 3))
+  (println (number-vector-of? [1 2 3] 0))
+  (println "========")
+  (println (number-matrix? 5))
+  (println (number-matrix? [[1] 2 [3]]))
+  (println (number-matrix? [[1 2 3] [1 2 3]]))
+  (println (number-matrix-of? [[1 2 3] [1 2 3]] [2 3]))
+  (println (number-matrix-of? [[1 2 3] [1 2 3]] [3 2]))
   )
-
