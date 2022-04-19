@@ -235,20 +235,6 @@ let Softmax = labelParametrizedTree(withArity((...trees) => new Divide(new Expon
 let sumNode = new Sum(new Const(10), new Variable("x"), new Multiply(new Const(11), new Const(13)));
 let sumExpNode = new Sumexp(new Const(10), new Variable("x"), new Multiply(new Const(11), new Const(13)));
 let softmaxNode = new Softmax(new Variable("x"), new Const(2), new Const(3));
-// console.log(sumNode.evaluate(1, 0, 0));
-// console.log(sumNode.prefix());
-// console.log(sumExpNode.evaluate(1, 0, 0));
-// console.log(sumExpNode.prefix());
-// console.log(softmaxNode.evaluate(1, 0, 0));
-
-
-// let node = new Multiply(new Const(566), new Variable("x"));
-// let node = new Gauss(new Const(1), new Const(2), new Const(3), new Const(4));
-// console.log(node.evaluate(1, 2, 3));
-// console.log("«" + node.toString() + "»");
-// console.log(node.evaluate(1, 2, 3));
-// console.log("«" + node.diff("x").toString() + "»");
-
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -488,30 +474,3 @@ function parsePrefix(string) {
 function parsePostfix(string) {
 	return parseTokenStream(reverseTokenStream(Lexer(string)), true);
 }
-
-
-// let emptyInput = parsePrefix("");
-// let nullaryWith0Args = parsePrefix("1");
-
-// console.log(new Const(10).prefix());
-// console.log(new Add(new Variable('x'), new Const(2)).prefix());
-
-// mapIterator(v => console.log(v), Lexer("(((()"));
-// console.log("====================");
-// mapIterator(v => console.log(v), reverseTokenStream(Lexer("(((()")));
-
-// console.log(formatToken(Add));
-// console.log(parsePrefix("()"));
-// console.log(Add.prototype.getSymbol());
-// console.log(parsePostfix("(x 2 +)"));
-// console.log(parsePostfix("(1 2 3 softmax)").evaluate());
-// console.log("«" + parsePostfix("( softmax)").postfix() + "»");
-
-// try {
-// 	console.log("«" + parsePostfix("( a)").prefix() + "»");
-// } catch(e) {
-// 	console.log(e);
-// 	console.log(e instanceof Error);
-// 	console.log(e instanceof TokenizeError);
-// }
-
