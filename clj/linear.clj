@@ -1,4 +1,4 @@
-(ns linear)
+;(ns linear)
 
 (defn same-deductible-property [deducer & vs] (and (not-empty vs) (let [prop (deducer (nth vs 0))]
                                                                     (every? #(= (deducer %) prop) vs)))
@@ -6,9 +6,6 @@
 
 (defn same-property [deducer & vs] (or (empty? vs) (same-deductible-property deducer vs))
   )
-
-(def same-size-vector-set
-  (partial same-deductible-property count))
 
 (defn matrix-dimension
   [m] [(count m) (if (empty? m) 1 (count (nth m 0)))]
@@ -29,8 +26,15 @@
     (= (nth dl 1) (nth dr 0)))
   )
 
-(def same-size-matrix-set
-  (partial same-deductible-property matrix-dimension))
+(defn same-size-vector-set [& vs]
+  (and (every? number-vector? vs) (same-deductible-property count vs))
+  )
+
+
+(defn same-size-matrix-set [& ms]
+  (and (every? number-matrix? ms) (same-deductible-property matrix-dimension ms))
+  )
+
 
 (defn vectorCoordWiseOperation [op]
   (fn [& vs]  {:pre [(apply same-size-vector-set vs)]}
@@ -38,7 +42,7 @@
     (apply op (map #(nth % i) vs))))))
 
 (defn matrixElementWiseOperation [op]
-  (fn [& ms] {:pre [(same-size-matrix-set ms), (every? number-matrix? ms)]} (apply (vectorCoordWiseOperation (vectorCoordWiseOperation op)) ms)))
+  (fn [& ms] {:pre [(same-size-matrix-set ms)]} (apply (vectorCoordWiseOperation (vectorCoordWiseOperation op)) ms)))
 
 (defn foldify
   [f neutral] (fn [& args] (reduce f neutral args))
@@ -52,7 +56,7 @@
 (def v+ (vectorCoordWiseOperation +))
 (def v- (vectorCoordWiseOperation -))
 (def v* (vectorCoordWiseOperation *))
-(defn v*s [v & ss]
+(defn v*s [v & ss] {:pre [(every? number? ss) (number-vector? v)]}
   (let [product (reduce * 1 ss)]
     (mapv #(* product %) v)))
 (def vd (vectorCoordWiseOperation /))
@@ -60,13 +64,13 @@
 (def m+ (matrixElementWiseOperation +))
 (def m- (matrixElementWiseOperation -))
 (def m* (matrixElementWiseOperation *))
-(defn m*s [m & ss]
+(defn m*s [m & ss] {:pre [(every? number? ss) (number-matrix? m)]}
   (let [product (reduce * 1 ss)]
     (mapv #(mapv (fn [row] (* product row)) %) m)))
 (def md (matrixElementWiseOperation /))
 
 
-(defn vect2 [a b]
+(defn vect2 [a b] {:pre [(number-vector? a), (number-vector? b), (= (count a) 3), (= (count b) 3)]}
   [
    (- (* (nth a 1) (nth b 2)) (* (nth a 2) (nth b 1)))
    (- (* (nth a 2) (nth b 0)) (* (nth a 0) (nth b 2)))
@@ -76,12 +80,12 @@
 
 (def vect (reductify vect2))
 
-(defn scalar
-  [& vs] (reduce + 0 (apply v* vs))
+(defn scalar [& vs] {:pre [(or (empty? vs) (same-size-vector-set vs))]}
+  (reduce + 0 (apply v* vs))
   )
 
-(defn transpose
-  [m] (if (empty? m)
+(defn transpose [m] {:pre [(number-matrix? m)]}
+  (if (empty? m)
     [[]]
     (vec (for [col (range (count (nth m 0)))]
            (vec (for [row (range (count m))]
@@ -89,20 +93,20 @@
     )
   )
 
-(defn row*m
-  [row m] {:pre [(= (count row) (nth (matrix-dimension m) 0))]} (let [transposed (transpose m)] (mapv #(scalar row %) transposed))
+(defn row*m [row m] {:pre [(number-vector? row), (number-matrix? m), (= (count row) (nth (matrix-dimension m) 0))]}
+  (let [transposed (transpose m)] (mapv #(scalar row %) transposed))
   )
 
-(defn m*m_two
-  [ml mr] {:pre [(matrices-match ml mr)]} (mapv #(row*m % mr) ml)
+(defn m*m_two [ml mr] {:pre [(number-matrix? ml), (number-matrix? mr), (matrices-match ml mr)]}
+  (mapv #(row*m % mr) ml)
   )
 
 (def m*m
   (reductify m*m_two)
   )
 
-(defn m*v
-  [m v] ((transpose (m*m m (transpose [v]))) 0)
+(defn m*v [m v] {:pre [(number-matrix? m), (number-vector? v), (= (nth (matrix-dimension m) 1) (count v))]}
+  ((transpose (m*m m (transpose [v]))) 0)
   )
 
 (defn -main []
@@ -137,4 +141,6 @@
   (println (number-matrix? [[1 2 3] [1 2 3]]))
   (println (number-matrix-of? [[1 2 3] [1 2 3]] [2 3]))
   (println (number-matrix-of? [[1 2 3] [1 2 3]] [3 2]))
+  (println "========")
+  (println (same-size-vector-set [] []))
   )
