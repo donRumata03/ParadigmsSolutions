@@ -300,14 +300,16 @@ let Lexer = function (string) {
 	// 	}
 	// 	return false;
 	// };
-	let isAlpha = ch => {
-		try {
-			eval("function " + ch + "(){}");
-			return ch.trim().length === 1 && true;
-		} catch {
-			return false;
-		}
-	}
+
+	// let isAlpha = ch => {
+	// 	try {
+	// 		eval("function " + ch + "(){}");
+	// 		return ch.trim().length === 1 && true;
+	// 	} catch {
+	// 		return false;
+	// 	}
+	// }
+	let isAlpha = ch => ch.length === 1 && ch.toLowerCase() !== ch.toUpperCase();
 	let skipSpaces = () => ptr = scanWhile(ch => ch.trim() === '')(ptr);
 	let isPositiveNumberStart = pos => pos < string.length && isDigit(string[pos]);
 	let nullaryWithArity = (constructedNode) => { let res = function() { return constructedNode; }; res.arity = 0; return res; }
