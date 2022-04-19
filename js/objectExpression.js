@@ -93,36 +93,39 @@ let createReductionNode = reductionOp => symbol => {
 	return constructor;
 }
 
-
-let Const = function (value) {
-	this.value = value;
-}
-Const.prototype.getChildren = function() { return []; };
-Const.prototype.getSymbol = function() { return this.value.toString(); };
-Const.prototype.evaluate = function(..._args) {
-	return this.value;
-}
-Const.prototype.diff = function(_varName) {
-	return new Const(0);
+class Const {
+	constructor(value) {
+		this.value = value;
+	}
+	getChildren() { return []; };
+	getSymbol() { return this.value.toString(); };
+	evaluate(..._args) {
+		return this.value;
+	}
+	diff(_varName) {
+		return new Const(0);
+	}
 }
 deriveTreeFormatting(Const.prototype, true);
 
 
-let Variable = function (name) {
-	this.name = name;
+class Variable {
+	constructor (name) {
+		this.name = name;
+	}
+	getChildren() { return []; }
+	getSymbol() { return this.name; };
+	evaluate(x, y, z) {
+		return this.name === "x" ? x : (this.name === "y" ? y : z);
+	}
+	diff(varName) {
+		return new Const(
+			(varName === this.name) ? 1 : 0
+		);
+	}
 }
-Variable.prototype.getChildren = function() { return []; };
-Variable.prototype.getSymbol = function() { return this.name; };
 deriveTreeFormatting(Variable.prototype, true);
 
-Variable.prototype.evaluate = function(x, y, z) {
-	return this.name === "x" ? x : (this.name === "y" ? y : z);
-}
-Variable.prototype.diff = function(varName) {
-	return new Const(
-		(varName === this.name) ? 1 : 0
-	);
-}
 
 let Add = createReductionNode((x, y) => x + y)("+");
 let Subtract = createReductionNode((x, y) => x - y)("-");
