@@ -267,19 +267,37 @@ let allowedVariableNames = [
 	"x", "y", "z"
 ];
 
-class ParseError extends Error {
-	constructor(message) {
-		super(message);
-		this.name = "ParseError";
-	}
-}
+// There are some issues with displaying true class name through graal
 
-class TokenizeError extends Error {
-	constructor(message) {
-		super(message);
-		this.name = "TokenizeError";
-	}
+// class ParseError extends Error {
+// 	constructor(message) {
+// 		super(message);
+// 		this.name = "ParseError";
+// 	}
+// }
+//
+// class TokenizeError extends Error {
+// 	constructor(message) {
+// 		super(message);
+// 		this.name = "TokenizeError";
+// 	}
+// }
+
+
+function ParseError(message) {
+	this.message = message;
 }
+ParseError.prototype = Object.create(Error.prototype);
+ParseError.prototype.name = "ParseError";
+ParseError.prototype.constructor = ParseError;
+
+function TokenizeError(message) {
+	this.message = message;
+}
+TokenizeError.prototype = Object.create(Error.prototype);
+TokenizeError.prototype.name = "TokenizeError";
+TokenizeError.prototype.constructor = TokenizeError;
+
 
 let Lexer = function (string) {
 	let ptr = 0;
@@ -488,4 +506,12 @@ function parsePostfix(string) {
 // console.log(parsePostfix("(x 2 +)"));
 // console.log(parsePostfix("(1 2 3 softmax)").evaluate());
 // console.log("«" + parsePostfix("( softmax)").postfix() + "»");
-// console.log("«" + parsePostfix("( softmax)").prefix() + "»");
+
+// try {
+// 	console.log("«" + parsePostfix("( a)").prefix() + "»");
+// } catch(e) {
+// 	console.log(e);
+// 	console.log(e instanceof Error);
+// 	console.log(e instanceof TokenizeError);
+// }
+
