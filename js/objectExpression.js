@@ -264,20 +264,19 @@ let allowedVariableNames = [
 	"x", "y", "z"
 ];
 
-function ParseError(message) {
-	this.message = message;
+class ParseError extends Error {
+	constructor(message) {
+		super(message);
+		this.name = "ParseError";
+	}
 }
-ParseError.prototype = Object.create(Error.prototype);
-ParseError.prototype.name = "ParseError";
-ParseError.prototype.constructor = ParseError;
 
-function TokenizeError(message) {
-	this.message = message;
+class TokenizeError extends Error {
+	constructor(message) {
+		super(message);
+		this.name = "TokenizeError";
+	}
 }
-TokenizeError.prototype = Object.create(Error.prototype);
-TokenizeError.prototype.name = "TokenizeError";
-TokenizeError.prototype.constructor = TokenizeError;
-
 
 let Lexer = function (string) {
 	let ptr = 0;
@@ -466,15 +465,7 @@ function parsePrefix(string) {
 }
 
 function parsePostfix(string) {
-	let parsed;
-	try {
-		parsed = parseTokenStream(reverseTokenStream(Lexer(string)), true);
-	} catch(e) {
-		// console.log(e);
-		// console.log(string);
-		throw e;
-	}
-	return parsed;
+	return parseTokenStream(reverseTokenStream(Lexer(string)), true);
 }
 
 
