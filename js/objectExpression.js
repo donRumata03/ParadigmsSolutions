@@ -476,3 +476,5 @@ function parsePrefix(string) {
 function parsePostfix(string) {
 	return parseTokenStream(reverseTokenStream(Lexer(string)), true);
 }
+
+console.log(new Sumexp().prefix());
