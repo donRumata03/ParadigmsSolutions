@@ -1,4 +1,4 @@
-;(ns linear)
+(ns linear (:require [clojure.test :refer [deftest is run-tests]]))
 
 (defn same-deductible-property [deducer & vs] (and (not-empty vs) (let [prop (deducer (nth vs 0))]
                                                                     (every? #(= (deducer %) prop) vs)))
@@ -15,14 +15,20 @@
   [m] [(count m) (if (empty? m) 1 (count (nth m 0)))]
   )
 
+
 (defn tensor-dimension [t]
   (cond
     (number? t) (list )
-    (vector? t) (tensor-dimension t)
+    (vector? t) (if (empty? t) (list 0) (cons (count t) (tensor-dimension (first t))))
     :else nil
     )
   )
 
+(deftest tDim (is (= (tensor-dimension 30) (list )))
+           (is (= (tensor-dimension []) (list 0)))
+           (is (= (tensor-dimension [[566]]) (list 1 1)))
+           (is (= (tensor-dimension [[[]] [[]]]) (list 2 1 0)))
+           )
 
 (defn number-matrix? [m] (and
                            (vector? m)
@@ -51,7 +57,7 @@
 
 (defn vectorCoordWiseOperation [op]
   (fn [& vs]
-    (vec (for [i (range(count (nth vs 0)))]
+    (vec (for [i (range(count (first vs)))]
     (apply op (map #(nth % i) vs))))))
 
 (defn numberVectorCoordWiseOperation [op]
