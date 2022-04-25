@@ -19,16 +19,28 @@
 (defn tensor-dimension [t]
   (cond
     (number? t) (list )
-    (vector? t) (if (empty? t) (list 0) (cons (count t) (tensor-dimension (first t))))
+    (vector? t) (let [childResult (tensor-dimension (first t))]
+                  (if (nil? childResult)
+                    nil
+                    (if (empty? t) (list 0) (cons (count t) childResult))
+                    )
+                  )
     :else nil
     )
   )
 
-(deftest tDim (is (= (tensor-dimension 30) (list )))
-           (is (= (tensor-dimension []) (list 0)))
-           (is (= (tensor-dimension [[566]]) (list 1 1)))
-           (is (= (tensor-dimension [[[]] [[]]]) (list 2 1 0)))
-           )
+(deftest tDim
+  (is (= (tensor-dimension 30) (list )))
+  (is (= (tensor-dimension []) (list 0)))
+  (is (= (tensor-dimension [[566]]) (list 1 1)))
+  (is (= (tensor-dimension [[[]] [[]]]) (list 2 1 0)))
+  (is (= (tensor-dimension [[[2 3 4] [5 6 7]]]) (list 1 2 3)))
+   )
+
+(deftest tIncorrect
+  (is (= (tensor-dimension nil) nil))
+  (is (= (tensor-dimension [(fn[] )]) nil))
+  )
 
 (defn number-matrix? [m] (and
                            (vector? m)
