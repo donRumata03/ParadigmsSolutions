@@ -55,6 +55,17 @@
     )
   )
 
+(defn broadcastTensor
+  [t, additionalDims]
+  (if (empty? additionalDims)
+    t
+    (vector (repeat
+              (first additionalDims)
+              (broadcastTensor t (rest additionalDims))
+              ))
+    )
+  )
+
 (deftest tDim
   (is (= (tensor-dimension 30) (list )))
   (is (= (tensor-dimension []) (list 0)))
