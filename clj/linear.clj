@@ -29,6 +29,21 @@
     )
   )
 
+(defn check-is-tensor-of-dimension
+  [t, dim]
+  (if (nil? dim)
+    false
+    (if (= dim (list ))
+      (number? t)
+      (and
+        (vector? t)
+        (= (count t) (first dim))
+        (every? #(check-is-tensor-of-dimension % (rest dim)) t)
+        )
+      )
+    )
+  )
+
 (deftest tDim
   (is (= (tensor-dimension 30) (list )))
   (is (= (tensor-dimension []) (list 0)))
