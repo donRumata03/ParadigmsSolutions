@@ -1,5 +1,16 @@
 (ns linear (:require [clojure.test :refer [deftest is run-tests]]))
 
+
+(defn isSuffixOf
+  [suffix, origin]
+  (let [
+        lSuff (count suffix)
+        lOrigin (count origin)
+        ]
+    (= suffix (drop (- lOrigin lSuff) origin))
+    )
+  )
+
 (defn same-deductible-property [deducer & vs] (and (not-empty vs) (let [prop (deducer (nth vs 0))]
                                                                     (every? #(= (deducer %) prop) vs)))
   )
