@@ -1,5 +1,7 @@
 (ns linear (:require [clojure.test :refer [deftest is run-tests]]))
 
+(defn zip [& colls]
+  (partition (count colls) (apply interleave colls)))
 
 (defn isSuffixOf
   [suffix, origin]
@@ -55,15 +57,22 @@
     )
   )
 
-(defn broadcastTensor
+(defn broadcastTensorWith
   [t, additionalDims]
   (if (empty? additionalDims)
     t
-    (vector (repeat
+    (apply vector (repeat
               (first additionalDims)
-              (broadcastTensor t (rest additionalDims))
+              (broadcastTensorWith t (rest additionalDims))
               ))
     )
+  )
+
+(defn broadcastTensorTo [t, newDim]
+  (broadcastTensorWith t (take
+                           (- (count newDim) (count (tensor-dimension t)))
+                           newDim
+                           ))
   )
 
 (defn number-tensor?
@@ -71,16 +80,16 @@
   (tensor-of-dimension? t (tensor-dimension t))
   )
 
-;(defn number-matrix? [m] (and
-;                           (vector? m)
-;                           (every? vector? m)
-;                           (same-property-seq count m)
-;                           (every? (partial every? number?) m)
-;))
+(defn number-matrix? [m] (and
+                           (vector? m)
+                           (every? vector? m)
+                           (same-property-seq count m)
+                           (every? (partial every? number?) m)
+))
 
-(defn number-matrix? [m]
-  (and (number-tensor? m) (= 2 (count (tensor-dimension m))))
-  )
+;(defn number-matrix? [m]
+;  (and (number-tensor? m) (= 2 (count (tensor-dimension m))))
+;  )
 
 ; TODO: rewrite this as particular cases of tensor…
 (defn number-vector? [v] (and (vector? v) (every? number? v)))
@@ -144,10 +153,10 @@
 
 (defn same-size-tensorElementWiseOperation [op]
   (letfn [(f [& tensors]
-    (let [dim (tensor-dimension (count (first tensors)))]
+    (let [dim (tensor-dimension (first tensors))]
       (if (empty? dim)
         (apply op tensors)
-        (mapv f tensors)
+        (mapv (partial apply f) (apply zip tensors))
         )
       )
     )]
@@ -155,6 +164,23 @@
     )
   )
 
+(defn auto-broadcast-tensors [& tensors]
+  (let [greatestDim (apply max-key count (mapv tensor-dimension tensors))]
+    (mapv #(broadcastTensorTo % greatestDim) tensors)
+    )
+  )
+
+(defn broadcastable-tensor-element-wise-operation [op]
+  (let [ssOp (same-size-tensorElementWiseOperation op)]
+    (fn [& tensors] (apply ssOp (apply auto-broadcast-tensors tensors))
+      )
+    )
+  )
+
+(def hb+ (broadcastable-tensor-element-wise-operation +))
+(def hb- (broadcastable-tensor-element-wise-operation -))
+(def hb* (broadcastable-tensor-element-wise-operation *))
+(def hbd (broadcastable-tensor-element-wise-operation /))
 
 (defn vect2 [a b] {:pre [(number-vector? a), (number-vector? b), (= (count a) 3), (= (count b) 3)]}
   [
@@ -224,11 +250,13 @@
   (println (scalar [1 2 3] [4 5 6]))
   (println (transpose [[1 2 3] [4 5 6]]))
   (println (transpose []))
+  (println "==========")
   (println (v*s [1 2 3] 1 2 3))
   (println (m*s [[1 2 3] [4 5 6]] 1 2 3))
   (println (row*m [7 8] [[1 2 3] [4 5 6]]))
   (println (m*m [[7 8 9] [10 11 12] [13 14 15]] [[1 2] [3 4] [5 6]]))
   (println (m*v [[7 8 9] [10 11 12] [13 14 15]] [1 2 3]))
+  (println "==========")
   (println (m*m [[]] []))
   (println (m*v [[]] []))
   (println (v- [8.3]))
@@ -248,4 +276,9 @@
   (println (same-size-number-vector-set [] []))
   (println "========")
   (println (tensor-dimension 1))
+  (println "========")
+  (println (broadcastTensorWith 1 (list 2 3)))
+  (println (broadcastTensorTo 1 (list 2 3)))
+  (println (auto-broadcast-tensors 1 [ [10 20 30] [40 50 60] ] [100 200 300]))
+  (println (hb+ 1 [ [10 20 30] [40 50 60] ] [100 200 300]))
   )
