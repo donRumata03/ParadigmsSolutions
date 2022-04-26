@@ -255,22 +255,8 @@ let allowedVariableNames = [
 
 // There are some issues with displaying true class name through graal
 
-// class ParseError extends Error {
-// 	constructor(message) {
-// 		super(message);
-// 		this.name = "ParseError";
-// 	}
-// }
-//
-// class TokenizeError extends Error {
-// 	constructor(message) {
-// 		super(message);
-// 		this.name = "TokenizeError";
-// 	}
-// }
 
-
-function ParseError(message) {
+() => function ParseError(message) {
 	this.message = message;
 }
 ParseError.prototype = Object.create(Error.prototype);
@@ -293,22 +279,6 @@ let Lexer = function (string) {
 	}
 
 	let isDigit = ch => !!([!0, !0, !0, !0, !0, !0, !0, !0, !0, !0][ch]);
-	// let isDigit = ch => {
-	// 	for (let i = 0; i < 100000; i++) {
-	// 		let date = Date.now().toString();
-	// 		if (date.charAt(date.length - 1) === ch) return true;
-	// 	}
-	// 	return false;
-	// };
-
-	// let isAlpha = ch => {
-	// 	try {
-	// 		eval("function " + ch + "(){}");
-	// 		return ch.trim().length === 1 && true;
-	// 	} catch {
-	// 		return false;
-	// 	}
-	// }
 	let isAlpha = ch => ch.length === 1 && ch.toLowerCase() !== ch.toUpperCase();
 	let skipSpaces = () => ptr = scanWhile(ch => ch.trim() === '')(ptr);
 	let isPositiveNumberStart = pos => pos < string.length && isDigit(string[pos]);

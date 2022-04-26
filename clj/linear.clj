@@ -40,7 +40,7 @@
     )
   )
 
-(defn check-is-tensor-of-dimension
+(defn tensor-of-dimension?
   [t, dim]
   (if (nil? dim)
     false
@@ -49,7 +49,7 @@
       (and
         (vector? t)
         (= (count t) (first dim))
-        (every? #(check-is-tensor-of-dimension % (rest dim)) t)
+        (every? #(tensor-of-dimension? % (rest dim)) t)
         )
       )
     )
@@ -66,25 +66,23 @@
     )
   )
 
-(deftest tDim
-  (is (= (tensor-dimension 30) (list )))
-  (is (= (tensor-dimension []) (list 0)))
-  (is (= (tensor-dimension [[566]]) (list 1 1)))
-  (is (= (tensor-dimension [[[]] [[]]]) (list 2 1 0)))
-  (is (= (tensor-dimension [[[2 3 4] [5 6 7]]]) (list 1 2 3)))
-   )
-
-(deftest tIncorrect
-  (is (= (tensor-dimension nil) nil))
-  (is (= (tensor-dimension [(fn[] )]) nil))
+(defn number-tensor?
+  [t]
+  (tensor-of-dimension? t (tensor-dimension t))
   )
 
-(defn number-matrix? [m] (and
-                           (vector? m)
-                           (every? vector? m)
-                           (same-property-seq count m)
-                           (every? (partial every? number?) m)
-))
+;(defn number-matrix? [m] (and
+;                           (vector? m)
+;                           (every? vector? m)
+;                           (same-property-seq count m)
+;                           (every? (partial every? number?) m)
+;))
+
+(defn number-matrix? [m]
+  (and (number-tensor? m) (= 2 (count (tensor-dimension m))))
+  )
+
+; TODO: rewrite this as particular cases of tensor…
 (defn number-vector? [v] (and (vector? v) (every? number? v)))
 (defn number-matrix-of? [m dim] (and (number-matrix? m) (= dim (matrix-dimension m))))
 (defn number-vector-of? [v size] (and (number-vector? v) (= size (count v))))
@@ -144,6 +142,13 @@
     (mapv #(mapv (fn [row] (* product row)) %) m)))
 (def md (matrixElementWiseOperation /))
 
+(defn same-size-tensorElementWiseOperation [tl, tr]
+  (let [dl (tensor-dimension tl)
+        dr
+        ]
+    )
+  )
+
 
 (defn vect2 [a b] {:pre [(number-vector? a), (number-vector? b), (= (count a) 3), (= (count b) 3)]}
   [
@@ -183,6 +188,21 @@
 (defn m*v [m v] {:pre [(number-matrix? m), (number-vector? v), (= (nth (matrix-dimension m) 1) (count v))]}
   ((transpose (m*m m (transpose [v]))) 0)
   )
+
+
+(deftest tDim
+         (is (= (tensor-dimension 30) (list )))
+         (is (= (tensor-dimension []) (list 0)))
+         (is (= (tensor-dimension [[566]]) (list 1 1)))
+         (is (= (tensor-dimension [[[]] [[]]]) (list 2 1 0)))
+         (is (= (tensor-dimension [[[2 3 4] [5 6 7]]]) (list 1 2 3)))
+         )
+
+(deftest tIncorrect
+         (is (= (tensor-dimension nil) nil))
+         (is (= (tensor-dimension [(fn[] )]) nil))
+         )
+
 
 (defn -main []
   (println (same-size-number-vector-set [100 1] [15 6] [0 0]))
