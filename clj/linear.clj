@@ -177,7 +177,8 @@
       {:pre [(every? number-tensor? tensors)
              (let [resDim (apply biggestDimension tensors)]
                (every? #(isSuffixOf (tensor-dimension %) resDim) tensors)
-               )]}
+               )]
+      :post [(number-tensor? %), (= (tensor-dimension %) (apply biggestDimension tensors))]}
       (apply ssOp (apply auto-broadcast-tensors tensors)))
     )
   )
