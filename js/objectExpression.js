@@ -337,21 +337,6 @@ let mapTokenStream = (f, it) => {
 	f(next);
 	mapTokenStream(f, it);
 }
-let reverseTokenStream = it => {
-	let collected = [];
-	mapTokenStream(v => collected.push(v), it);
-	let viewThroughMirror = ch => ch === '(' ? ')' : (ch === ')' ? '(' : ch);
-	let i = collected.length;
-
-	let res = () => i === 0 ? undefined : viewThroughMirror(collected[--i]);
-
-	let nextIs = symbol => () => {
-		return i !== 0 && viewThroughMirror(collected[i - 1]) === symbol;
-	};
-	res.nextIsOpeningParentheses = nextIs('(');
-	res.nextIsClosingParentheses = nextIs(')');
-	return res;
-};
 
 let parse = function (string) {
 	let lex = Lexer(string)
@@ -396,36 +381,38 @@ function expectClosingParentheses(lexer, context = undefined) {
 	lexer();
 }
 
-function parseOperatorTokenizedStream(stream, reverseArguments) {
+function parseOperatorTokenizedStream(stream, firstIsFunction) {
+	let children = [];
+	// for (let i = 0; i < operator.arity; i++) {
+	while (!stream.nextIsClosingParentheses()) {
+		children.push(parseTokenizedStream(stream, firstIsFunction));
+	}
+
+
 	let operator = stream();
 	checkHasArity(operator);
 	if (operator.arity === 0) {
 		throw new ParseError("Can't use nullary operator as a normal one… Don't know why… 😠");
 	}
 
-	let args = [];
-	// for (let i = 0; i < operator.arity; i++) {
-	while (!stream.nextIsClosingParentheses()) {
-		args.push(parseTokenizedStream(stream, reverseArguments));
-	}
 
 	let validateArity = (expected, actual) =>
 		expected === Infinity
 		|| actual === expected
 		|| (Array.isArray(expected) && expected[0] <= actual && actual <= expected[1]);
 
-	if (!validateArity(operator.arity, args.length)) {
+	if (!validateArity(operator.arity, children.length)) {
 		throw new ParseError(
 			operator.arity + " arguments expected for operator " + formatToken(operator) +
-			", actual number of arguments: " + args.length);
+			", actual number of arguments: " + children.length);
 	}
 
-	return new operator(...(reverseArguments ? args.reverse() : args));
+	return new operator(...(firstIsFunction ? children.reverse() : children));
 }
-function parseTokenizedStream(stream, reverseArguments) {
+function parseTokenizedStream(stream, firstIsFunction) {
 	if (stream.nextIsOpeningParentheses()) {
 		stream();
-		let res = parseOperatorTokenizedStream(stream, reverseArguments);
+		let res = parseOperatorTokenizedStream(stream, firstIsFunction);
 		expectClosingParentheses(stream, "operator expression ending");
 		return res;
 	} else {
@@ -437,21 +424,15 @@ function parseTokenizedStream(stream, reverseArguments) {
 		return new nextNullary();
 	}
 }
-function parseTokenStream(stream, reverseArguments) {
-	let parsed = parseTokenizedStream(stream, reverseArguments);
+function parseXFix(string, functionIsFirst) {
+	let lex = Lexer(string);
+	let parsed = parseTokenizedStream(lex, functionIsFirst);
 
-	if (stream() !== undefined) {
+	if (lex() !== undefined) {
 		throw new ParseError("Couldn't parse the whole expression…");
 	}
 	return parsed;
 }
 
-function parsePrefix(string) {
-	return parseTokenStream(Lexer(string), false);
-}
-
-function parsePostfix(string) {
-	return parseTokenStream(reverseTokenStream(Lexer(string)), true);
-}
-
-console.log(new Sumexp().prefix());
+let parsePrefix = string => parseXFix(Lexer(string), true);
+let parsePostfix = string => parseXFix(Lexer(string), false);
