@@ -65,6 +65,7 @@ public interface Operations {
 
     Operation MEAN = any("mean", "Mean", 1, 5, Operations::mean);
     Operation VAR = any("var", "Var", 1, 5, Operations::var);
+    Operation VARN = any("varn", "Varn", 1, 5, Operations::var);
 
     Operation SUMEXP = any("sumexp", "Sumexp", 0, 3, Operations::sumexp);
     Operation SOFTMAX = any("softmax", "Softmax", 1, 5, args -> Math.exp(args[0]) / sumexp(args));

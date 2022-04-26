@@ -13,5 +13,9 @@ set "ARGS=%~2 %~3"
 
 if not exist "%OUT%" mkdir "%OUT%"
 
-javac -d "%OUT%" "--class-path=%JS%;%JAVA%" "%JS%%CLASS:.=\%.java" ^
+javac ^
+    -encoding utf-8 ^
+    -d "%OUT%" ^
+    "--class-path=%JS%;%JAVA%" ^
+    "%JS%%CLASS:.=\%.java" ^
   && java -ea "--module-path=%JS%graal" "--class-path=%OUT%" "%CLASS%" %ARGS%

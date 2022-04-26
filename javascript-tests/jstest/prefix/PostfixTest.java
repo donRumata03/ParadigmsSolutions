@@ -40,7 +40,7 @@ public final class PostfixTest {
     }
 
     public static void main(final String... args) {
-//        ParserTest.main(args);
+        ParserTest.main(args);
         SELECTOR.main(args);
     }
 }

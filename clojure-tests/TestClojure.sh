@@ -15,6 +15,7 @@ REPO="$CLOJURE/.."
 LIB="$CLOJURE/lib/*"
 
 javac \
+    -encoding utf-8 \
     -d "$OUT" \
     "--class-path=$LIB:$REPO/java:$REPO/javascript:$REPO/clojure" \
     "$CLOJURE/${CLASS//\./\/}.java" \

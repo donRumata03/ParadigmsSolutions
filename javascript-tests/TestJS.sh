@@ -14,6 +14,7 @@ JS="$(dirname "$0")"
 REPO="$JS/.."
 
 javac \
+    -encoding utf-8 \
     -d "$OUT" \
     "--class-path=$REPO/java:$REPO/javascript" \
     "$JS/${CLASS//\./\/}.java" \

@@ -12,6 +12,7 @@ set "CLASS=%~1"
 set "ARGS=%~2 %~3"
 
 javac ^
+    -encoding utf-8 ^
     -d "%OUT%" ^
     "--class-path=%LIB%;%REPO%/clojure;%REPO%/javascript;%REPO%/java" ^
     "%~dp0%CLASS:.=/%.java" ^
