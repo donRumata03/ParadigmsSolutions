@@ -1,4 +1,4 @@
-(ns linear (:require [clojure.test :refer [deftest is run-tests]]))
+;(ns linear (:require [clojure.test :refer [deftest is run-tests]]))
 
 (defn zip [& colls]
   (partition (count colls) (apply interleave colls)))
@@ -164,16 +164,21 @@
     )
   )
 
+(defn biggestDimension [& tensors] (apply max-key count (mapv tensor-dimension tensors)))
 (defn auto-broadcast-tensors [& tensors]
-  (let [greatestDim (apply max-key count (mapv tensor-dimension tensors))]
-    (mapv #(broadcastTensorTo % greatestDim) tensors)
+  (let [resDim (apply biggestDimension tensors)]
+    (mapv #(broadcastTensorTo % resDim) tensors)
     )
   )
 
 (defn broadcastable-tensor-element-wise-operation [op]
   (let [ssOp (same-size-tensorElementWiseOperation op)]
-    (fn [& tensors] (apply ssOp (apply auto-broadcast-tensors tensors))
-      )
+    (fn [& tensors]
+      {:pre [(every? number-tensor? tensors)
+             (let [resDim (apply biggestDimension tensors)]
+               (every? #(isSuffixOf (tensor-dimension %) resDim) tensors)
+               )]}
+      (apply ssOp (apply auto-broadcast-tensors tensors)))
     )
   )
 
@@ -222,18 +227,18 @@
   )
 
 
-(deftest tDim
-         (is (= (tensor-dimension 30) (list )))
-         (is (= (tensor-dimension []) (list 0)))
-         (is (= (tensor-dimension [[566]]) (list 1 1)))
-         (is (= (tensor-dimension [[[]] [[]]]) (list 2 1 0)))
-         (is (= (tensor-dimension [[[2 3 4] [5 6 7]]]) (list 1 2 3)))
-         )
-
-(deftest tIncorrect
-         (is (= (tensor-dimension nil) nil))
-         (is (= (tensor-dimension [(fn[] )]) nil))
-         )
+;(deftest tDim
+;         (is (= (tensor-dimension 30) (list )))
+;         (is (= (tensor-dimension []) (list 0)))
+;         (is (= (tensor-dimension [[566]]) (list 1 1)))
+;         (is (= (tensor-dimension [[[]] [[]]]) (list 2 1 0)))
+;         (is (= (tensor-dimension [[[2 3 4] [5 6 7]]]) (list 1 2 3)))
+;         )
+;
+;(deftest tIncorrect
+;         (is (= (tensor-dimension nil) nil))
+;         (is (= (tensor-dimension [(fn[] )]) nil))
+;         )
 
 
 (defn -main []
