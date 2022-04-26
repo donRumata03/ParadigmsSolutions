@@ -142,10 +142,16 @@
     (mapv #(mapv (fn [row] (* product row)) %) m)))
 (def md (matrixElementWiseOperation /))
 
-(defn same-size-tensorElementWiseOperation [tl, tr]
-  (let [dl (tensor-dimension tl)
-        dr
-        ]
+(defn same-size-tensorElementWiseOperation [op]
+  (letfn [(f [& tensors]
+    (let [dim (tensor-dimension (count (first tensors)))]
+      (if (empty? dim)
+        (apply op tensors)
+        (mapv f tensors)
+        )
+      )
+    )]
+    f
     )
   )
 
