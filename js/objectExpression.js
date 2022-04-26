@@ -256,20 +256,27 @@ let allowedVariableNames = [
 // There are some issues with displaying true class name through graal
 
 
-() => function ParseError(message) {
-	this.message = message;
-}
-ParseError.prototype = Object.create(Error.prototype);
-ParseError.prototype.name = "ParseError";
-ParseError.prototype.constructor = ParseError;
+let ParseError = (() => {
+	function ParseError(message) {
+		this.message = message;
+	}
 
-function TokenizeError(message) {
-	this.message = message;
-}
-TokenizeError.prototype = Object.create(Error.prototype);
-TokenizeError.prototype.name = "TokenizeError";
-TokenizeError.prototype.constructor = TokenizeError;
+	ParseError.prototype = Object.create(Error.prototype);
+	ParseError.prototype.name = "ParseError";
+	ParseError.prototype.constructor = ParseError;
 
+	return ParseError;
+})();
+
+let TokenizeError = (() => {
+	function TokenizeError(message) {
+		this.message = message;
+	}
+	TokenizeError.prototype = Object.create(Error.prototype);
+	TokenizeError.prototype.name = "TokenizeError";
+	TokenizeError.prototype.constructor = TokenizeError;
+	return TokenizeError;
+})();
 
 let Lexer = function (string) {
 	let ptr = 0;
