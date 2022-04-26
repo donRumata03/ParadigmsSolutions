@@ -434,5 +434,5 @@ function parseXFix(string, functionIsFirst) {
 	return parsed;
 }
 
-let parsePrefix = string => parseXFix(Lexer(string), true);
-let parsePostfix = string => parseXFix(Lexer(string), false);
+let parsePrefix = string => parseXFix(string, true);
+let parsePostfix = string => parseXFix(string, false);
