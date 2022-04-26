@@ -118,7 +118,7 @@
 
 (defn numberVectorCoordWiseOperation [op]
   (let [unconstrained (vectorCoordWiseOperation op)]
-    (fn [& vs]  {:pre [(apply same-size-number-vector-set vs)]} (apply unconstrained vs))
+    (fn [& vs]  {:pre [(apply same-size-number-vector-set vs)] :post [(apply same-size-number-vector-set % vs)]} (apply unconstrained vs))
   )
 )
 
@@ -188,7 +188,10 @@
 (def hb* (broadcastable-tensor-element-wise-operation *))
 (def hbd (broadcastable-tensor-element-wise-operation /))
 
-(defn vect2 [a b] {:pre [(number-vector? a), (number-vector? b), (= (count a) 3), (= (count b) 3)]}
+(defn vect2 [a b] {
+                   :pre [(number-vector? a), (number-vector? b), (= (count a) 3), (= (count b) 3)]
+                   :post [(number-vector? %), (= (count %) 3)]
+                   }
   [
    (- (* (nth a 1) (nth b 2)) (* (nth a 2) (nth b 1)))
    (- (* (nth a 2) (nth b 0)) (* (nth a 0) (nth b 2)))
@@ -198,11 +201,22 @@
 
 (def vect (reductify vect2))
 
-(defn scalar [& vs] {:pre [(or (empty? vs) (apply same-size-number-vector-set vs))]}
+(defn scalar [& vs] {
+                     :pre [(or (empty? vs) (apply same-size-number-vector-set vs))]
+                     :post [(number? %)]
+                     }
   (reduce + 0 (apply v* vs))
   )
 
-(defn transpose [m] {:pre [(number-matrix? m)]}
+(defn transpose [m] {
+                     :pre [(number-matrix? m)]
+                     :post [
+                            (number-matrix? %)
+                            (or
+                              (and (= % []) (= 0 (second (matrix-dimension m))))
+                              (= (matrix-dimension %) (reverse (matrix-dimension m)))
+                            )]
+                     }
   (if (empty? m)
     [[]]
     (vec (for [col (range (count (nth m 0)))]
@@ -215,7 +229,10 @@
   (let [transposed (transpose m)] (mapv #(scalar row %) transposed))
   )
 
-(defn m*m_two [ml mr] {:pre [(number-matrix? ml), (number-matrix? mr), (matrices-match ml mr)]}
+(defn m*m_two [ml mr] {
+                       :pre [(number-matrix? ml), (number-matrix? mr), (matrices-match ml mr)]
+                       :post [(number-matrix? %), (= (matrix-dimension %) (list (first (matrix-dimension ml)) (second (matrix-dimension mr))))]
+                       }
   (mapv #(row*m % mr) ml)
   )
 
@@ -223,7 +240,10 @@
   (reductify m*m_two)
   )
 
-(defn m*v [m v] {:pre [(number-matrix? m), (number-vector? v), (= (nth (matrix-dimension m) 1) (count v))]}
+(defn m*v [m v] {
+                 :pre [(number-matrix? m), (number-vector? v), (= (second (matrix-dimension m)) (count v))]
+                 :post [(number-vector? %), (= (count %) (first (matrix-dimension m)))]
+                 }
   ((transpose (m*m m (transpose [v]))) 0)
   )
 
@@ -287,4 +307,6 @@
   (println (broadcastTensorTo 1 (list 2 3)))
   (println (auto-broadcast-tensors 1 [ [10 20 30] [40 50 60] ] [100 200 300]))
   (println (hb+ 1 [ [10 20 30] [40 50 60] ] [100 200 300]))
+  (println "===========")
+  (println (transpose (vector (vector) (vector)))) ; [[] []] → []
   )
