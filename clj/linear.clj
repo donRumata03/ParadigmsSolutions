@@ -1,43 +1,30 @@
-;(ns linear (:require [clojure.test :refer [deftest is run-tests]]))
+(ns linear (:require [clojure.test :refer [deftest is run-tests]]))
 
 (defn zip [& colls]
   (partition (count colls) (apply interleave colls)))
 
 (defn isSuffixOf
   [suffix, origin]
-  (let [
-        lSuff (count suffix)
-        lOrigin (count origin)
-        ]
-    (= suffix (drop (- lOrigin lSuff) origin))
-    )
-  )
+  (let [lSuff (count suffix)
+        lOrigin (count origin)]
+    (= suffix (drop (- lOrigin lSuff) origin))))
 
-(defn same-deductible-property [deducer & vs] (and (not-empty vs) (let [prop (deducer (nth vs 0))]
-                                                                    (every? #(= (deducer %) prop) vs)))
-  )
+(defn same-property [deducer vs-seq] (or (empty? vs-seq) (apply = (map deducer vs-seq))))
 
-(defn same-deductible-property-seq [deducer vs-seq] (apply (partial same-deductible-property deducer) vs-seq))
-
-(defn same-property [deducer & vs] (or (empty? vs) (same-deductible-property deducer vs))
-  )
-(defn same-property-seq [deducer vs-seq] (apply (partial same-property deducer) vs-seq))
-
+(defn same-deductible-property [deducer vs]
+  (and (not-empty vs) (same-property deducer vs)))
 
 (defn matrix-dimension
-  [m] [(count m) (if (empty? m) 1 (count (nth m 0)))]
-  )
+  [m] [(count m) (if (empty? m) 1 (count (nth m 0)))])
 
+(def rows count)
+(defn cols [m] (if (empty? m) 1 (count (first m))))
 
 (defn tensor-dimension [t]
   (cond
     (number? t) (list )
-    (vector? t) (let [childResult (tensor-dimension (first t))]
-                  (if (nil? childResult)
-                    nil
-                    (if (empty? t) (list 0) (cons (count t) childResult))
-                    )
-                  )
+    (vector? t) (some-> (tensor-dimension (first t))
+                  #(if (empty? t) (list 0) (cons (count t) %)))
     :else nil
     )
   )
@@ -83,7 +70,7 @@
 (defn number-matrix? [m] (and
                            (vector? m)
                            (every? vector? m)
-                           (same-property-seq count m)
+                           (same-property count m)
                            (every? (partial every? number?) m)
 ))
 
@@ -102,12 +89,12 @@
   )
 
 (defn same-size-number-vector-set [& vs]
-  (and (every? number-vector? vs) (same-deductible-property-seq count vs))
+  (and (every? number-vector? vs) (same-deductible-property count vs))
   )
 
 
 (defn same-size-matrix-set [& ms]
-  (and (every? number-matrix? ms) (same-deductible-property-seq matrix-dimension ms))
+  (and (every? number-matrix? ms) (same-deductible-property matrix-dimension ms))
   )
 
 
@@ -263,6 +250,14 @@
 
 
 (defn -main []
+  (println (maybe-test nil))
+  (println (maybe-test 10))
+  (short-circuit-test "Anal")
+  (println (some->> {:a 2 :b 3} :a vector (filter even?) (map inc) first))
+  (short-circuit-test nil)
+
+  (println "===========")
+
   (println (same-size-number-vector-set [100 1] [15 6] [0 0]))
   (println (same-size-matrix-set [[1 2] [3 4]] [[5 6] [7 8]]))
   (println (v+ [] []))
@@ -307,6 +302,5 @@
   (println (broadcastTensorTo 1 (list 2 3)))
   (println (auto-broadcast-tensors 1 [ [10 20 30] [40 50 60] ] [100 200 300]))
   (println (hb+ 1 [ [10 20 30] [40 50 60] ] [100 200 300]))
-  (println "===========")
   (println (transpose (vector (vector) (vector)))) ; [[] []] → []
   )
