@@ -47,17 +47,12 @@
               (broadcastTensorWith t (rest additionalDims))))))
 
 (defn broadcastTensorTo [t, newDim]
-  (broadcastTensorWith t (take
-                           (- (count newDim) (count (tensor-dimension t)))
-                           newDim
-                           ))
-  )
+  (broadcastTensorWith t (take (- (count newDim) (count (tensor-dimension t))) newDim)))
 
 (defn number-tensor? [t] (tensor-of-dimension? t (tensor-dimension t)))
 
 (defn number-matrix? [m]
-  (and
-    (vector? m)
+  (and (vector? m)
     (every? vector? m)
     (same-property count m)
     (every? (partial every? number?) m)))
@@ -91,13 +86,8 @@
   (fn [& ms] {:pre [(apply same-size-matrix-set ms)]}
     (apply (vectorCoordWiseOperation (numberVectorCoordWiseOperation op)) ms)))
 
-(defn foldify
-  [f neutral] (fn [& args] (reduce f neutral args))
-  )
-
-(defn reductify
-  [f] (fn [& args] {:pre [(not-empty args)]} (reduce f args))
-  )
+(defn foldify [f neutral] (fn [& args] (reduce f neutral args)))
+(defn reductify [f] (fn [& args] {:pre [(not-empty args)]} (reduce f args)))
 
 
 (def v+ (numberVectorCoordWiseOperation +))
