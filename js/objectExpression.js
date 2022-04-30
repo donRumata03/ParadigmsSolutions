@@ -13,6 +13,7 @@ let polishTreeFormatter = (operatorSymbol, children, builder, formatChild, _isNu
 	children.forEach(child => { formatChild(child, builder); builder.push(" "); });
 	builder.push(operatorSymbol);
 }
+
 function withParenthesesIfNotNullary(b, c, ext, isNullary) {
 	if (!isNullary) {
 		b.push("(");
@@ -36,6 +37,42 @@ let postfixTreeFormatter = (operatorSymbol, children, builder, formatChild, isNu
 		builder.push(operatorSymbol);
 	}, isNullary);
 }
+let mapIterator = (f, it) => {
+	let next = it();
+	if (next === undefined) return;
+	f(next);
+	mapIterator(f, it);
+}
+
+let iteratorOnce = val => {
+	let already = false;
+	return () => {
+		if (!already) {
+			already = true;
+			return val;
+		} else { return undefined; }
+	};
+}
+
+let chainIterators = (itl, itr) => {
+	let leftFinished = false;
+
+	let res = () => {
+		if (leftFinished) {
+			return itr();
+		} else {
+			let nextLeft = itl();
+			if (nextLeft === undefined) {
+				leftFinished = true;
+				return res();
+			}
+			return nextLeft;
+		}
+	};
+	res.nextIsClosingParentheses = ()
+	return res;
+}
+
 
 // function namedTreeToStringBuilder(builder, children, name) {
 // 	children.forEach(child => { child.toStringBuilder(builder); builder.push(" "); });
@@ -331,12 +368,6 @@ let Lexer = function (string) {
 	lexer.nextIsClosingParentheses = nextIs(')');
 	return lexer;
 }
-let mapTokenStream = (f, it) => {
-	let next = it();
-	if (next === undefined) return;
-	f(next);
-	mapTokenStream(f, it);
-}
 
 let parse = function (string) {
 	let lex = Lexer(string)
@@ -383,17 +414,29 @@ function expectClosingParentheses(lexer, context = undefined) {
 
 function parseOperatorTokenizedStream(stream, firstIsFunction) {
 	let children = [];
-	// for (let i = 0; i < operator.arity; i++) {
-	while (!stream.nextIsClosingParentheses()) {
-		children.push(parseTokenizedStream(stream, firstIsFunction));
+
+	let operator;
+	if (firstIsFunction) {
+		operator = stream();
+		checkHasArity(operator);
+		if (operator.arity === 0) {
+			throw new ParseError(
+				"Can't use nullary operator as a normal one… Don't know why… 😠");
+		}
+		while (!stream.nextIsClosingParentheses()) {
+			children.push(parseTokenizedStream(stream, firstIsFunction));
+		}
+	}
+	else {
+		let tokenAfterNextIsClosingParentheses = false;
+		while (!tokenAfterNextIsClosingParentheses) {
+			let nextToken = stream();
+			tokenAfterNextIsClosingParentheses = stream.nextIsClosingParentheses();
+			stream = chainIterators();
+
+		}
 	}
 
-
-	let operator = stream();
-	checkHasArity(operator);
-	if (operator.arity === 0) {
-		throw new ParseError("Can't use nullary operator as a normal one… Don't know why… 😠");
-	}
 
 
 	let validateArity = (expected, actual) =>
