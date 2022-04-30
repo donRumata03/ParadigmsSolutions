@@ -69,7 +69,7 @@ let chainIterators = (itl, itr) => {
 			return nextLeft;
 		}
 	};
-	res.nextIsClosingParentheses = ()
+	res.nextIsClosingParentheses = function() {};
 	return res;
 }
 
