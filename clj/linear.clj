@@ -38,22 +38,13 @@
       (and
         (vector? t)
         (= (count t) (first dim))
-        (every? #(tensor-of-dimension? % (rest dim)) t)
-        )
-      )
-    )
-  )
+        (every? #(tensor-of-dimension? % (rest dim)) t)))))
 
 (defn broadcastTensorWith
   [t, additionalDims]
-  (if (empty? additionalDims)
-    t
-    (apply vector (repeat
-              (first additionalDims)
-              (broadcastTensorWith t (rest additionalDims))
-              ))
-    )
-  )
+  (if (empty? additionalDims) t
+    (apply vector (repeat (first additionalDims)
+              (broadcastTensorWith t (rest additionalDims))))))
 
 (defn broadcastTensorTo [t, newDim]
   (broadcastTensorWith t (take
@@ -62,41 +53,28 @@
                            ))
   )
 
-(defn number-tensor?
-  [t]
-  (tensor-of-dimension? t (tensor-dimension t))
-  )
+(defn number-tensor? [t] (tensor-of-dimension? t (tensor-dimension t)))
 
-(defn number-matrix? [m] (and
-                           (vector? m)
-                           (every? vector? m)
-                           (same-property count m)
-                           (every? (partial every? number?) m)
-))
+(defn number-matrix? [m]
+  (and
+    (vector? m)
+    (every? vector? m)
+    (same-property count m)
+    (every? (partial every? number?) m)))
 
-;(defn number-matrix? [m]
-;  (and (number-tensor? m) (= 2 (count (tensor-dimension m))))
-;  )
-
-; TODO: rewrite this as particular cases of tensor…
 (defn number-vector? [v] (and (vector? v) (every? number? v)))
 (defn number-matrix-of? [m dim] (and (number-matrix? m) (= dim (matrix-dimension m))))
 (defn number-vector-of? [v size] (and (number-vector? v) (= size (count v))))
 
 (defn matrices-match
   [ml mr] (let [dl (matrix-dimension ml), dr (matrix-dimension mr)]
-    (= (nth dl 1) (nth dr 0)))
-  )
+    (= (nth dl 1) (nth dr 0))))
 
 (defn same-size-number-vector-set [& vs]
-  (and (every? number-vector? vs) (same-deductible-property count vs))
-  )
-
+  (and (every? number-vector? vs) (same-deductible-property count vs)))
 
 (defn same-size-matrix-set [& ms]
-  (and (every? number-matrix? ms) (same-deductible-property matrix-dimension ms))
-  )
-
+  (and (every? number-matrix? ms) (same-deductible-property matrix-dimension ms)))
 
 (defn vectorCoordWiseOperation [op]
   (fn [& vs]
@@ -146,17 +124,12 @@
         (mapv (partial apply f) (apply zip tensors))
         )
       )
-    )]
-    f
-    )
-  )
+    )] f))
 
 (defn biggestDimension [& tensors] (apply max-key count (mapv tensor-dimension tensors)))
 (defn auto-broadcast-tensors [& tensors]
   (let [resDim (apply biggestDimension tensors)]
-    (mapv #(broadcastTensorTo % resDim) tensors)
-    )
-  )
+    (mapv #(broadcastTensorTo % resDim) tensors)))
 
 (defn broadcastable-tensor-element-wise-operation [op]
   (let [ssOp (same-size-tensorElementWiseOperation op)]
@@ -166,9 +139,7 @@
                (every? #(isSuffixOf (tensor-dimension %) resDim) tensors)
                )]
       :post [(number-tensor? %), (= (tensor-dimension %) (apply biggestDimension tensors))]}
-      (apply ssOp (apply auto-broadcast-tensors tensors)))
-    )
-  )
+      (apply ssOp (apply auto-broadcast-tensors tensors)))))
 
 (def hb+ (broadcastable-tensor-element-wise-operation +))
 (def hb- (broadcastable-tensor-element-wise-operation -))
