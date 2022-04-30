@@ -24,7 +24,7 @@
   (cond
     (number? t) (list )
     (vector? t) (some-> (tensor-dimension (first t))
-                  #(if (empty? t) (list 0) (cons (count t) %)))
+                        (#(if (empty? t) (list 0) (cons (count t) %))))
     :else nil
     )
   )
@@ -250,12 +250,8 @@
 
 
 (defn -main []
-  (println (maybe-test nil))
-  (println (maybe-test 10))
-  (short-circuit-test "Anal")
-  (println (some->> {:a 2 :b 3} :a vector (filter even?) (map inc) first))
-  (short-circuit-test nil)
-
+  (println (some->> nil (+ 2)))
+  (println (some->> 10 (+ 2)))
   (println "===========")
 
   (println (same-size-number-vector-set [100 1] [15 6] [0 0]))
