@@ -12,7 +12,12 @@
                    (/ 1.0 (first %&))
                    (reduce (fn [l, r] (/ (double l) (double r))) %&))))
 (def negate subtract)
-(def operators {'+ add, '- subtract, '* multiply, '/ divide, 'negate negate})
+(defn exp-sum [& args] (apply + (mapv #(Math/exp %) args)))
+(def sumexp (reduction-op exp-sum))
+(def softmax (reduction-op #(/ (Math/exp (first %&)) (apply exp-sum %&))))
+
+(def operators {'+ add, '- subtract, '* multiply, '/ divide,
+                'negate negate, 'sumexp sumexp, 'softmax softmax})
 
 (defn parseTokenFunction [token]
   (cond
@@ -35,4 +40,8 @@
   (println (add (variable "x") (constant 2.0)))
   (println (parseFunction "(+ x 2.0)"))
   (println (parseFunction "(/ (negate x) 2.0)"))
+  (println (type (name 'softmax)))
+  (println (#(Math/exp %) 0))
+  (println ((sumexp (variable "x")) {"z" 0.0, "x" 0.0, "y" 0.0}))
+  ;(println (((eval 'softmax) (constant 1) (constant 2) (constant 3)) {}))
   )
