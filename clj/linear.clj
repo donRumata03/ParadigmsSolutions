@@ -97,11 +97,11 @@
 
 ; Tensor element-wise operations
 (defn same-size-tensorElementWiseOperation [op]
-  (letfn [(f [& tensors]
+  (letfn [(operate [& tensors]
     (let [dim (tensor-dimension (first tensors))]
       (if (empty? dim)
         (apply op tensors)
-        (mapv (partial apply f) (apply zip tensors)))))] f))
+        (mapv (partial apply operate) (apply zip tensors)))))] operate))
 
 (defn biggestDimension [& tensors] (apply max-key count (mapv tensor-dimension tensors)))
 (defn auto-broadcast-tensors [& tensors]
