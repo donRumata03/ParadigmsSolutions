@@ -1,21 +1,17 @@
-(ns linear (:require [clojure.test :refer [deftest is run-tests]]))
+;(ns linear (:require [clojure.test :refer [deftest is run-tests]]))
 
-(defn zip [& colls]
-  (partition (count colls) (apply interleave colls)))
+(defn zip [& colls] (partition (count colls) (apply interleave colls)))
 
-(defn isSuffixOf
-  [suffix, origin]
+(defn is-suffix-of [suffix, origin]
   (let [lSuff (count suffix)
         lOrigin (count origin)]
     (= suffix (drop (- lOrigin lSuff) origin))))
 
 (defn same-property [deducer vs-seq] (or (empty? vs-seq) (apply = (map deducer vs-seq))))
 
-(defn same-deductible-property [deducer vs]
-  (and (not-empty vs) (same-property deducer vs)))
+(defn same-deductible-property [deducer vs] (and (not-empty vs) (same-property deducer vs)))
 
-(defn matrix-dimension
-  [m] [(count m) (if (empty? m) 1 (count (nth m 0)))])
+(defn matrix-dimension [m] [(count m) (if (empty? m) 1 (count (nth m 0)))])
 
 (def rows count)
 (defn cols [m] (if (empty? m) 1 (count (first m))))
@@ -25,12 +21,9 @@
     (number? t) (list )
     (vector? t) (some-> (tensor-dimension (first t))
                         (#(if (empty? t) (list 0) (cons (count t) %))))
-    :else nil
-    )
-  )
+    :else nil))
 
-(defn tensor-of-dimension?
-  [t, dim]
+(defn tensor-of-dimension? [t, dim]
   (if (nil? dim)
     false
     (if (= dim (list ))
@@ -60,10 +53,6 @@
 (defn number-vector? [v] (and (vector? v) (every? number? v)))
 (defn number-matrix-of? [m dim] (and (number-matrix? m) (= dim (matrix-dimension m))))
 (defn number-vector-of? [v size] (and (number-vector? v) (= size (count v))))
-
-(defn matrices-match
-  [ml mr] (let [dl (matrix-dimension ml), dr (matrix-dimension mr)]
-    (= (nth dl 1) (nth dr 0))))
 
 (defn same-size-number-vector-set [& vs]
   (and (every? number-vector? vs) (same-deductible-property count vs)))
@@ -106,15 +95,13 @@
     (mapv #(mapv (fn [row] (* product row)) %) m)))
 (def md (matrixElementWiseOperation /))
 
+; Tensor element-wise operations
 (defn same-size-tensorElementWiseOperation [op]
   (letfn [(f [& tensors]
     (let [dim (tensor-dimension (first tensors))]
       (if (empty? dim)
         (apply op tensors)
-        (mapv (partial apply f) (apply zip tensors))
-        )
-      )
-    )] f))
+        (mapv (partial apply f) (apply zip tensors)))))] f))
 
 (defn biggestDimension [& tensors] (apply max-key count (mapv tensor-dimension tensors)))
 (defn auto-broadcast-tensors [& tensors]
@@ -126,8 +113,7 @@
     (fn [& tensors]
       {:pre [(every? number-tensor? tensors)
              (let [resDim (apply biggestDimension tensors)]
-               (every? #(isSuffixOf (tensor-dimension %) resDim) tensors)
-               )]
+               (every? #(is-suffix-of (tensor-dimension %) resDim) tensors))]
       :post [(number-tensor? %), (= (tensor-dimension %) (apply biggestDimension tensors))]}
       (apply ssOp (apply auto-broadcast-tensors tensors)))))
 
@@ -136,78 +122,44 @@
 (def hb* (broadcastable-tensor-element-wise-operation *))
 (def hbd (broadcastable-tensor-element-wise-operation /))
 
-(defn vect2 [a b] {
-                   :pre [(number-vector? a), (number-vector? b), (= (count a) 3), (= (count b) 3)]
-                   :post [(number-vector? %), (= (count %) 3)]
-                   }
-  [
-   (- (* (nth a 1) (nth b 2)) (* (nth a 2) (nth b 1)))
+; Typical linear algebra
+(defn vect2 [a b]
+  {:pre [(every? #(number-vector-of? % 3) [a b])]
+   :post [(number-vector-of? % 3)]}
+  [(- (* (nth a 1) (nth b 2)) (* (nth a 2) (nth b 1)))
    (- (* (nth a 2) (nth b 0)) (* (nth a 0) (nth b 2)))
-   (- (* (nth a 0) (nth b 1)) (* (nth a 1) (nth b 0)))
-   ]
-  )
-
+   (- (* (nth a 0) (nth b 1)) (* (nth a 1) (nth b 0)))])
 (def vect (reductify vect2))
 
-(defn scalar [& vs] {
-                     :pre [(or (empty? vs) (apply same-size-number-vector-set vs))]
-                     :post [(number? %)]
-                     }
+(defn scalar [& vs]
+  {:pre [(or (empty? vs) (apply same-size-number-vector-set vs))]
+  :post [(number? %)]}
   (reduce + 0 (apply v* vs))
   )
 
-(defn transpose [m] {
-                     :pre [(number-matrix? m)]
-                     :post [
-                            (number-matrix? %)
-                            (or
-                              (and (= % []) (= 0 (second (matrix-dimension m))))
-                              (= (matrix-dimension %) (reverse (matrix-dimension m)))
-                            )]
-                     }
-  (if (empty? m)
-    [[]]
-    (vec (for [col (range (count (nth m 0)))]
-           (vec (for [row (range (count m))]
-                  ((m row) col)))))
-    )
-  )
+(defn transpose [m]
+  {:pre [(number-matrix? m)]
+  :post [(number-matrix? %),
+         (or (and (= % []) (= 0 (cols m)))
+             (= (matrix-dimension %) (reverse (matrix-dimension m))))]}
+  (if (empty? m) [[]]
+    (vec (for [col (range (cols m))]
+           (vec (for [row (range (rows m))]
+                  ((m row) col)))))))
 
-(defn row*m [row m] {:pre [(number-vector? row), (number-matrix? m), (= (count row) (nth (matrix-dimension m) 0))]}
-  (let [transposed (transpose m)] (mapv #(scalar row %) transposed))
-  )
+(defn row*m [row m]
+  {:pre [(number-matrix? m), (number-vector-of? row (rows m))]
+   :post [(number-vector-of? % (cols m))]}
+  (let [transposed (transpose m)] (mapv #(scalar row %) transposed)))
 
-(defn m*m_two [ml mr] {
-                       :pre [(number-matrix? ml), (number-matrix? mr), (matrices-match ml mr)]
-                       :post [(number-matrix? %), (= (matrix-dimension %) (list (first (matrix-dimension ml)) (second (matrix-dimension mr))))]
-                       }
-  (mapv #(row*m % mr) ml)
-  )
+(defn m*m_two [ml mr]
+  {:pre [(number-matrix? ml), (number-matrix? mr), (= (cols ml) (rows mr))]
+  :post [(number-matrix? %), (= (matrix-dimension %) (list (first (matrix-dimension ml)) (second (matrix-dimension mr))))]}
+  (mapv #(row*m % mr) ml))
 
-(def m*m
-  (reductify m*m_two)
-  )
+(def m*m (reductify m*m_two))
 
-(defn m*v [m v] {
-                 :pre [(number-matrix? m), (number-vector? v), (= (second (matrix-dimension m)) (count v))]
-                 :post [(number-vector? %), (= (count %) (first (matrix-dimension m)))]
-                 }
-  ((transpose (m*m m (transpose [v]))) 0)
-  )
-
-
-;(deftest tDim
-;         (is (= (tensor-dimension 30) (list )))
-;         (is (= (tensor-dimension []) (list 0)))
-;         (is (= (tensor-dimension [[566]]) (list 1 1)))
-;         (is (= (tensor-dimension [[[]] [[]]]) (list 2 1 0)))
-;         (is (= (tensor-dimension [[[2 3 4] [5 6 7]]]) (list 1 2 3)))
-;         )
-;
-;(deftest tIncorrect
-;         (is (= (tensor-dimension nil) nil))
-;         (is (= (tensor-dimension [(fn[] )]) nil))
-;         )
+(defn m*v [m v] (first (transpose (m*m m (transpose [v])))))
 
 
 (defn -main []
