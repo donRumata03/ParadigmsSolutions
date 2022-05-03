@@ -39,6 +39,12 @@ public interface Operations {
     Operation GAUSS = fixed("gauss", "Gauss", 4, args -> gauss(args[0], args[1], args[2], args[3]),
             new int[][]{{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {34, 57, 64}, {31, 51, 58}, {47, 1, 1}, {247, 129, 185}, {1007, 693, 763}});
 
+    Operation EXP = unary("exp", "Exp", Math::exp,
+            new int[][]{{1, 1, 1}, {5, 1, 1}, {9, 14, 1}, {9, 9, 1}, {48, 48, 37}, {27, 22, 22}});
+    Operation LN = unary("ln", "Ln", Math::log,
+            new int[][]{{1, 1, 1}, {5, 1, 1}, {9, 14, 1}, {9, 9, 1}, {46, 46, 36}, {26, 22, 22}});
+
+
     private static double gauss(final double a, final double b, final double c, final double x) {
         final double q = (x - b) / c;
         return a * Math.exp(-q * q / 2);

@@ -10,6 +10,7 @@ import static jstest.expression.Operations.*;
 public final class ObjectTest {
     public static final Selector SELECTOR = ObjectTester.builder()
             .variant("Base",            ARITH)
+            .variant("MeanVarn",        ARITH, MEAN,        VARN)
             .selector();
 
     private ObjectTest() {
