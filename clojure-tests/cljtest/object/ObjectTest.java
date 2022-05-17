@@ -11,6 +11,9 @@ public final class ObjectTest {
     public static final Selector SELECTOR = ObjectTester.builder()
             .variant("Base",            ARITH)
             .variant("MeanVarn",        ARITH, MEAN,        VARN)
+            .variant("SumexpSoftmax",   ARITH, SUMEXP,      SOFTMAX)
+            .variant("PowLog",          ARITH, POW,         LOG)
+            .variant("ExpLn",           ARITH, EXP,         LN)
             .selector();
 
     private ObjectTest() {

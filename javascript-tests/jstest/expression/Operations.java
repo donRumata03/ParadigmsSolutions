@@ -2,9 +2,7 @@ package jstest.expression;
 
 import java.util.Arrays;
 import java.util.OptionalDouble;
-import java.util.function.DoubleBinaryOperator;
-import java.util.function.DoubleUnaryOperator;
-import java.util.function.Function;
+import java.util.function.*;
 import java.util.stream.DoubleStream;
 
 /**
@@ -19,6 +17,15 @@ public interface Operations {
         checker.any("*", "Multiply", 0, 2, arith(1, (a, b) -> a * b));
         checker.any("/", "Divide", 1, 2, arith(1, (a, b) -> a / b));
     };
+
+    Operation INFIX_BIT_AND     = infix("&",   "BitAnd",  90,  bitwise((a, b) -> a & b));
+    Operation INFIX_BIT_OR      = infix("|",   "BitOr",   80,  bitwise((a, b) -> a | b));
+    Operation INFIX_BIT_XOR     = infix("^",   "BitXor",  70,  bitwise((a, b) -> a ^ b));
+
+    private static DoubleBinaryOperator bitwise(final LongBinaryOperator op) {
+        return (a, b) -> Double.longBitsToDouble(op.applyAsLong(Double.doubleToLongBits(a), Double.doubleToLongBits(b)));
+    }
+
 
     Operation PI = constant("pi", Math.PI);
     Operation E = constant("e", Math.E);
@@ -121,4 +128,9 @@ public interface Operations {
                 : args.length == 1 ? f.applyAsDouble(zero, args[0])
                 : Arrays.stream(args).reduce(f).orElseThrow();
     }
+
+    private static Operation infix(final String name, final String alias, final int priority, final DoubleBinaryOperator op) {
+        return checker -> checker.infix(name, alias, priority, op);
+    }
+
 }

@@ -119,7 +119,7 @@
            [ctor prototype]
            (fn [& args] (apply ctor {:prototype prototype} args))))
 (example "Supertype"
-         (def _Point)
+         (declare _Point)
          (def _distance (method :distance))
          (def _length (method :length))
          (def _sub (method :sub))

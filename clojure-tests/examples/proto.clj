@@ -33,10 +33,7 @@
 (defmacro deffield
   "Defines field"
   [name]
-  (let [key (keyword (subs (str name) 1))]
-    `(defn ~name
-       ([this#] (proto-get this# ~key))
-       ([this# def#] (proto-get this# ~key def#)))))
+  `(def ~name (field ~(keyword (subs (str name) 1)))))
 
 (defmacro deffields
   "Defines multiple fields"
