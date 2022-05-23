@@ -1,4 +1,5 @@
-(ns expression)
+(ns expression
+  (:import (expression Subtract)))
 
 (load-file "proto.clj")
 
@@ -30,6 +31,7 @@
 
 (def _name (field :name))
 (def _value (field :value))
+(def _children (field :children))
 
 (def evaluate (method :evaluate))
 (def toString (method :toString))
@@ -39,26 +41,44 @@
    :evaluate (fn [this _vars] (_value this))
    :toString (comp str _value)
    })
-(defn Constant [this value]
+(defn ConstantConstructor [this value]
   (assoc this
     :value value))
-(def _Constant (constructor Constant ConstantPrototype))
+(def Constant (constructor ConstantConstructor ConstantPrototype))
 
 (def VariablePrototype
   {:name ""
    :evaluate (fn [this vars] (vars (_name this)))
    :toString _name
    })
-(defn Variable [this name]
+(defn VariableConstructor [this name]
   (assoc this
     :name name))
-(def _Variable (constructor Variable VariablePrototype))
+(def Variable (constructor VariableConstructor VariablePrototype))
+
+(defn reductionNode [op]
+  (let [Prototype
+          {:children (vector )
+           :evaluate (fn [this vars] (apply op (mapv #(evaluate % vars) (_children this))))
+           :toString _name
+           }
+        Constructor (fn [this & children] (assoc this :children (vec children)))
+        ]
+  (constructor Constructor Prototype)))
+
+(def Add (reductionNode +))
+(def Subtract (reductionNode -))
+(def Multiply (reductionNode *))
+(def Divide (reductionNode div))
+(def Negate Subtract)
+
 
 
 (defn -main []
-  (println (_Constant 228))
-  (println (_value (_Constant 228)))
-  (println (type (toString (_Constant 228))))
+  (println (evaluate (Add (Constant 228) (Variable "x")) {"x" 3}))
+  (println (Constant 228))
+  (println (_value (Constant 228)))
+  (println (type (toString (Constant 228))))
   (println (/ 5.0 0))
   (println (div 5.0 0))
   (println (div 5 0))
