@@ -1,5 +1,8 @@
 ;(ns expression)
 
+(defn div ([arg] (/ 1 (double arg)))
+  ([first & tail] (reduce (fn [l, r] (/ (double l) (double r))) (apply vector first tail))))
+
 (defn constant [value] (fn [vars] value))
 (defn variable [name] (fn [vars] (vars name)))
 
@@ -7,10 +10,7 @@
 (def add (reduction-op +))
 (def subtract (reduction-op -))
 (def multiply (reduction-op *))
-(def divide
-  (reduction-op #(if (== (count %&) 1)
-                   (/ 1.0 (first %&))
-                   (reduce (fn [l, r] (/ (double l) (double r))) %&))))
+(def divide (reduction-op div))
 (def negate subtract)
 (defn exp-sum [& args] (apply + (mapv #(Math/exp %) args)))
 (def sumexp (reduction-op exp-sum))
@@ -27,12 +27,15 @@
 (def parseFunction (comp parseTokenFunction read-string))
 
 (defn -main []
+  (println (/ 5.0 0))
+  (println (div 5.0 0))
+  (println (div 5 0))
+  (println "====================")
   (println (operators (eval '-)))
   (println {:x 1} {"x" 1})
   (println ({"x" 1} "x"))
   (println ({"x" 1} "y"))
   (println (= {:x 1} {"x" 1}))
-  (println "====================")
   (println (eval '(+ 1 2)))
   (println (eval (read-string "(+ 1 2)")))
   (println (read-string "(- (* 2 x) 3)"))
