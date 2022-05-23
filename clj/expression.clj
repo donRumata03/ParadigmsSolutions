@@ -1,5 +1,4 @@
-(ns expression
-  (:import (expression Subtract)))
+(ns expression)
 
 (load-file "proto.clj")
 
@@ -19,15 +18,6 @@
 (def sumexp (reduction-op exp-sum))
 (def softmax (reduction-op #(/ (Math/exp (first %&)) (apply exp-sum %&))))
 
-(def operators {'+ add, '- subtract, '* multiply, '/ divide,
-                'negate negate, 'sumexp sumexp, 'softmax softmax})
-
-(defn parseTokenFunction [token]
-  (cond
-    (number? token) (constant token)
-    (symbol? token) (variable (name token))
-    (list? token) (apply (operators (first token)) (mapv parseTokenFunction (drop 1 token)))))
-(def parseFunction (comp parseTokenFunction read-string))
 
 (def _name (field :name))
 (def _value (field :value))
@@ -74,8 +64,34 @@
 
 
 
+(def functionalDictionary {:c constant, :v variable, '+ add, '- subtract, '* multiply,
+                           '/ divide, 'negate negate, 'sumexp sumexp, 'softmax softmax})
+
+(def objectDictionary {:c Constant, :v Variable, '+ Add, '- Subtract, '* Multiply, '/ Divide, 'negate Negate})
+
+(defn parseTokenStream [dictionary token]
+  (cond
+    (number? token) ((dictionary :c) token)
+    (symbol? token)
+      ((dictionary :v)
+       (name token))
+    (list? token) (apply (dictionary (first token)) (mapv (partial parseTokenStream dictionary) (drop 1 token)))))
+
+(def parseFunction (comp (partial parseTokenStream functionalDictionary) read-string))
+(def parseObject (comp (partial parseTokenStream objectDictionary) read-string))
+
+(def expr
+  (Subtract
+    (Multiply
+      (Constant 2)
+      (Variable "x"))
+    (Constant 3)))
+
+
 (defn -main []
+  (println (evaluate (parseObject "(- (* 2 x) 3)") {"x" 2}))
   (println (evaluate (Add (Constant 228) (Variable "x")) {"x" 3}))
+  (println (evaluate expr {"x" 2}))
   (println (Constant 228))
   (println (_value (Constant 228)))
   (println (type (toString (Constant 228))))
@@ -83,7 +99,7 @@
   (println (div 5.0 0))
   (println (div 5 0))
   (println "====================")
-  (println (operators (eval '-)))
+  (println (functionalDictionary (eval '-)))
   (println {:x 1} {"x" 1})
   (println ({"x" 1} "x"))
   (println ({"x" 1} "y"))
