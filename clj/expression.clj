@@ -1,4 +1,6 @@
-;(ns expression)
+(ns expression)
+
+(load-file "proto.clj")
 
 (defn div ([arg] (/ 1 (double arg)))
   ([first & tail] (reduce (fn [l, r] (/ (double l) (double r))) (apply vector first tail))))
@@ -26,7 +28,37 @@
     (list? token) (apply (operators (first token)) (mapv parseTokenFunction (drop 1 token)))))
 (def parseFunction (comp parseTokenFunction read-string))
 
+(def _name (field :name))
+(def _value (field :value))
+
+(def evaluate (method :evaluate))
+(def toString (method :toString))
+
+(def ConstantPrototype
+  {:value 0
+   :evaluate (fn [this _vars] (_value this))
+   :toString (comp str _value)
+   })
+(defn Constant [this value]
+  (assoc this
+    :value value))
+(def _Constant (constructor Constant ConstantPrototype))
+
+(def VariablePrototype
+  {:name ""
+   :evaluate (fn [this vars] (vars (_name this)))
+   :toString _name
+   })
+(defn Variable [this name]
+  (assoc this
+    :name name))
+(def _Variable (constructor Variable VariablePrototype))
+
+
 (defn -main []
+  (println (_Constant 228))
+  (println (_value (_Constant 228)))
+  (println (type (toString (_Constant 228))))
   (println (/ 5.0 0))
   (println (div 5.0 0))
   (println (div 5 0))
