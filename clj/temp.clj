@@ -27,12 +27,11 @@
 (def diff (method :diff))
 (def toString (method :toString))
 
-(declare Constant)
 (def ConstantPrototype
   {:value 0
    :evaluate (fn [this _vars] (_value this))
    :toString (comp str _value)
-   :diff (constantly (Constant 0))
+   :diff (constantly 0)
    })
 (defn ConstantConstructor [this value]
   (assoc this
@@ -43,33 +42,35 @@
   {:name ""
    :evaluate (fn [this vars] (vars (_name this)))
    :toString _name
-   :diff (fn [this var] (Constant (if (= var (_name this)) 1 0)))
+   :diff (fn [this var] (if (= var (_name this)) 1 0))
    })
 (defn VariableConstructor [this name]
   (assoc this
     :name name))
 (def Variable (constructor VariableConstructor VariablePrototype))
 
-(defn reductionNode [op, differentiation]
+(defn reductionNode [op]
   (let [Prototype
-          {:children (vector )
-           :evaluate (fn [this vars] (apply op (mapv #(evaluate % vars) (_children this))))
-           :toString _name
-           :diff differentiation
-           }
-        Constructor (fn [this & children] (assoc this :children (vec children)))
+        {:children (vector )
+         :evaluate (fn [this vars] (apply op (mapv #(evaluate % vars) (_children this))))
+         :toString _name
+         }
         ]
-    (constructor Constructor Prototype)))
+    Prototype))
+(defn addNodeConstructor [this]
+  (let [Constructor (fn [this & children] (assoc this :children (vec children)))]
+    (constructor Constructor this)))
 
 (defn recursive-diff [Container]
   (fn [this var] (do
                    (println this)
                    (apply Container (mapv #(diff % var) (_children this))))))
 
-(def Add (reductionNode + (fn [this var] (apply Add (mapv #(diff % var) (_children this))))))
-(def Subtract (reductionNode - (fn [this var] (apply Subtract (mapv #(diff % var) (_children this))))))
+(def AddPrototype (reductionNode +)))
+(def Add (addNodeConstructor AddPrototype))
+(def Subtract (reductionNode - (recursive-diff Subtract)))
 (def Multiply (reductionNode * (fn [this var] (let [ch (_children this)]
-  (apply Add (mapv (fn [index] (apply Multiply (concat [(diff (nth ch index) var)] (take index ch) (take-last (- (count ch) index 1) ch)))) (range (count ch))))))))
+                                                (apply Add (mapv (fn [index] (apply Multiply (concat [(diff (nth ch index) var)] (take index ch) (take-last (- (count ch) index 1) ch)))) (range (count ch))))))))
 
 (def Divide (reductionNode div nil))
 (def Negate Subtract)
@@ -85,8 +86,8 @@
   (cond
     (number? token) ((dictionary :c) token)
     (symbol? token)
-      ((dictionary :v)
-       (name token))
+    ((dictionary :v)
+     (name token))
     (list? token) (apply (dictionary (first token)) (mapv (partial parseTokenStream dictionary) (drop 1 token)))))
 
 (def parseFunction (comp (partial parseTokenStream functionalDictionary) read-string))
@@ -101,34 +102,31 @@
 
 
 (defn -main []
-  (println (evaluate (Constant 1) {"x" 2}))
-  (println (diff (Constant 1) "x"))
-  (println (let [e (diff (Constant 1) "x")]
-             (evaluate e {"x" 2})))
-  ;(println (evaluate (parseObject "(- (* 2 x) 3)") {"x" 2}))
-  ;(println (evaluate (Add (Constant 228) (Variable "x")) {"x" 3}))
-  ;(println (evaluate expr {"x" 2}))
-  ;(println (Constant 228))
-  ;(println (_value (Constant 228)))
-  ;(println (type (toString (Constant 228))))
-  ;(println (/ 5.0 0))
-  ;(println (div 5.0 0))
-  ;(println (div 5 0))
-  ;(println "====================")
-  ;(println (functionalDictionary (eval '-)))
-  ;(println {:x 1} {"x" 1})
-  ;(println ({"x" 1} "x"))
-  ;(println ({"x" 1} "y"))
-  ;(println (= {:x 1} {"x" 1}))
-  ;(println (eval '(+ 1 2)))
-  ;(println (eval (read-string "(+ 1 2)")))
-  ;(println (read-string "(- (* 2 x) 3)"))
-  ;(println (read-string "x") (type (read-string "x")) (name (read-string "x")))
-  ;(println (add (variable "x") (constant 2.0)))
-  ;(println (parseFunction "(+ x 2.0)"))
-  ;(println (parseFunction "(/ (negate x) 2.0)"))
-  ;(println (type (name 'softmax)))
-  ;(println (#(Math/exp %) 0))
-  ;(println ((sumexp (variable "x")) {"z" 0.0, "x" 0.0, "y" 0.0}))
+  (println (evaluate (diff expr "x") {"x" 2}))
+  (println (evaluate (parseObject "(- (* 2 x) 3)") {"x" 2}))
+  (println (evaluate (Add (Constant 228) (Variable "x")) {"x" 3}))
+  (println (evaluate expr {"x" 2}))
+  (println (Constant 228))
+  (println (_value (Constant 228)))
+  (println (type (toString (Constant 228))))
+  (println (/ 5.0 0))
+  (println (div 5.0 0))
+  (println (div 5 0))
+  (println "====================")
+  (println (functionalDictionary (eval '-)))
+  (println {:x 1} {"x" 1})
+  (println ({"x" 1} "x"))
+  (println ({"x" 1} "y"))
+  (println (= {:x 1} {"x" 1}))
+  (println (eval '(+ 1 2)))
+  (println (eval (read-string "(+ 1 2)")))
+  (println (read-string "(- (* 2 x) 3)"))
+  (println (read-string "x") (type (read-string "x")) (name (read-string "x")))
+  (println (add (variable "x") (constant 2.0)))
+  (println (parseFunction "(+ x 2.0)"))
+  (println (parseFunction "(/ (negate x) 2.0)"))
+  (println (type (name 'softmax)))
+  (println (#(Math/exp %) 0))
+  (println ((sumexp (variable "x")) {"z" 0.0, "x" 0.0, "y" 0.0}))
   ;(println (((eval 'softmax) (constant 1) (constant 2) (constant 3)) {}))
   )
