@@ -19,36 +19,26 @@
 (def softmax (reduction-op #(/ (Math/exp (first %&)) (apply exp-sum %&))))
 
 
-(def _name (field :name))
-(def _value (field :value))
-(def _children (field :children))
-
 (def evaluate (method :evaluate))
 (def diff (method :diff))
 (def toString (method :toString))
 
 (declare Constant)
-(def ConstantPrototype
-  {:value 0
-   :evaluate (fn [this _vars] (_value this))
-   :toString (comp str _value)
-   :diff (constantly (Constant 0))
-   })
-(defn ConstantConstructor [this value]
-  (assoc this
-    :value value))
-(def Constant (constructor ConstantConstructor ConstantPrototype))
+(declare Add)
+(declare Subtract)
+(declare Multiply)
+(declare Divide)
 
-(def VariablePrototype
-  {:name ""
-   :evaluate (fn [this vars] (vars (_name this)))
-   :toString _name
-   :diff (fn [this var] (Constant (if (= var (_name this)) 1 0)))
-   })
-(defn VariableConstructor [this name]
-  (assoc this
-    :name name))
-(def Variable (constructor VariableConstructor VariablePrototype))
+(defclass Constant _ [value]
+          (evaluate [vars] (_value this))
+          (diff [var] (Constant 0))
+          (toString [] (str (_value this))))
+
+(defclass Variable _ [name]
+          (evaluate [vars] (vars (_name this)))
+          (diff [var] (Constant (if (= var (_name this)) 1 0)))
+          (toString (_name this)))
+
 
 (defn reductionNode [op, differentiation]
   (let [Prototype
