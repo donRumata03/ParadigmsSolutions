@@ -67,9 +67,9 @@
   (let [-name (fn [suffix] (fn [class] (symbol (str class "_" suffix))))
         proto-name (-name "proto")
         fields-name (-name "fields")
-        method (fn [[name args body]] [(keyword name) `(fn ~(apply vector 'this args) ~body)])
+        method (fn [[name args body]] [(keyword name) `(fn [~'this ~@args] ~body)])
         base-proto (if (= '_ super) {} {:prototype (proto-name super)})
-        prototype (reduce (fn [m nab] (apply assoc m (method nab))) base-proto methods)
+        prototype (apply assoc base-proto (mapcat method methods))
         public-prototype (proto-name name)
         public-fields (fields-name name)
         all-fields (vec (concat (if (= '_ super) [] (eval (fields-name super))) fields))]

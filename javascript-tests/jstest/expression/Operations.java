@@ -18,9 +18,14 @@ public interface Operations {
         checker.any("/", "Divide", 1, 2, arith(1, (a, b) -> a / b));
     };
 
+    Operation INFIX_POW = infix("**", "IPow", -300, Math::pow);
+    Operation INFIX_LOG = infix("//", "ILog", -300, (a, b) -> Math.log(Math.abs(b)) / Math.log(Math.abs(a)));
+
     Operation INFIX_BIT_AND     = infix("&",   "BitAnd",  90,  bitwise((a, b) -> a & b));
     Operation INFIX_BIT_OR      = infix("|",   "BitOr",   80,  bitwise((a, b) -> a | b));
     Operation INFIX_BIT_XOR     = infix("^",   "BitXor",  70,  bitwise((a, b) -> a ^ b));
+    Operation INFIX_BIT_IMPL    = infix("=>",   "BitImpl", -60, bitwise((a, b) -> ~a | b));
+    Operation INFIX_BIT_IFF     = infix("<=>",  "BitIff",  50,  bitwise((a, b) -> ~(a ^ b)));
 
     private static DoubleBinaryOperator bitwise(final LongBinaryOperator op) {
         return (a, b) -> Double.longBitsToDouble(op.applyAsLong(Double.doubleToLongBits(a), Double.doubleToLongBits(b)));
