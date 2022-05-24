@@ -1,4 +1,4 @@
-(ns expression)
+;(ns expression)
 
 (load-file "proto.clj")
 
@@ -53,12 +53,7 @@
            :evaluate (fn [this vars] (apply op (mapv #(evaluate % vars) (_children this))))
            :functionSymbol (fn[this] name)
            :toString (fn [this]
-                       (str
-                         "(" name " "
-                         (clojure.string/join " "
-                                              (mapv toString
-                                                    (_children this)))
-                         ")"))
+                       (str "(" name " " (clojure.string/join " " (mapv toString (_children this))) ")"))
            :diff differentiation
            }
         Constructor (fn [this & children] (assoc this :children (vec children)))
@@ -85,11 +80,14 @@
 
 ; div(first, ...) = first / prod(...)
 (def Divide (reductionNode div "/"
-                           (fn [this var] (let [ch (_children this)] (Divide
-                                            (apply Subtract
-                                              (diff-term ch 0 var)
-                                              (mapv #(diff-term ch % var) (range 1 (count ch))))
-                                            (apply Multiply (mapv #(Multiply % %) (drop 1 ch))))))))
+                           (fn [this var] (let [ch (_children this)]
+                                            (if (= 1 (count ch))
+                                              (diff (Divide (Constant 1) (first ch)) var)
+                                              (Divide
+                                                (apply Subtract
+                                                       (diff-term ch 0 var)
+                                                       (mapv #(diff-term ch % var) (range 1 (count ch))))
+                                                (apply Multiply (mapv #(Multiply % %) (drop 1 ch)))))))))
 
 (defn labeledTree [treeConstructor, label]
   (let [Prototype
@@ -132,9 +130,11 @@
     (Constant 3)))
 
 (def e2 (diff (Divide (Constant 5.0) (Variable "z")) "x"))
+(def single-div (diff (Divide (Variable "x")) "x"))
 
 (defn -main []
   (println e2)
+  (println (toString single-div))
   (println (toString e2))
   (println (toString (Subtract (Constant 3.0) (Variable "y"))))
   (println (toString (Variable "x")))
