@@ -35,6 +35,7 @@
 (declare Multiply)
 (declare Divide)
 (declare Negate)
+(declare Exp)
 
 (defclass Constant _ [value]
           (evaluate [vars] (_value this))
@@ -88,6 +89,7 @@
                                                        (diff-term ch 0 var)
                                                        (mapv #(diff-term ch % var) (range 1 (count ch))))
                                                 (apply Multiply (mapv #(Multiply % %) (drop 1 ch)))))))))
+(def Exp (reductionNode #(Math/exp %) "exp" (fn [this var] (Multiply this (diff (first (_children this)) var)))))
 
 (defn labeledTree [treeConstructor, label]
   (let [Prototype
@@ -104,12 +106,16 @@
 
 (def Negate (labeledTree Subtract "negate"))
 
+(def Sumexp (labeledTree (fn [& trees] (apply Add (mapv Exp trees))) "sumexp"))
+(def Softmax (labeledTree (fn [& trees] (Divide (Exp (first trees)) (apply Sumexp trees))) "softmax"))
+
 
 
 (def functionalDictionary {:c constant, :v variable, '+ add, '- subtract, '* multiply,
                            '/ divide, 'negate negate, 'sumexp sumexp, 'softmax softmax})
 
-(def objectDictionary {:c Constant, :v Variable, '+ Add, '- Subtract, '* Multiply, '/ Divide, 'negate Negate})
+(def objectDictionary {:c Constant, :v Variable, '+ Add, '- Subtract, '* Multiply, '/ Divide,
+                       'negate Negate, 'sumexp Sumexp, 'softmax Softmax})
 
 (defn parseTokenStream [dictionary token]
   (cond
