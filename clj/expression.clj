@@ -22,14 +22,19 @@
 (def evaluate (method :evaluate))
 (def diff (method :diff))
 (def toString (method :toString))
+(def functionSymbol (method :functionSymbol))
 
 (def _children (field :children))
+(def _immediate-children (field :immediate-children))
+(def _inner (field :inner))
 
 (declare Constant)
+(declare Variable)
 (declare Add)
 (declare Subtract)
 (declare Multiply)
 (declare Divide)
+(declare Negate)
 
 (defclass Constant _ [value]
           (evaluate [vars] (_value this))
@@ -39,14 +44,21 @@
 (defclass Variable _ [name]
           (evaluate [vars] (vars (_name this)))
           (diff [var] (Constant (if (= var (_name this)) 1 0)))
-          (toString (_name this)))
+          (toString [] (_name this)))
 
 
-(defn reductionNode [op, differentiation]
+(defn reductionNode [op, name, differentiation]
   (let [Prototype
           {:children (vector )
            :evaluate (fn [this vars] (apply op (mapv #(evaluate % vars) (_children this))))
-           :toString _name
+           :functionSymbol (fn[this] name)
+           :toString (fn [this]
+                       (str
+                         "(" name " "
+                         (clojure.string/join " "
+                                              (mapv toString
+                                                    (_children this)))
+                         ")"))
            :diff differentiation
            }
         Constructor (fn [this & children] (assoc this :children (vec children)))
@@ -59,13 +71,40 @@
                    (apply Container (mapv #(diff % var) (_children this)))
                    )))
 
-(def Add (reductionNode + (fn [this var] (apply Add (mapv #(diff % var) (_children this))))))
-(def Subtract (reductionNode - (fn [this var] (apply Subtract (mapv #(diff % var) (_children this))))))
-(def Multiply (reductionNode * (fn [this var] (let [ch (_children this)]
-  (apply Add (mapv (fn [index] (apply Multiply (concat [(diff (nth ch index) var)] (take index ch) (take-last (- (count ch) index 1) ch)))) (range (count ch))))))))
+(defn diff-term [ch index var]
+  (apply Multiply
+         (concat
+           [(diff (nth ch index) var)]
+           (take index ch)
+           (take-last (- (count ch) index 1) ch))))
 
-(def Divide (reductionNode div nil))
-(def Negate Subtract)
+(def Add (reductionNode + "+" (fn [this var] (apply Add (mapv #(diff % var) (_children this))))))
+(def Subtract (reductionNode - "-" (fn [this var] (apply Subtract (mapv #(diff % var) (_children this))))))
+(def Multiply (reductionNode * "*" (fn [this var] (let [ch (_children this)]
+  (apply Add (mapv (fn [index] (diff-term ch index var)) (range (count ch))))))))
+
+; div(first, ...) = first / prod(...)
+(def Divide (reductionNode div "/"
+                           (fn [this var] (let [ch (_children this)] (Divide
+                                            (apply Subtract
+                                              (diff-term ch 0 var)
+                                              (mapv #(diff-term ch % var) (range 1 (count ch))))
+                                            (apply Multiply (mapv #(Multiply % %) (drop 1 ch))))))))
+
+(defn labeledTree [treeConstructor, label]
+  (let [Prototype
+        {:immediate-children (vector )
+         :inner nil
+         :evaluate (fn [this vars] (evaluate (_inner this) vars))
+         :toString (fn [this] (str "(" label " " (clojure.string/join " " (mapv toString (_immediate-children this))) ")"))
+         :diff (fn [this var] (diff (_inner this) var))
+         }
+        Constructor (fn [this & imm-children] (assoc this :immediate-children (vec imm-children) :inner (apply treeConstructor imm-children)))
+        ]
+    (constructor Constructor Prototype)))
+
+
+(def Negate (labeledTree Subtract "negate"))
 
 
 
@@ -92,8 +131,13 @@
       (Variable "x"))
     (Constant 3)))
 
+(def e2 (diff (Divide (Constant 5.0) (Variable "z")) "x"))
 
 (defn -main []
+  (println e2)
+  (println (toString e2))
+  (println (toString (Subtract (Constant 3.0) (Variable "y"))))
+  (println (toString (Variable "x")))
   (println (evaluate (diff expr "x") {"x" 10}))
   (println (evaluate
              (diff (Add (Constant 228) (Variable "x")) "x") {"x" 3}))
