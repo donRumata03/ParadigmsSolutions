@@ -23,6 +23,8 @@
 (def diff (method :diff))
 (def toString (method :toString))
 
+(def _children (field :children))
+
 (declare Constant)
 (declare Add)
 (declare Subtract)
@@ -54,7 +56,8 @@
 (defn recursive-diff [Container]
   (fn [this var] (do
                    (println this)
-                   (apply Container (mapv #(diff % var) (_children this))))))
+                   (apply Container (mapv #(diff % var) (_children this)))
+                   )))
 
 (def Add (reductionNode + (fn [this var] (apply Add (mapv #(diff % var) (_children this))))))
 (def Subtract (reductionNode - (fn [this var] (apply Subtract (mapv #(diff % var) (_children this))))))
@@ -91,12 +94,14 @@
 
 
 (defn -main []
+  (println (evaluate (diff expr "x") {"x" 10}))
+  (println (evaluate
+             (diff (Add (Constant 228) (Variable "x")) "x") {"x" 3}))
   (println (evaluate (Constant 1) {"x" 2}))
   (println (diff (Constant 1) "x"))
+  ;(println (evaluate (parseObject "(- (* 2 x) 3)") {"x" 2}))
   (println (let [e (diff (Constant 1) "x")]
              (evaluate e {"x" 2})))
-  ;(println (evaluate (parseObject "(- (* 2 x) 3)") {"x" 2}))
-  ;(println (evaluate (Add (Constant 228) (Variable "x")) {"x" 3}))
   ;(println (evaluate expr {"x" 2}))
   ;(println (Constant 228))
   ;(println (_value (Constant 228)))
