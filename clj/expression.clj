@@ -101,6 +101,7 @@
   (let [Prototype
         {:immediate-children (vector )
          :inner nil
+         :functionSymbol (fn [this] label)
          :evaluate (fn [this vars] (evaluate (_inner this) vars))
          :toString (fn [this] (str "(" label " " (clojure.string/join " " (mapv toString (_immediate-children this))) ")"))
          :toStringInfix (fn [this] (assert false))
@@ -146,6 +147,8 @@
   (do (run! (fn [input] (printf "    %-10s %s\n" (pr-str input) (-show (parser input)))) inputs)
       (println "--------------------------------")))
 
+(defn +char-seq [s] (apply +seq (map #(+char (str %)) s)))
+(defn +string [s] (+str (+char-seq s)))
 
 (def *digit (+char "0123456789"))
 (def *number (+map read-string (+str (+plus *digit))))
@@ -153,8 +156,42 @@
 (def *wss (+ignore (+star *space)))
 (def *wsp (+ignore (+plus *space)))
 
+(defn *operator [op] (+map (constantly op) (+string (functionSymbol (op 0)))))
+(defn *operators [& ops] (apply +or (map *operator ops)))
+(def *mul-div (*operators Multiply Divide))
 (def *var (+map str (+char "xyz")))
 
+;Expr   -> Term Expr'
+;Expr'  -> ([ '+' | '-' ] Term)*
+;
+; Term  -> Factor Term'
+; Term' -> ([ '*' | '/' ] Factor)*
+;
+;// For right associativity it would be:
+;# Factor  ->
+;#	| Atomic ** Factor
+;#	| Atomic // Factor
+;
+; Factor  -> Atomic Factor'
+; Factor' -> ([ '//' | '**' ] Atomic)*
+;
+; Atomic  ->
+;	 | num
+;  | var
+;	 | '(' Expr ')'
+;	 | '-' Factor
+;	 | FuncName Factor
+;
+; FuncName -> 't0' | 'l0' | 'abs'
+
+(defn *atomic [expr] (+or
+                       *number
+                       *var
+                       (+seqn 1 (+char "(") expr (+char ")"))
+                       ; - Factor?
+                       ))
+
+(defn layer-parser [deeper])
 
 ; ================================== Tests =============================================
 
@@ -174,7 +211,10 @@
   (tabulate *wsp ["" "~" "     ~" "\t~"])
   (tabulate *var ["x" "xyz"])
   (println (toStringInfix expr))
-  (println (toStringInfix (Sumexp (Constant 1) (Constant 2) (Constant 3))))
+  ;(println (toStringInfix (Sumexp (Constant 1) (Constant 2) (Constant 3))))
+  (tabulate (*atomic *number) ["x  2 2354325" "-2343" "(2000)"])
+  (tabulate (+string "hello") ["hello" "hello123" "hell"])
+  (tabulate *mul-div ["*" "/" "10"])
 ;(println e2)
   ;(println (toString single-div))
   ;(println (toString e2))
