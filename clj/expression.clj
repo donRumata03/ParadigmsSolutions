@@ -1,4 +1,4 @@
-(ns expression)
+;(ns expression)
 
 (load-file "proto.clj")
 (load-file "parser.clj")
@@ -231,11 +231,9 @@
 (defn *layer-parser [layer] ((layer :associativity) layer))
 ;
 
-;(def *infix-parser (let [term-layer {:deeper (*atomic *infix-parser), :operators [Add Subtract], :associativity *left-associativity-layer}
-;                         term-layer-parser (*layer-parser term-layer)
-;                         expr-layer {:deeper term-layer-parser, :operators [Add Subtract], :associativity :left *left-associativity-layer}
-;                         ]
-;                     ))
+(def parseObjectInfix (letfn [(expr-layer-parser [] (*layer-parser {:deeper (delay (term-layer-parser)), :operators [Add Subtract], :associativity *left-associativity-layer}))
+                           (term-layer-parser [] (*layer-parser {:deeper (*atomic (delay (expr-layer-parser))), :operators [Multiply Divide], :associativity *left-associativity-layer}))]
+                     (+parser (expr-layer-parser))))
 
 ; ================================== Tests =============================================
 
@@ -277,6 +275,9 @@
   (tabulate (*layer-arr-parser {:deeper (*atomic *number), :operators [Add Subtract]}) ["10" "x" "x+10" "  x   +  10  " "x+10-y" "+" "+ 10"])
   (println (toStringInfix (-value (test-l "1 + x + 100 - y"))))
   (println (toStringInfix (-value (test-r "1 + x + 100 - y"))))
+  (println (toStringInfix (parseObjectInfix "11 + 100 * 10")))
+  (println (toStringInfix (parseObjectInfix "100 * (x + 10 * (y - 7)) + 6")))
+  (println (toStringInfix (parseObjectInfix "2 * x - 3")))
   ;(println (toString single-div))
   ;(println (toString e2))
   ;(println (toString (Subtract (Constant 3.0) (Variable "y"))))
