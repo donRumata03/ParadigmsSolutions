@@ -6,6 +6,14 @@
 (defn div ([arg] (/ 1 (double arg)))
   ([first & tail] (reduce (fn [l, r] (/ (double l) (double r))) (apply vector first tail))))
 
+(defn foldr [f val coll]
+  (if (empty? coll) val
+                    (f (foldr f val (rest coll)) (first coll))))
+
+(defn foldl [f val coll]
+  (if (empty? coll) val
+                    (foldl f (f val (first coll)) (rest coll))))
+
 (defn constant [value] (fn [vars] value))
 (defn variable [name] (fn [vars] (vars name)))
 
@@ -152,7 +160,7 @@
 
 (def *digit (+char "0123456789"))
 (def *uint-str (+str (+plus *digit)))
-(def *number (+map read-string
+(def *number (+map (comp Constant read-string)
                    (+seqf str
                           (+opt (+char "-"))
                           *uint-str
@@ -168,7 +176,7 @@
 (defn *operator [op] (+map (constantly op) (+string (functionSymbol (op 0)))))
 (defn *operators [& ops] (apply +or (map *operator ops)))
 (def *mul-div (*operators Multiply Divide))
-(def *var (+map str (+char "xyz")))
+(def *var (+map (comp Variable str) (+char "xyz")))
 
 ;Expr   -> Term ([ '+' | '-' ] Term)*
 ;
@@ -205,9 +213,22 @@
   (let [ops (layer :operators) deeper (layer :deeper) p' (*layer-cont layer)]
     (+seq *wss deeper *wss (+star p'))))
 
-;(defn *left-associativity-layer [] nil)
-;
-;(defn *layer-parser [layer] ((layer :associativity) layer))
+(defn right-regroup "[x ([+ 10] [- 20])] → [[x +] [10 -] 20]" [[fst pairs]]
+  (if (empty? pairs) (list pairs fst)
+                     (let [op (first (first pairs))
+                           [new-list last] (right-regroup [(second (first pairs)) (rest pairs)])]
+                       [(cons [fst op] new-list) last])))
+
+(defn *left-associativity-layer [layer]
+  (let [construct (fn [parsed] (reduce (fn [acc [op tree]] (op acc tree)) (first parsed) (second parsed)))]
+    (+map construct (*layer-arr-parser layer))))
+
+(defn *right-associativity-layer [layer]
+  (let [construct (fn [parsed] (foldr (fn [tree [a op]] (op a tree)) (second parsed) (first parsed)))]
+    (+map (comp construct right-regroup) (*layer-arr-parser layer))))
+
+
+(defn *layer-parser [layer] ((layer :associativity) layer))
 ;
 
 ;(def *infix-parser (let [term-layer {:deeper (*atomic *infix-parser), :operators [Add Subtract], :associativity *left-associativity-layer}
@@ -227,8 +248,20 @@
 
 (def e2 (diff (Divide (Constant 5.0) (Variable "z")) "x"))
 (def single-div (diff (Divide (Variable "x")) "x"))
+(def rrg (right-regroup ["x" (list ["+" "10"] ["-" "20"])]))
+(def test-l (*left-associativity-layer {:deeper (*atomic *number), :operators [Add Subtract]}))
+(def test-r (*right-associativity-layer {:deeper (*atomic *number), :operators [Add Subtract]}))
 
 (defn -main []
+  (println (foldl vector 1 [2 3 4]))
+  (println (reduce vector 1 [2 3 4]))
+  (println (foldr (fn [a b] (vector b a)) 4 [1 2 3]))
+  (println (right-regroup ["x" (list )]))
+  (println (foldr
+             (fn [tree [a op]] (str "(" a op tree ")"))
+             (second rrg)
+             (first rrg)
+             ))
   (tabulate *uint-str ["1" "1~" "12~" "123~" "" "~"])
   (tabulate *number ["1" "-1" "1.0" "-100.19"])
   (tabulate *wss ["" "~" "     ~" "\t~"])
@@ -242,6 +275,8 @@
   (println (evaluate ((-value (*mul-div "*")) (Constant 10) (Constant 12)) {}))
   (tabulate (*layer-cont {:deeper (*atomic *number), :operators [Add Subtract]}) ["+10" "   +  x  "])
   (tabulate (*layer-arr-parser {:deeper (*atomic *number), :operators [Add Subtract]}) ["10" "x" "x+10" "  x   +  10  " "x+10-y" "+" "+ 10"])
+  (println (toStringInfix (-value (test-l "1 + x + 100 - y"))))
+  (println (toStringInfix (-value (test-r "1 + x + 100 - y"))))
   ;(println (toString single-div))
   ;(println (toString e2))
   ;(println (toString (Subtract (Constant 3.0) (Variable "y"))))
