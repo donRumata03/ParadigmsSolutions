@@ -116,6 +116,8 @@
 (def BitAnd (bitwiseOp bit-and "&"))
 (def BitOr (bitwiseOp bit-or "|"))
 (def BitXor (bitwiseOp bit-xor "^"))
+(def BitImpl (bitwiseOp #(bit-or (bit-not %1) %2) "=>"))
+(def BitIff (bitwiseOp #(bit-not (bit-xor %1 %2)) "<=>"))
 
 
 (defn labeledTree [treeConstructor, label]
@@ -247,14 +249,16 @@
 
 
 
-(def parseObjectInfix (letfn [(atomic [] (*atomic (delay (xor-layer-parser)) (delay (atomic))))
+(def parseObjectInfix (letfn [(atomic [] (*atomic (delay (iff-layer-parser)) (delay (atomic))))
                               (term-layer-parser [] (*layer-parser {:deeper (delay (atomic)), :operators [Multiply Divide], :associativity *left-associativity-layer}))
                               (expr-layer-parser [] (*layer-parser {:deeper (delay (term-layer-parser)), :operators [Add Subtract], :associativity *left-associativity-layer}))
                               (and-layer-parser [] (*layer-parser {:deeper (delay (expr-layer-parser)), :operators [BitAnd], :associativity *left-associativity-layer}))
                               (or-layer-parser [] (*layer-parser {:deeper (delay (and-layer-parser)), :operators [BitOr], :associativity *left-associativity-layer}))
                               (xor-layer-parser [] (*layer-parser {:deeper (delay (or-layer-parser)), :operators [BitXor], :associativity *left-associativity-layer}))
+                              (impl-layer-parser [] (*layer-parser {:deeper (delay (xor-layer-parser)), :operators [BitImpl], :associativity *right-associativity-layer}))
+                              (iff-layer-parser [] (*layer-parser {:deeper (delay (impl-layer-parser)), :operators [BitIff], :associativity *left-associativity-layer}))
                               ]
-                     (+parser (xor-layer-parser))))
+                     (+parser (iff-layer-parser))))
 
 ; ================================== Tests =============================================
 
