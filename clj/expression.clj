@@ -199,7 +199,7 @@
 
 (defn *layer-cont [layer]
   (let [ops (layer :operators) deeper (layer :deeper)]
-    (+seqf cons *wss (apply *operators ops) *wss deeper *wss)))
+    (+seq *wss (apply *operators ops) *wss deeper *wss)))
 
 (defn *layer-arr-parser "structured collection of this-layer operator tokens and parsed deeper layer" [layer]
   (let [ops (layer :operators) deeper (layer :deeper) p' (*layer-cont layer)]
@@ -209,9 +209,12 @@
 ;
 ;(defn *layer-parser [layer] ((layer :associativity) layer))
 ;
-;(def term-layer {:deeper *atomic, :operators [Add Subtract], :associativity *left-associativity-layer})
-;(def term-layer-parser (*layer-parser term-layer))
-;(def expr-layer {:deeper term-layer-parser, :operators [Add Subtract], :associativity :left *left-associativity-layer})
+
+;(def *infix-parser (let [term-layer {:deeper (*atomic *infix-parser), :operators [Add Subtract], :associativity *left-associativity-layer}
+;                         term-layer-parser (*layer-parser term-layer)
+;                         expr-layer {:deeper term-layer-parser, :operators [Add Subtract], :associativity :left *left-associativity-layer}
+;                         ]
+;                     ))
 
 ; ================================== Tests =============================================
 
@@ -237,9 +240,8 @@
   (tabulate (+string "hello") ["hello" "hello123" "hell"])
   (tabulate *mul-div ["*" "/" "10"])
   (println (evaluate ((-value (*mul-div "*")) (Constant 10) (Constant 12)) {}))
-  (tabulate (*layer-cont {:deeper *atomic, :operators [Add Subtract]}) ["+10" "   +  x  "])
-  (tabulate (*layer-arr-parser {:deeper *atomic, :operators [Add Subtract]}) ["10" "x" "x+10" "  x   +  10  " "x+10-y" "+" "+ 10"])
-;(println e2)
+  (tabulate (*layer-cont {:deeper (*atomic *number), :operators [Add Subtract]}) ["+10" "   +  x  "])
+  (tabulate (*layer-arr-parser {:deeper (*atomic *number), :operators [Add Subtract]}) ["10" "x" "x+10" "  x   +  10  " "x+10-y" "+" "+ 10"])
   ;(println (toString single-div))
   ;(println (toString e2))
   ;(println (toString (Subtract (Constant 3.0) (Variable "y"))))
