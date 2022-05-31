@@ -151,7 +151,16 @@
 (defn +string [s] (+str (+char-seq s)))
 
 (def *digit (+char "0123456789"))
-(def *number (+map read-string (+str (+plus *digit))))
+(def *uint-str (+str (+plus *digit)))
+(def *number (+map read-string
+                   (+seqf str
+                          (+opt (+char "-"))
+                          *uint-str
+                          (+opt (+seqf str
+                                       (+char ".")
+                                       *uint-str))
+                          )))
+
 (def *space (+char " \t\n\r"))
 (def *wss (+ignore (+star *space)))
 (def *wsp (+ignore (+plus *space)))
@@ -161,19 +170,16 @@
 (def *mul-div (*operators Multiply Divide))
 (def *var (+map str (+char "xyz")))
 
-;Expr   -> Term Expr'
-;Expr'  -> ([ '+' | '-' ] Term)*
+;Expr   -> Term ([ '+' | '-' ] Term)*
 ;
-; Term  -> Factor Term'
-; Term' -> ([ '*' | '/' ] Factor)*
+; Term  -> Factor ([ '*' | '/' ] Factor)*
 ;
 ;// For right associativity it would be:
 ;# Factor  ->
 ;#	| Atomic ** Factor
 ;#	| Atomic // Factor
 ;
-; Factor  -> Atomic Factor'
-; Factor' -> ([ '//' | '**' ] Atomic)*
+; Factor  -> Atomic ([ '//' | '**' ] Atomic)*
 ;
 ; Atomic  ->
 ;	 | num
@@ -191,7 +197,21 @@
                        ; - Factor?
                        ))
 
-(defn layer-parser [deeper])
+(defn *layer-cont [layer]
+  (let [ops (layer :operators) deeper (layer :deeper)]
+    (+seqf cons *wss (apply *operators ops) *wss deeper *wss)))
+
+(defn *layer-arr-parser "structured collection of this-layer operator tokens and parsed deeper layer" [layer]
+  (let [ops (layer :operators) deeper (layer :deeper) p' (*layer-cont layer)]
+    (+seq *wss deeper *wss (+star p'))))
+
+;(defn *left-associativity-layer [] nil)
+;
+;(defn *layer-parser [layer] ((layer :associativity) layer))
+;
+;(def term-layer {:deeper *atomic, :operators [Add Subtract], :associativity *left-associativity-layer})
+;(def term-layer-parser (*layer-parser term-layer))
+;(def expr-layer {:deeper term-layer-parser, :operators [Add Subtract], :associativity :left *left-associativity-layer})
 
 ; ================================== Tests =============================================
 
@@ -206,15 +226,19 @@
 (def single-div (diff (Divide (Variable "x")) "x"))
 
 (defn -main []
-  (tabulate *number ["1" "1~" "12~" "123~" "" "~"])
+  (tabulate *uint-str ["1" "1~" "12~" "123~" "" "~"])
+  (tabulate *number ["1" "-1" "1.0" "-100.19"])
   (tabulate *wss ["" "~" "     ~" "\t~"])
   (tabulate *wsp ["" "~" "     ~" "\t~"])
   (tabulate *var ["x" "xyz"])
   (println (toStringInfix expr))
   ;(println (toStringInfix (Sumexp (Constant 1) (Constant 2) (Constant 3))))
-  (tabulate (*atomic *number) ["x  2 2354325" "-2343" "(2000)"])
+  (tabulate (*atomic *number) ["x  2 " "20" "-2343" "(2000)"])
   (tabulate (+string "hello") ["hello" "hello123" "hell"])
   (tabulate *mul-div ["*" "/" "10"])
+  (println (evaluate ((-value (*mul-div "*")) (Constant 10) (Constant 12)) {}))
+  (tabulate (*layer-cont {:deeper *atomic, :operators [Add Subtract]}) ["+10" "   +  x  "])
+  (tabulate (*layer-arr-parser {:deeper *atomic, :operators [Add Subtract]}) ["10" "x" "x+10" "  x   +  10  " "x+10-y" "+" "+ 10"])
 ;(println e2)
   ;(println (toString single-div))
   ;(println (toString e2))
