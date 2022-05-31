@@ -23,6 +23,7 @@
 (def evaluate (method :evaluate))
 (def diff (method :diff))
 (def toString (method :toString))
+(def toStringInfix (method :toStringInfix))
 (def functionSymbol (method :functionSymbol))
 
 (def _children (field :children))
@@ -41,11 +42,13 @@
 (defclass Constant _ [value]
           (evaluate [vars] (_value this))
           (diff [var] (Constant 0))
+          (toStringInfix [] (str (_value this)))
           (toString [] (str (_value this))))
 
 (defclass Variable _ [name]
           (evaluate [vars] (vars (_name this)))
           (diff [var] (Constant (if (= var (_name this)) 1 0)))
+          (toStringInfix [] (_name this))
           (toString [] (_name this)))
 
 
@@ -56,6 +59,8 @@
            :functionSymbol (fn[this] name)
            :toString (fn [this]
                        (str "(" name " " (clojure.string/join " " (mapv toString (_children this))) ")"))
+           :toStringInfix (fn [this] (let [ch-str (map toStringInfix (_children this)) have-two (assert (= 2 (count ch-str)))]
+                                  (str "(" (first ch-str) " " name " " (second ch-str) ")")))
            :diff differentiation
            }
         Constructor (fn [this & children] (assoc this :children (vec children)))
@@ -98,6 +103,7 @@
          :inner nil
          :evaluate (fn [this vars] (evaluate (_inner this) vars))
          :toString (fn [this] (str "(" label " " (clojure.string/join " " (mapv toString (_immediate-children this))) ")"))
+         :toStringInfix (fn [this] (assert false))
          :diff (fn [this var] (diff (_inner this) var))
          }
         Constructor (fn [this & imm-children] (assoc this :immediate-children (vec imm-children) :inner (apply treeConstructor imm-children)))
@@ -137,14 +143,17 @@
     (str "-> " (pr-str (-value result)) " | " (pr-str (apply str (-tail result))))
     "!"))
 (defn tabulate [parser inputs]
-  (run! (fn [input] (printf "    %-10s %s\n" (pr-str input) (-show (parser input)))) inputs))
+  (do (run! (fn [input] (printf "    %-10s %s\n" (pr-str input) (-show (parser input)))) inputs)
+      (println "--------------------------------")))
 
 
 (def *digit (+char "0123456789"))
 (def *number (+map read-string (+str (+plus *digit))))
 (def *space (+char " \t\n\r"))
-(def *ws* (+ignore (+star *space)))
-(def *ws+ (+ignore (+plus *space)))
+(def *wss (+ignore (+star *space)))
+(def *wsp (+ignore (+plus *space)))
+
+(def *var (+map str (+char "xyz")))
 
 
 ; ================================== Tests =============================================
@@ -161,8 +170,11 @@
 
 (defn -main []
   (tabulate *number ["1" "1~" "12~" "123~" "" "~"])
-  (tabulate *ws* ["" "~" "     ~" "\t~"])
-  (tabulate *ws+ ["" "~" "     ~" "\t~"])
+  (tabulate *wss ["" "~" "     ~" "\t~"])
+  (tabulate *wsp ["" "~" "     ~" "\t~"])
+  (tabulate *var ["x" "xyz"])
+  (println (toStringInfix expr))
+  (println (toStringInfix (Sumexp (Constant 1) (Constant 2) (Constant 3))))
 ;(println e2)
   ;(println (toString single-div))
   ;(println (toString e2))
