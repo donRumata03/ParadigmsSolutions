@@ -1,6 +1,7 @@
-;(ns expression)
+(ns expression)
 
 (load-file "proto.clj")
+(load-file "parser.clj")
 
 (defn div ([arg] (/ 1 (double arg)))
   ([first & tail] (reduce (fn [l, r] (/ (double l) (double r))) (apply vector first tail))))
@@ -110,6 +111,7 @@
 (def Softmax (labeledTree (fn [& trees] (Divide (Exp (first trees)) (apply Sumexp trees))) "softmax"))
 
 
+; =============== Simple parser ===============
 
 (def functionalDictionary {:c constant, :v variable, '+ add, '- subtract, '* multiply,
                            '/ divide, 'negate negate, 'sumexp sumexp, 'softmax softmax})
@@ -128,6 +130,25 @@
 (def parseFunction (comp (partial parseTokenStream functionalDictionary) read-string))
 (def parseObject (comp (partial parseTokenStream objectDictionary) read-string))
 
+; =============== Combinator parser ===============
+
+(defn -show [result]
+  (if (-valid? result)
+    (str "-> " (pr-str (-value result)) " | " (pr-str (apply str (-tail result))))
+    "!"))
+(defn tabulate [parser inputs]
+  (run! (fn [input] (printf "    %-10s %s\n" (pr-str input) (-show (parser input)))) inputs))
+
+
+(def *digit (+char "0123456789"))
+(def *number (+map read-string (+str (+plus *digit))))
+(def *space (+char " \t\n\r"))
+(def *ws* (+ignore (+star *space)))
+(def *ws+ (+ignore (+plus *space)))
+
+
+; ================================== Tests =============================================
+
 (def expr
   (Subtract
     (Multiply
@@ -139,19 +160,22 @@
 (def single-div (diff (Divide (Variable "x")) "x"))
 
 (defn -main []
-  (println e2)
-  (println (toString single-div))
-  (println (toString e2))
-  (println (toString (Subtract (Constant 3.0) (Variable "y"))))
-  (println (toString (Variable "x")))
-  (println (evaluate (diff expr "x") {"x" 10}))
-  (println (evaluate
-             (diff (Add (Constant 228) (Variable "x")) "x") {"x" 3}))
-  (println (evaluate (Constant 1) {"x" 2}))
-  (println (diff (Constant 1) "x"))
-  ;(println (evaluate (parseObject "(- (* 2 x) 3)") {"x" 2}))
-  (println (let [e (diff (Constant 1) "x")]
-             (evaluate e {"x" 2})))
+  (tabulate *number ["1" "1~" "12~" "123~" "" "~"])
+  (tabulate *ws* ["" "~" "     ~" "\t~"])
+  (tabulate *ws+ ["" "~" "     ~" "\t~"])
+;(println e2)
+  ;(println (toString single-div))
+  ;(println (toString e2))
+  ;(println (toString (Subtract (Constant 3.0) (Variable "y"))))
+  ;(println (toString (Variable "x")))
+  ;(println (evaluate (diff expr "x") {"x" 10}))
+  ;(println (evaluate
+  ;           (diff (Add (Constant 228) (Variable "x")) "x") {"x" 3}))
+  ;(println (evaluate (Constant 1) {"x" 2}))
+  ;(println (diff (Constant 1) "x"))
+  ;;(println (evaluate (parseObject "(- (* 2 x) 3)") {"x" 2}))
+  ;(println (let [e (diff (Constant 1) "x")]
+  ;           (evaluate e {"x" 2})))
   ;(println (evaluate expr {"x" 2}))
   ;(println (Constant 228))
   ;(println (_value (Constant 228)))
@@ -173,7 +197,8 @@
   ;(println (parseFunction "(+ x 2.0)"))
   ;(println (parseFunction "(/ (negate x) 2.0)"))
   ;(println (type (name 'softmax)))
-  ;(println (#(Math/exp %) 0))
+  ;(println [(#(Math/exp %) 0))
   ;(println ((sumexp (variable "x")) {"z" 0.0, "x" 0.0, "y" 0.0}))
   ;(println (((eval 'softmax) (constant 1) (constant 2) (constant 3)) {}))
+  (println "")
   )
