@@ -59,16 +59,19 @@
           (toStringInfix [] (_name this))
           (toString [] (_name this)))
 
+(defn toPrefix [name children] (str "(" name " " (clojure.string/join " " (mapv toString children)) ")"))
+
+(defn toInfix [name children] (let [ch-str (map toStringInfix children) have-two (= 2 (count ch-str))]
+                           (if have-two (str "(" (first ch-str) " " name " " (second ch-str) ")")
+                                        (str name "(" (first ch-str) ")"))))
 
 (defn reductionNode [op, name, differentiation]
   (let [Prototype
           {:children (vector )
            :evaluate (fn [this vars] (apply op (mapv #(evaluate % vars) (_children this))))
            :functionSymbol (fn[this] name)
-           :toString (fn [this]
-                       (str "(" name " " (clojure.string/join " " (mapv toString (_children this))) ")"))
-           :toStringInfix (fn [this] (let [ch-str (map toStringInfix (_children this)) have-two (assert (= 2 (count ch-str)))]
-                                  (str "(" (first ch-str) " " name " " (second ch-str) ")")))
+           :toString (fn [this] (toPrefix name (_children this)))
+           :toStringInfix (fn [this] (toInfix name (_children this)))
            :diff differentiation
            }
         Constructor (fn [this & children] (assoc this :children (vec children)))
@@ -111,8 +114,8 @@
          :inner nil
          :functionSymbol (fn [this] label)
          :evaluate (fn [this vars] (evaluate (_inner this) vars))
-         :toString (fn [this] (str "(" label " " (clojure.string/join " " (mapv toString (_immediate-children this))) ")"))
-         :toStringInfix (fn [this] (assert false))
+         :toString (fn [this] (toPrefix label (_immediate-children this)))
+         :toStringInfix (fn [this] (toInfix label (_immediate-children this)))
          :diff (fn [this var] (diff (_inner this) var))
          }
         Constructor (fn [this & imm-children] (assoc this :immediate-children (vec imm-children) :inner (apply treeConstructor imm-children)))
@@ -198,11 +201,11 @@
 ;
 ; FuncName -> 't0' | 'l0' | 'abs'
 
-(defn *atomic [expr] (+or
+(defn *atomic [expr factor] (+or
                        *number
                        *var
                        (+seqn 1 (+char "(") expr (+char ")"))
-                       ; - Factor?
+                       (+seqf (fn [ng tree] (Negate tree)) *wss (+string "negate")  *wss factor *wss)
                        ))
 
 (defn *layer-cont [layer]
@@ -231,8 +234,9 @@
 (defn *layer-parser [layer] ((layer :associativity) layer))
 ;
 
-(def parseObjectInfix (letfn [(expr-layer-parser [] (*layer-parser {:deeper (delay (term-layer-parser)), :operators [Add Subtract], :associativity *left-associativity-layer}))
-                           (term-layer-parser [] (*layer-parser {:deeper (*atomic (delay (expr-layer-parser))), :operators [Multiply Divide], :associativity *left-associativity-layer}))]
+(def parseObjectInfix (letfn [(atomic [] (*atomic (delay (expr-layer-parser)) (delay (atomic))))
+                              (expr-layer-parser [] (*layer-parser {:deeper (delay (term-layer-parser)), :operators [Add Subtract], :associativity *left-associativity-layer}))
+                           (term-layer-parser [] (*layer-parser {:deeper (delay (atomic)), :operators [Multiply Divide], :associativity *left-associativity-layer}))]
                      (+parser (expr-layer-parser))))
 
 ; ================================== Tests =============================================
@@ -245,12 +249,15 @@
     (Constant 3)))
 
 (def e2 (diff (Divide (Constant 5.0) (Variable "z")) "x"))
+(def withNegate (Divide (Negate (Variable "x")) (Constant 2.0)))
 (def single-div (diff (Divide (Variable "x")) "x"))
 (def rrg (right-regroup ["x" (list ["+" "10"] ["-" "20"])]))
-(def test-l (*left-associativity-layer {:deeper (*atomic *number), :operators [Add Subtract]}))
-(def test-r (*right-associativity-layer {:deeper (*atomic *number), :operators [Add Subtract]}))
+(def test-l (*left-associativity-layer {:deeper (*atomic *number *number), :operators [Add Subtract]}))
+(def test-r (*right-associativity-layer {:deeper (*atomic *number *number), :operators [Add Subtract]}))
 
 (defn -main []
+  (println (parseObjectInfix "negate( 1  ) / 2"))
+  (println (toStringInfix withNegate))
   (println (foldl vector 1 [2 3 4]))
   (println (reduce vector 1 [2 3 4]))
   (println (foldr (fn [a b] (vector b a)) 4 [1 2 3]))
@@ -267,12 +274,12 @@
   (tabulate *var ["x" "xyz"])
   (println (toStringInfix expr))
   ;(println (toStringInfix (Sumexp (Constant 1) (Constant 2) (Constant 3))))
-  (tabulate (*atomic *number) ["x  2 " "20" "-2343" "(2000)"])
+  (tabulate (*atomic *number *number) ["x  2 " "20" "-2343" "(2000)"])
   (tabulate (+string "hello") ["hello" "hello123" "hell"])
   (tabulate *mul-div ["*" "/" "10"])
   (println (evaluate ((-value (*mul-div "*")) (Constant 10) (Constant 12)) {}))
-  (tabulate (*layer-cont {:deeper (*atomic *number), :operators [Add Subtract]}) ["+10" "   +  x  "])
-  (tabulate (*layer-arr-parser {:deeper (*atomic *number), :operators [Add Subtract]}) ["10" "x" "x+10" "  x   +  10  " "x+10-y" "+" "+ 10"])
+  (tabulate (*layer-cont {:deeper (*atomic *number *number), :operators [Add Subtract]}) ["+10" "   +  x  "])
+  (tabulate (*layer-arr-parser {:deeper (*atomic *number *number), :operators [Add Subtract]}) ["10" "x" "x+10" "  x   +  10  " "x+10-y" "+" "+ 10"])
   (println (toStringInfix (-value (test-l "1 + x + 100 - y"))))
   (println (toStringInfix (-value (test-r "1 + x + 100 - y"))))
   (println (toStringInfix (parseObjectInfix "11 + 100 * 10")))
