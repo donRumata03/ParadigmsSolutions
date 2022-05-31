@@ -245,10 +245,16 @@
 (defn *layer-parser [layer] ((layer :associativity) layer))
 ;
 
-(def parseObjectInfix (letfn [(atomic [] (*atomic (delay (expr-layer-parser)) (delay (atomic))))
+
+
+(def parseObjectInfix (letfn [(atomic [] (*atomic (delay (xor-layer-parser)) (delay (atomic))))
+                              (term-layer-parser [] (*layer-parser {:deeper (delay (atomic)), :operators [Multiply Divide], :associativity *left-associativity-layer}))
                               (expr-layer-parser [] (*layer-parser {:deeper (delay (term-layer-parser)), :operators [Add Subtract], :associativity *left-associativity-layer}))
-                           (term-layer-parser [] (*layer-parser {:deeper (delay (atomic)), :operators [Multiply Divide], :associativity *left-associativity-layer}))]
-                     (+parser (expr-layer-parser))))
+                              (and-layer-parser [] (*layer-parser {:deeper (delay (expr-layer-parser)), :operators [BitAnd], :associativity *left-associativity-layer}))
+                              (or-layer-parser [] (*layer-parser {:deeper (delay (and-layer-parser)), :operators [BitOr], :associativity *left-associativity-layer}))
+                              (xor-layer-parser [] (*layer-parser {:deeper (delay (or-layer-parser)), :operators [BitXor], :associativity *left-associativity-layer}))
+                              ]
+                     (+parser (xor-layer-parser))))
 
 ; ================================== Tests =============================================
 
