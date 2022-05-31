@@ -245,9 +245,16 @@
 
 
 (defn *layer-parser [layer] ((layer :associativity) layer))
-;
 
+(defn *layerL [operators] (fn [deeper] (*left-associativity-layer {:deeper deeper :operators operators})))
+(defn *layerR [operators] (fn [deeper] (*right-associativity-layer {:deeper deeper :operators operators})))
 
+(defn *combine-layers [& layers] )
+
+(def parseObjectInfix'
+  (*combine-layers
+    (fn [first-layer] (letfn [(f [] (*atomic first-layer (delay (f))))] (delay f)))
+    (*layerL [Multiply Divide])))
 
 (def parseObjectInfix (letfn [(atomic [] (*atomic (delay (iff-layer-parser)) (delay (atomic))))
                               (term-layer-parser [] (*layer-parser {:deeper (delay (atomic)), :operators [Multiply Divide], :associativity *left-associativity-layer}))
