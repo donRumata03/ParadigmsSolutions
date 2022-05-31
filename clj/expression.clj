@@ -33,6 +33,7 @@
 (def toString (method :toString))
 (def toStringInfix (method :toStringInfix))
 (def functionSymbol (method :functionSymbol))
+(def real-name (method :real-name))
 
 (def _children (field :children))
 (def _immediate-children (field :immediate-children))
@@ -54,8 +55,10 @@
           (toString [] (str (_value this))))
 
 (defclass Variable _ [name]
-          (evaluate [vars] (vars (_name this)))
-          (diff [var] (Constant (if (= var (_name this)) 1 0)))
+          (real-name [] (clojure.string/lower-case (first (_name this))))
+                     ;(_name this))
+          (evaluate [vars] (vars (real-name this)))
+          (diff [var] (Constant (if (= var (real-name this)) 1 0)))
           (toStringInfix [] (_name this))
           (toString [] (_name this)))
 
@@ -107,6 +110,13 @@
                                                        (mapv #(diff-term ch % var) (range 1 (count ch))))
                                                 (apply Multiply (mapv #(Multiply % %) (drop 1 ch)))))))))
 (def Exp (reductionNode #(Math/exp %) "exp" (fn [this var] (Multiply this (diff (first (_children this)) var)))))
+
+(defn bitwiseOp [longOp, name] (reductionNode #(Double/longBitsToDouble (longOp (Double/doubleToLongBits %1) (Double/doubleToLongBits %2))) name nil))
+
+(def BitAnd (bitwiseOp bit-and "&"))
+(def BitOr (bitwiseOp bit-or "|"))
+(def BitXor (bitwiseOp bit-xor "^"))
+
 
 (defn labeledTree [treeConstructor, label]
   (let [Prototype
@@ -179,7 +189,8 @@
 (defn *operator [op] (+map (constantly op) (+string (functionSymbol (op 0)))))
 (defn *operators [& ops] (apply +or (map *operator ops)))
 (def *mul-div (*operators Multiply Divide))
-(def *var (+map (comp Variable str) (+char "xyz")))
+;(def *var (+map (comp Variable str) (+char "xyz")))
+ (def *var (+map (comp Variable str) (+str (+plus (+char "xyzXYZ")))))
 
 ;Expr   -> Term ([ '+' | '-' ] Term)*
 ;
