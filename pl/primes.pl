@@ -107,5 +107,12 @@ prime_divisors(N, Divisors) :- ground(Divisors), forall(Divisors, prime), ascend
 prime_divisors(1, []) :- !.
 prime_divisors(N, [S | T]) :- ground(N), smallest_prime_factor(N, S), D is div(N, S), prime_divisors(D, T).
 
+lcm(N, M, R) :- prime_divisors(N, NR), prime_divisors(M, MR), list_lcm(NR, MR, R).
+
+list_lcm([], DM, R) :- multiply(DM, R), !.
+list_lcm(DN, [], R) :- multiply(DN, R), !.
+list_lcm([H | TN], [H | TM], R) :- list_lcm(TN, TM, TR), R is H * TR, !.
+list_lcm([HN | TN], [HM | TM], R) :- HN < HM, list_lcm(TN, [HM | TM], TR), R is HN * TR, !.
+list_lcm(DN, DM, R) :- list_lcm(DM, DN, R).
 
 count_primes(N, L) :- init(N), N1 is N + 1, range(1, N1, Range), filter(Range, prime, R), length(R, L).
