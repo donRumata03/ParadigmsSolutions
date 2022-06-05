@@ -38,7 +38,7 @@ public class ClojureEngine implements Engine<Object> {
     @Override
     public Result<Number> evaluate(final Result<Object> prepared, final double[] vars) {
         final Object map = HASH_MAP.invoke("x", vars[0], "y", vars[1], "z", vars[2]);
-        final String context = String.format("(%sexpr %s)\nwhere expr = %s", evaluateString, map, prepared.context);
+        final String context = java.lang.String.format("(%sexpr %s)\nwhere expr = %s", evaluateString, map, prepared.context);
         return evaluate
                 .map(f -> ClojureScript.call(f, Number.class, context, new Object[]{prepared.value, map}))
                 .orElseGet(() -> ClojureScript.call((IFn) prepared.value, Number.class, context, new Object[]{map}));
