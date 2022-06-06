@@ -6,6 +6,7 @@ import expression.Divide;
 import expression.Multiply;
 import expression.Subtract;
 import expression.Variable;
+import expression.exceptions.CheckedAbs;
 import expression.exceptions.CheckedAdd;
 import expression.exceptions.CheckedDivide;
 import expression.exceptions.CheckedLog;
@@ -64,7 +65,7 @@ public class MaybeCheckedParseInterpreter extends TokenMatcher<Integer> {
 
     @Override
     ParenthesesTrackingExpression<Integer> constructAbs(ParenthesesTrackingExpression<Integer> child) {
-        return null;
+        return new CheckedAbs(child);
     }
 
     @Override
