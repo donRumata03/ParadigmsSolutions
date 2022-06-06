@@ -9,14 +9,16 @@ import expression.Variable;
 import expression.exceptions.CheckedAdd;
 import expression.exceptions.CheckedDivide;
 import expression.exceptions.CheckedLog;
+import expression.exceptions.CheckedLogicalShiftRight;
 import expression.exceptions.CheckedMultiply;
 import expression.exceptions.CheckedNegate;
 import expression.exceptions.CheckedPow;
+import expression.exceptions.CheckedShiftLeft;
 import expression.exceptions.CheckedSubtract;
 import expression.general.ParenthesesTrackingExpression;
 import expression.general.arithmetics.CheckedIntegerArithmetics;
 import expression.general.arithmetics.UncheckedIntegerArithmetics;
-import expression.general.operations.ArithmeticShiftRight;
+import expression.exceptions.CheckedArithmeticShiftRight;
 import expression.general.operations.Log;
 import expression.general.operations.LogicalShiftRight;
 import expression.general.operations.Negate;
@@ -114,19 +116,19 @@ public class MaybeCheckedParseInterpreter extends TokenMatcher<Integer> {
     @Override
     ParenthesesTrackingExpression<Integer> constructShiftLeft(ParenthesesTrackingExpression<Integer> left,
         ParenthesesTrackingExpression<Integer> right) {
-        return new ShiftLeft<>(left, right, new CheckedIntegerArithmetics());
+        return new CheckedShiftLeft(left, right);
     }
 
     @Override
     ParenthesesTrackingExpression<Integer> constructLogicalShiftRight(ParenthesesTrackingExpression<Integer> left,
         ParenthesesTrackingExpression<Integer> right) {
-        return new LogicalShiftRight<>(left, right, new CheckedIntegerArithmetics());
+        return new CheckedLogicalShiftRight(left, right);
     }
 
     @Override
     ParenthesesTrackingExpression<Integer> constructArithmeticShiftRight(ParenthesesTrackingExpression<Integer> left,
         ParenthesesTrackingExpression<Integer> right) {
-        return new ArithmeticShiftRight<>(left, right, new CheckedIntegerArithmetics());
+        return new CheckedArithmeticShiftRight(left, right);
     }
 
     @Override
