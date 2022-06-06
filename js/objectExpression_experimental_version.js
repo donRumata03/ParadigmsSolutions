@@ -13,6 +13,7 @@ let polishTreeFormatter = (operatorSymbol, children, builder, formatChild, _isNu
 	children.forEach(child => { formatChild(child, builder); builder.push(" "); });
 	builder.push(operatorSymbol);
 }
+
 function withParenthesesIfNotNullary(b, c, ext, isNullary) {
 	if (!isNullary) {
 		b.push("(");
@@ -36,6 +37,42 @@ let postfixTreeFormatter = (operatorSymbol, children, builder, formatChild, isNu
 		builder.push(operatorSymbol);
 	}, isNullary);
 }
+let mapIterator = (f, it) => {
+	let next = it();
+	if (next === undefined) return;
+	f(next);
+	mapIterator(f, it);
+}
+
+let iteratorOnce = val => {
+	let already = false;
+	return () => {
+		if (!already) {
+			already = true;
+			return val;
+		} else { return undefined; }
+	};
+}
+
+let chainIterators = (itl, itr) => {
+	let leftFinished = false;
+
+	let res = () => {
+		if (leftFinished) {
+			return itr();
+		} else {
+			let nextLeft = itl();
+			if (nextLeft === undefined) {
+				leftFinished = true;
+				return res();
+			}
+			return nextLeft;
+		}
+	};
+	res.nextIsClosingParentheses = function() {};
+	return res;
+}
+
 
 // function namedTreeToStringBuilder(builder, children, name) {
 // 	children.forEach(child => { child.toStringBuilder(builder); builder.push(" "); });
@@ -255,35 +292,28 @@ let allowedVariableNames = [
 
 // There are some issues with displaying true class name through graal
 
-// class ParseError extends Error {
-// 	constructor(message) {
-// 		super(message);
-// 		this.name = "ParseError";
-// 	}
-// }
-//
-// class TokenizeError extends Error {
-// 	constructor(message) {
-// 		super(message);
-// 		this.name = "TokenizeError";
-// 	}
-// }
 
+let ParseError = (() => {
+	function ParseError(message) {
+		this.message = message;
+	}
 
-function ParseError(message) {
-	this.message = message;
-}
-ParseError.prototype = Object.create(Error.prototype);
-ParseError.prototype.name = "ParseError";
-ParseError.prototype.constructor = ParseError;
+	ParseError.prototype = Object.create(Error.prototype);
+	ParseError.prototype.name = "ParseError";
+	ParseError.prototype.constructor = ParseError;
 
-function TokenizeError(message) {
-	this.message = message;
-}
-TokenizeError.prototype = Object.create(Error.prototype);
-TokenizeError.prototype.name = "TokenizeError";
-TokenizeError.prototype.constructor = TokenizeError;
+	return ParseError;
+})();
 
+let TokenizeError = (() => {
+	function TokenizeError(message) {
+		this.message = message;
+	}
+	TokenizeError.prototype = Object.create(Error.prototype);
+	TokenizeError.prototype.name = "TokenizeError";
+	TokenizeError.prototype.constructor = TokenizeError;
+	return TokenizeError;
+})();
 
 let Lexer = function (string) {
 	let ptr = 0;
@@ -293,22 +323,6 @@ let Lexer = function (string) {
 	}
 
 	let isDigit = ch => !!([!0, !0, !0, !0, !0, !0, !0, !0, !0, !0][ch]);
-	// let isDigit = ch => {
-	// 	for (let i = 0; i < 100000; i++) {
-	// 		let date = Date.now().toString();
-	// 		if (date.charAt(date.length - 1) === ch) return true;
-	// 	}
-	// 	return false;
-	// };
-
-	// let isAlpha = ch => {
-	// 	try {
-	// 		eval("function " + ch + "(){}");
-	// 		return ch.trim().length === 1 && true;
-	// 	} catch {
-	// 		return false;
-	// 	}
-	// }
 	let isAlpha = ch => ch.length === 1 && ch.toLowerCase() !== ch.toUpperCase();
 	let skipSpaces = () => ptr = scanWhile(ch => ch.trim() === '')(ptr);
 	let isPositiveNumberStart = pos => pos < string.length && isDigit(string[pos]);
@@ -354,27 +368,6 @@ let Lexer = function (string) {
 	lexer.nextIsClosingParentheses = nextIs(')');
 	return lexer;
 }
-let mapTokenStream = (f, it) => {
-	let next = it();
-	if (next === undefined) return;
-	f(next);
-	mapTokenStream(f, it);
-}
-let reverseTokenStream = it => {
-	let collected = [];
-	mapTokenStream(v => collected.push(v), it);
-	let viewThroughMirror = ch => ch === '(' ? ')' : (ch === ')' ? '(' : ch);
-	let i = collected.length;
-
-	let res = () => i === 0 ? undefined : viewThroughMirror(collected[--i]);
-
-	let nextIs = symbol => () => {
-		return i !== 0 && viewThroughMirror(collected[i - 1]) === symbol;
-	};
-	res.nextIsOpeningParentheses = nextIs('(');
-	res.nextIsClosingParentheses = nextIs(')');
-	return res;
-};
 
 let parse = function (string) {
 	let lex = Lexer(string)
@@ -419,36 +412,50 @@ function expectClosingParentheses(lexer, context = undefined) {
 	lexer();
 }
 
-function parseOperatorTokenizedStream(stream, reverseArguments) {
-	let operator = stream();
-	checkHasArity(operator);
-	if (operator.arity === 0) {
-		throw new ParseError("Can't use nullary operator as a normal one… Don't know why… 😠");
+function parseOperatorTokenizedStream(stream, firstIsFunction) {
+	let children = [];
+
+	let operator;
+	if (firstIsFunction) {
+		operator = stream();
+		checkHasArity(operator);
+		if (operator.arity === 0) {
+			throw new ParseError(
+				"Can't use nullary operator as a normal one… Don't know why… 😠");
+		}
+		while (!stream.nextIsClosingParentheses()) {
+			children.push(parseTokenizedStream(stream, firstIsFunction));
+		}
+	}
+	else {
+		let tokenAfterNextIsClosingParentheses = false;
+		while (!tokenAfterNextIsClosingParentheses) {
+			let nextToken = stream();
+			tokenAfterNextIsClosingParentheses = stream.nextIsClosingParentheses();
+			stream = chainIterators();
+
+		}
 	}
 
-	let args = [];
-	// for (let i = 0; i < operator.arity; i++) {
-	while (!stream.nextIsClosingParentheses()) {
-		args.push(parseTokenizedStream(stream, reverseArguments));
-	}
+
 
 	let validateArity = (expected, actual) =>
 		expected === Infinity
 		|| actual === expected
 		|| (Array.isArray(expected) && expected[0] <= actual && actual <= expected[1]);
 
-	if (!validateArity(operator.arity, args.length)) {
+	if (!validateArity(operator.arity, children.length)) {
 		throw new ParseError(
 			operator.arity + " arguments expected for operator " + formatToken(operator) +
-			", actual number of arguments: " + args.length);
+			", actual number of arguments: " + children.length);
 	}
 
-	return new operator(...(reverseArguments ? args.reverse() : args));
+	return new operator(...(firstIsFunction ? children.reverse() : children));
 }
-function parseTokenizedStream(stream, reverseArguments) {
+function parseTokenizedStream(stream, firstIsFunction) {
 	if (stream.nextIsOpeningParentheses()) {
 		stream();
-		let res = parseOperatorTokenizedStream(stream, reverseArguments);
+		let res = parseOperatorTokenizedStream(stream, firstIsFunction);
 		expectClosingParentheses(stream, "operator expression ending");
 		return res;
 	} else {
@@ -460,22 +467,15 @@ function parseTokenizedStream(stream, reverseArguments) {
 		return new nextNullary();
 	}
 }
-function parseTokenStream(stream, reverseArguments) {
-	let parsed = parseTokenizedStream(stream, reverseArguments);
+function parseXFix(string, functionIsFirst) {
+	let lex = Lexer(string);
+	let parsed = parseTokenizedStream(lex, functionIsFirst);
 
-	if (stream() !== undefined) {
+	if (lex() !== undefined) {
 		throw new ParseError("Couldn't parse the whole expression…");
 	}
 	return parsed;
 }
 
-function parsePrefix(string) {
-	return parseTokenStream(Lexer(string), false);
-}
-
-function parsePostfix(string) {
-	return parseTokenStream(reverseTokenStream(Lexer(string)), true);
-}
-
-let node = new Const(10);
-console.log(node.toString());
+let parsePrefix = string => parseXFix(string, true);
+let parsePostfix = string => parseXFix(string, false);
