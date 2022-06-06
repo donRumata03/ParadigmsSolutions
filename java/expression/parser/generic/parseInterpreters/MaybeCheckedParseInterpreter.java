@@ -16,9 +16,12 @@ import expression.exceptions.CheckedSubtract;
 import expression.general.ParenthesesTrackingExpression;
 import expression.general.arithmetics.CheckedIntegerArithmetics;
 import expression.general.arithmetics.UncheckedIntegerArithmetics;
+import expression.general.operations.ArithmeticShiftRight;
 import expression.general.operations.Log;
+import expression.general.operations.LogicalShiftRight;
 import expression.general.operations.Negate;
 import expression.general.operations.Pow;
+import expression.general.operations.ShiftLeft;
 
 /**
  * Depending on `checked` parameter generates checked or unchecked integer nodes
@@ -111,19 +114,19 @@ public class MaybeCheckedParseInterpreter extends TokenMatcher<Integer> {
     @Override
     ParenthesesTrackingExpression<Integer> constructShiftLeft(ParenthesesTrackingExpression<Integer> left,
         ParenthesesTrackingExpression<Integer> right) {
-        return null;
+        return new ShiftLeft<>(left, right, new CheckedIntegerArithmetics());
     }
 
     @Override
     ParenthesesTrackingExpression<Integer> constructLogicalShiftRight(ParenthesesTrackingExpression<Integer> left,
         ParenthesesTrackingExpression<Integer> right) {
-        return null;
+        return new LogicalShiftRight<>(left, right, new CheckedIntegerArithmetics());
     }
 
     @Override
     ParenthesesTrackingExpression<Integer> constructArithmeticShiftRight(ParenthesesTrackingExpression<Integer> left,
         ParenthesesTrackingExpression<Integer> right) {
-        return null;
+        return new ArithmeticShiftRight<>(left, right, new CheckedIntegerArithmetics());
     }
 
     @Override
