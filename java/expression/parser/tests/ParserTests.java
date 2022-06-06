@@ -4,6 +4,8 @@ import expression.TripleExpression;
 import expression.general.GenericTripleExpression;
 import expression.general.arithmetics.ArithmeticEngine;
 import expression.general.arithmetics.CheckedIntegerArithmetics;
+import expression.general.arithmetics.UncheckedDoubleArithmetics;
+import expression.general.arithmetics.UncheckedIntegerArithmetics;
 import expression.general.exceptions.IntegerOverflowException;
 import java.io.IOException;
 import java.util.Optional;
@@ -76,5 +78,45 @@ public class ParserTests {
         Assert.assertEquals(Integer.valueOf(-100),  e.evaluate(1, 2, 3));
     }
 
+    @Test
+    public void parseBigNumber() {
+        var e = parseCheckedFrom("(((z + y) - 2147483647) + (y + y))");
+        System.out.println(e.toMiniString());
+    }
 
+    @Test
+    public void parseSmallNumber() {
+        var e = parseCheckedFrom("(((z + y) - 1) + (y + y))");
+        System.out.println(e.toMiniString());
+    }
+
+    @Test
+    public void parseSmallNumberWithPlus() {
+        var e = parseCheckedFrom("(((z + y) + 1) + (y + y))");
+        System.out.println(e.toMiniString());
+    }
+
+    @Test
+    public void parseBigNumberReduced() {
+        var e = parseCheckedFrom("(z + y) - 2147483647");
+        System.out.println(e.toMiniString());
+    }
+
+    @Test
+    public void parseBigNumberUnchecked() {
+        var e = parseGenericFrom("(((z + y) - 2147483647) + (y + y))", new UncheckedIntegerArithmetics());
+        System.out.println(e.toString());
+    }
+
+    @Test
+    public void parseUnaryMinusChecked() {
+        var e = parseCheckedFrom("- 1");
+        System.out.println(e.toString());
+    }
+
+    @Test
+    public void parseBinaryMinusChecked() {
+        var e = parseCheckedFrom("x - 1");
+        System.out.println(e.toString());
+    }
 }

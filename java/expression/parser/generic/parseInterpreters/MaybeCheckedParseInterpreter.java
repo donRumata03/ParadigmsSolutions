@@ -2,9 +2,23 @@ package expression.parser.generic.parseInterpreters;
 
 import expression.Add;
 import expression.Const;
+import expression.Divide;
+import expression.Multiply;
+import expression.Subtract;
 import expression.Variable;
 import expression.exceptions.CheckedAdd;
+import expression.exceptions.CheckedDivide;
+import expression.exceptions.CheckedLog;
+import expression.exceptions.CheckedMultiply;
+import expression.exceptions.CheckedNegate;
+import expression.exceptions.CheckedPow;
+import expression.exceptions.CheckedSubtract;
 import expression.general.ParenthesesTrackingExpression;
+import expression.general.arithmetics.CheckedIntegerArithmetics;
+import expression.general.arithmetics.UncheckedIntegerArithmetics;
+import expression.general.operations.Log;
+import expression.general.operations.Negate;
+import expression.general.operations.Pow;
 
 /**
  * Depending on `checked` parameter generates checked or unchecked integer nodes
@@ -55,7 +69,7 @@ public class MaybeCheckedParseInterpreter extends TokenMatcher<Integer> {
 
     @Override
     ParenthesesTrackingExpression<Integer> constructUnaryMinus(ParenthesesTrackingExpression<Integer> child) {
-        return null;
+        return checked ? new CheckedNegate(child) : new Negate<>(child, new UncheckedIntegerArithmetics());
     }
 
     @Override
@@ -79,19 +93,19 @@ public class MaybeCheckedParseInterpreter extends TokenMatcher<Integer> {
     @Override
     ParenthesesTrackingExpression<Integer> constructSubtract(ParenthesesTrackingExpression<Integer> left,
         ParenthesesTrackingExpression<Integer> right) {
-        return null;
+        return checked ? new CheckedSubtract(left, right) : new Subtract(left, right);
     }
 
     @Override
     ParenthesesTrackingExpression<Integer> constructMultiply(ParenthesesTrackingExpression<Integer> left,
         ParenthesesTrackingExpression<Integer> right) {
-        return null;
+        return checked ? new CheckedMultiply(left, right) : new Multiply(left, right);
     }
 
     @Override
     ParenthesesTrackingExpression<Integer> constructDivide(ParenthesesTrackingExpression<Integer> left,
         ParenthesesTrackingExpression<Integer> right) {
-        return null;
+        return checked ? new CheckedDivide(left, right) : new Divide(left, right);
     }
 
     @Override
@@ -115,12 +129,12 @@ public class MaybeCheckedParseInterpreter extends TokenMatcher<Integer> {
     @Override
     ParenthesesTrackingExpression<Integer> constructPow(ParenthesesTrackingExpression<Integer> left,
         ParenthesesTrackingExpression<Integer> right) {
-        return null;
+        return new CheckedPow(left, right);
     }
 
     @Override
     ParenthesesTrackingExpression<Integer> constructLog(ParenthesesTrackingExpression<Integer> left,
         ParenthesesTrackingExpression<Integer> right) {
-        return null;
+        return new CheckedLog(left, right);
     }
 }

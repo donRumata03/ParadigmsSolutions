@@ -121,4 +121,13 @@ public class TokenizerTests {
         String testCase = "( ( ( ( 0 A ) ) ) + ( 0 ) )";
         Assert.assertThrows(TokenizationError.class, () -> parseTokens(testCase));
     }
+
+    @Test
+    public void testBigNumber() throws IOException {
+        String testCase = "(((z + y) - 2147483647) + (y + y))";
+        var tokens = parseTokens(testCase);
+        System.out.println(tokens);
+    }
+
+
 }
