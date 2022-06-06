@@ -19,7 +19,6 @@ forall([H | T], F) :- G =.. [F, H], call(G), forall(T, F).
 mult_conv(A, B, R) :- R is A * B.
 multiply(Array, R) :- foldLeft(Array, 1, mult_conv, R).
 
-
 ascending([]).
 ascending([_]).
 ascending([F, S | T]) :- 
@@ -34,11 +33,11 @@ init(MAX_N) :- init_(2, MAX_N).
 init_(N, MAX_N) :- Sq is N * N, Sq > MAX_N, !.
 init_(N, MAX_N) :- 
 	S is N + 1,
-	process(N, MAX_N),
+	process_sieve(N, MAX_N),
 	init_(S, MAX_N).
 
-process(N, _) :- composite_table(N), !.
-process(N, MAX_N) :-  Sq is N * N, mark_composite_until(N, Sq, MAX_N).
+process_sieve(N, _) :- composite_table(N), !.
+process_sieve(N, MAX_N) :-  Sq is N * N, mark_composite_until(N, Sq, MAX_N).
 
 mark_composite_until(Modulo, Start, MAX_N) :- Start > MAX_N, !.
 
@@ -49,6 +48,7 @@ mark_composite_until(Modulo, Start, MAX_N) :-
 
 update_tables(Modulo, Sieved) :- composite_table(Sieved), !.
 update_tables(Modulo, Sieved) :- assert(composite_table(Sieved)), assert(factor_table(Sieved, Modulo)).
+
 
 % Answering queries (primeness, factorization, lcm)
 
